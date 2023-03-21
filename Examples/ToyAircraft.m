@@ -24,6 +24,7 @@ cockpit.add(fus_body);
 
 fus_tail = baff.model.BluffBody.Cone(0.14,0.055,0.02);
 fus_tail.eta = 1;
+fus_tail.EtaDir = [0;0.14;0.005-0.02-0.005]./0.14;
 fus_body.add(fus_tail);
 
 %% create Wing
@@ -69,7 +70,7 @@ Htp = baff.model.Wing.UniformWing(hSpan,0.1,0.1,...
     baff.model.Material.Stiff,hChord,beam_loc,"NAeroStations",11);
 Htp.A = baff.util.rotz(-90);
 Htp.eta = 0.5;
-Htp.Offset = [-hSpan*0.5;0;-fus_rad*0.5];
+Htp.Offset = [-hSpan*0.5;0;-fus_rad*0.25];
 fus_tail.add(Htp);
 
 %% create vtp
@@ -77,7 +78,7 @@ Vtp = baff.model.Wing.UniformWing(vSpan,0.1,0.1,...
     baff.model.Material.Stiff,vChord,beam_loc,"NAeroStations",11);
 Vtp.A = baff.util.rotz(-90)*baff.util.rotx(-90);
 Vtp.eta = 0.5;
-Vtp.Offset = [0;0;-fus_rad*0.5];
+Vtp.Offset = [0;0;-fus_rad*0.25];
 fus_tail.add(Vtp);
 
 %% create model
