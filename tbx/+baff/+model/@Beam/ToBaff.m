@@ -11,16 +11,6 @@ function ToBaff(obj,filepath,loc)
     BNs = arrayfun(@(x)length(x.BeamStations),obj);
     BN = sum(BNs);
 
-    %create placeholders
-    h5create(filepath,sprintf('%s/Stations/eta',loc),[1 BN]);
-    h5create(filepath,sprintf('%s/Stations/A',loc),[1 BN]);
-    h5create(filepath,sprintf('%s/Stations/Ixx',loc),[1 BN]);
-    h5create(filepath,sprintf('%s/Stations/Izz',loc),[1 BN]);
-    h5create(filepath,sprintf('%s/Stations/E',loc),[1 BN]);
-    h5create(filepath,sprintf('%s/Stations/G',loc),[1 BN]);
-    h5create(filepath,sprintf('%s/Stations/rho',loc),[1 BN]);
-    h5create(filepath,sprintf('%s/Stations/nu',loc),[1 BN]);
-
     %fill data
     BN_idx = [0,cumsum(BNs)']+1;
     for i = 1:length(obj)

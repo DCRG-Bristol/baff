@@ -54,12 +54,13 @@ classdef Element < matlab.mixin.Heterogeneous & handle
             if length(obj)>0
                 pIdx = h5read(filepath,sprintf('%s/Parent',loc));
                 cIdx = h5read(filepath,sprintf('%s/Children',loc));
+                cIdx = cIdx(~isnan(cIdx(:,1)),:);
                 for i = 1:length(obj)
                     if pIdx(i) > 0
                         obj(i).Parent = linker(i);
                     end
                     for j = 1:size(cIdx,1)
-                        if ~isnan(cIdx(j,i))
+                        if cIdx(j,i)>0
                             obj(i).Children(end+1) = linker(cIdx(j,i));
                         end
                     end
@@ -84,49 +85,51 @@ classdef Element < matlab.mixin.Heterogeneous & handle
         end
         function PropToBaff(obj,filepath,loc)
             N = length(obj);
-            if N == 0
-                h5create(filepath,sprintf('%s/eta',loc),[1 1]);
-                h5write(filepath,sprintf('%s/eta',loc),0);
-            else
-                %create place holders
-                h5create(filepath,sprintf('%s/Offset',loc),[3 N]);
-                h5create(filepath,sprintf('%s/eta',loc),[1 N]);
-                h5create(filepath,sprintf('%s/A',loc),[9 N]);
-                h5create(filepath,sprintf('%s/Name',loc),[1 N],Datatype="string");
-                h5create(filepath,sprintf('%s/EtaLength',loc),[1 N]);
-                h5create(filepath,sprintf('%s/Index',loc),[1 N]);
-                h5create(filepath,sprintf('%s/Parent',loc),[1 N]);
+            if N ~= 0
                 %fill easy data
-                h5write(filepath,sprintf('%s/Offset',loc),[obj.Offset]);
-                h5write(filepath,sprintf('%s/eta',loc),[obj.eta]);
-                h5write(filepath,sprintf('%s/A',loc),reshape([obj.A],9,[]));
-                h5write(filepath,sprintf('%s/Name',loc),[obj.Name]);
-                h5write(filepath,sprintf('%s/EtaLength',loc),[obj.EtaLength]);
-                h5write(filepath,sprintf('%s/Index',loc),[obj.Index]);
+                h5write(filepath,sprintf('%s/Offset',loc),[obj.Offset],[1 1],[3 N]);
+                h5write(filepath,sprintf('%s/eta',loc),[obj.eta],[1 1],[1 N]);
+                h5write(filepath,sprintf('%s/A',loc),reshape([obj.A],9,[]),[1 1],[9 N]);
+                h5write(filepath,sprintf('%s/Name',loc),[obj.Name],[1 1],[1 N]);
+                h5write(filepath,sprintf('%s/EtaLength',loc),[obj.EtaLength],[1 1],[1 N]);
+                h5write(filepath,sprintf('%s/Index',loc),[obj.Index],[1 1],[1 N]);
                 pIdx = zeros(1,N);
                 for i = 1:N
                     if ~isempty(obj(i).Parent)
                         pIdx(i) = obj(i).Parent.Index;
                     end
                 end
-                h5write(filepath,sprintf('%s/Parent',loc),pIdx);
+                h5write(filepath,sprintf('%s/Parent',loc),pIdx,[1 1],[1 N]);
                 %deal with children
                 maxChildren = max(arrayfun(@(x)length(x.Children),obj));
                 if maxChildren == 0
-                    h5create(filepath,sprintf('%s/Children',loc),[1 N]);
-                    h5write(filepath,sprintf('%s/Children',loc),nan(1,N));
+                    h5write(filepath,sprintf('%s/Children',loc),zeros(1,N),[1,1],[1 N]);
                 else
-                    child_idx = nan(maxChildren,N);
+                    child_idx = zeros(maxChildren,N);
                     for i = 1:length(obj)
                         nc = length(obj(i).Children);
                         child_idx(1:nc,i) = arrayfun(@(x)x.Index,obj(i).Children);
                     end
-                    h5create(filepath,sprintf('%s/Children',loc),[maxChildren N]);
-                    h5write(filepath,sprintf('%s/Children',loc),child_idx);
+                    h5write(filepath,sprintf('%s/Children',loc),child_idx,[1,1],[maxChildren N]);
                 end
             end
         end
         function ToBaff(obj,filepath)
+        end
+    end
+    methods(Static)
+        function TemplateHdf5(filepath,loc)
+            %create place holders
+            h5create(filepath,sprintf('%s/Offset',loc),[3 inf],"Chunksize",[3,10]);
+            h5create(filepath,sprintf('%s/eta',loc),[1 inf],"Chunksize",[1,10]);
+            h5create(filepath,sprintf('%s/A',loc),[9 inf],"Chunksize",[9,10]);
+            h5create(filepath,sprintf('%s/Name',loc),[1 inf],"Chunksize",[1,10],Datatype="string");
+            h5create(filepath,sprintf('%s/EtaLength',loc),[1 inf],"Chunksize",[1,10]);
+            h5create(filepath,sprintf('%s/Index',loc),[1 inf],"Chunksize",[1,10]);
+            h5create(filepath,sprintf('%s/Parent',loc),[1 inf],"Chunksize",[1,10],"Fillvalue",nan);
+            h5create(filepath,sprintf('%s/Children',loc),[256 inf],"Chunksize",[256,10],"Fillvalue",nan);
+
+            h5writeatt(filepath,[loc,'/'],'Qty', 0);
         end
     end
 end

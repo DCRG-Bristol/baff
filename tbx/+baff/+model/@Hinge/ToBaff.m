@@ -7,18 +7,13 @@ function ToBaff(obj,filepath,loc)
         h5writeatt(filepath,[loc,'/'],'Qty', 0);
         return
     end
-    %create place holders
-    h5create(filepath,sprintf('%s/HingeVector',loc),[3 N]);
-    h5create(filepath,sprintf('%s/Rotation',loc),[1 N]);
-    h5create(filepath,sprintf('%s/K',loc),[1 N]);
-    h5create(filepath,sprintf('%s/C',loc),[1 N]);
-    h5create(filepath,sprintf('%s/isLocked',loc),[1 N]);
+    
     %fill data
-    h5write(filepath,sprintf('%s/HingeVector',loc),[obj.HingeVector]);
-    h5write(filepath,sprintf('%s/Rotation',loc),[obj.Rotation]);
-    h5write(filepath,sprintf('%s/K',loc),[obj.K]);
-    h5write(filepath,sprintf('%s/C',loc),[obj.C]);
-    h5write(filepath,sprintf('%s/isLocked',loc),[obj.isLocked]);
+    h5write(filepath,sprintf('%s/HingeVector',loc),[obj.HingeVector],[1,1],[3,N]);
+    h5write(filepath,sprintf('%s/Rotation',loc),[obj.Rotation],[1,1],[1,N]);
+    h5write(filepath,sprintf('%s/K',loc),[obj.K],[1,1],[1,N]);
+    h5write(filepath,sprintf('%s/C',loc),[obj.C],[1,1],[1,N]);
+    h5write(filepath,sprintf('%s/isLocked',loc),[obj.isLocked],[1,1],[1,N]);
 
     h5writeatt(filepath,[loc,'/'],'Qty', length(obj));
 end

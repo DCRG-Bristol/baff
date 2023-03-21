@@ -22,6 +22,7 @@ classdef Wing < baff.model.Beam
     end
     methods(Static)
         obj = FromBaff(filepath,loc);
+        TemplateHdf5(filepath,loc);
 
         function obj = UniformWing(length,barHeight,barWidth,Material,Chord,BeamLoc,opts)
             arguments

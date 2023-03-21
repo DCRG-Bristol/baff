@@ -71,6 +71,7 @@ ax.ZAxis.Direction = "reverse";
 axis equal
 
 delete test.h5
+baff.model.Model.GenTempHdf5('test.h5');
 tic;
 model = baff.model.Model;
 model.AddElement(con);

@@ -6,6 +6,7 @@ classdef Constraint < baff.model.Element
     end
     methods(Static)
         obj = FromBaff(filepath,loc);
+        TemplateHdf5(filepath,loc);
     end
     methods
         function obj = Constraint(CompOpts,opts)

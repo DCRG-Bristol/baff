@@ -7,16 +7,12 @@ function ToBaff(obj,filepath,loc)
         h5writeatt(filepath,[loc,'/'],'Qty', 0);
         return
     end
-    %create place holders
-    h5create(filepath,sprintf('%s/InertiaTensor',loc),[9 N]);
-    h5create(filepath,sprintf('%s/Force',loc),[3 N]);
-    h5create(filepath,sprintf('%s/Moment',loc),[3 N]);
-    h5create(filepath,sprintf('%s/Mass',loc),[1 N]);
+
     %fill data
-    h5write(filepath,sprintf('%s/InertiaTensor',loc),reshape([obj.InertiaTensor],9,[]));
-    h5write(filepath,sprintf('%s/Force',loc),[obj.Force]);
-    h5write(filepath,sprintf('%s/Moment',loc),[obj.Moment]);
-    h5write(filepath,sprintf('%s/Mass',loc),[obj.mass]);
+    h5write(filepath,sprintf('%s/InertiaTensor',loc),reshape([obj.InertiaTensor],9,[]),[1,1],[9,N]);
+    h5write(filepath,sprintf('%s/Force',loc),[obj.Force],[1,1],[3,N]);
+    h5write(filepath,sprintf('%s/Moment',loc),[obj.Moment],[1,1],[3,N]);
+    h5write(filepath,sprintf('%s/Mass',loc),[obj.mass],[1,1],[1,N]);
 
     h5writeatt(filepath,[loc,'/'],'Qty', length(obj));
 end

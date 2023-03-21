@@ -56,7 +56,6 @@ classdef Model < handle
 
         function ToBaff(obj,filename)
             date = datestr(now);
-            h5create(filename,'/Version',[1 1],'Datatype','string');
             h5write(filename,'/Version',string(baff.util.get_version));
             h5writeatt(filename,'/','BaffVersion', string(baff.util.get_version));
             h5writeatt(filename,'/','MatlabVersion', version);
@@ -98,6 +97,18 @@ classdef Model < handle
         end
     end
     methods(Static)
+        function GenTempHdf5(filename)
+            obj = baff.model.Model();
+            h5create(filename,'/Version',[1 1],'Datatype','string');
+            h5write(filename,'/Version',string(baff.util.get_version));
+            h5writeatt(filename,'/','BaffVersion', string(baff.util.get_version));
+            names = fieldnames(obj);
+            for i = 1:length(names)
+                if isa(obj.(names{i}),'baff.model.Element') && ~strcmp(names{i},'Orphans')
+                    baff.model.(names{i}).TemplateHdf5(filename,sprintf('/BAFF/%s',names{i}));
+                end
+            end
+        end
         function obj = FromBaff(filename)
             obj = baff.model.Model();
             names = fieldnames(obj);
