@@ -16,6 +16,7 @@ function ToBaff(obj,filepath,loc)
     for i = 1:length(obj)
         h5write(filepath,sprintf('%s/Stations/eta',loc),arrayfun(@(x)x.eta,[obj(i).Stations]),[1 BN_idx(i)],[1 BNs(i)]);
         h5write(filepath,sprintf('%s/Stations/A',loc),arrayfun(@(x)x.A,[obj(i).Stations]),[1 BN_idx(i)],[1 BNs(i)]);
+        h5write(filepath,sprintf('%s/Stations/Radius',loc),arrayfun(@(x)x.Radius,[obj(i).Stations]),[1 BN_idx(i)],[1 BNs(i)]);
         h5write(filepath,sprintf('%s/Stations/Ixx',loc),arrayfun(@(x)x.Ixx,[obj(i).Stations]),[1 BN_idx(i)],[1 BNs(i)]);
         h5write(filepath,sprintf('%s/Stations/Izz',loc),arrayfun(@(x)x.Izz,[obj(i).Stations]),[1 BN_idx(i)],[1 BNs(i)]);
         h5write(filepath,sprintf('%s/Stations/E',loc),arrayfun(@(x)x.Mat.E,[obj(i).Stations]),[1 BN_idx(i)],[1 BNs(i)]);

@@ -2,6 +2,7 @@ classdef Model < handle
     properties
         Name = ""
         Beam (:,1) baff.model.Beam = baff.model.Beam.empty
+        BluffBody (:,1) baff.model.BluffBody = baff.model.BluffBody.empty
         Constraint (:,1) baff.model.Constraint = baff.model.Constraint.empty
         Hinge (:,1) baff.model.Hinge = baff.model.Hinge.empty
         Mass (:,1) baff.model.Mass = baff.model.Mass.empty
@@ -11,20 +12,10 @@ classdef Model < handle
     end
     methods
         function AddElement(obj,ele)
-            % add the element
-            switch class(ele)
-                case "baff.model.Beam"
-                    obj.Beam(end+1) = ele;
-                case "baff.model.Constraint"
-                    obj.Constraint(end+1) = ele;
-                case "baff.model.Hinge"
-                    obj.Hinge(end+1) = ele;
-                case "baff.model.Mass"
-                    obj.Mass(end+1) = ele;
-                case "baff.model.Point"
-                    obj.Point(end+1) = ele;
-                case "baff.model.Wing"
-                    obj.Wing(end+1) = ele;
+            % add element
+            if isa(ele,'baff.model.Element')
+                cName = strsplit(class(ele),'.');
+                obj.(cName{end})(end+1) = ele;
             end
             % add its Children
             for cIdx = 1:length(ele.Children)
