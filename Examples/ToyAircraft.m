@@ -16,30 +16,27 @@ vChord = 0.07;
 
 %% create fuselage
 cockpit = baff.model.BluffBody.SemiSphere(0.15,0.055);
-cockpit.A = baff.util.rotz(90);
 
 fus_body = baff.model.BluffBody.Cylinder(0.652-0.082,0.055);
-fus_body.eta = 1;
-cockpit.add(fus_body);
 
 fus_tail = baff.model.BluffBody.Cone(0.14,0.055,0.02);
-fus_tail.eta = 1;
-fus_tail.EtaDir = [0;0.14;0.005-0.02-0.005]./0.14;
-fus_body.add(fus_tail);
+[fus_tail.Stations.EtaDir] = deal([0;0.14;0.005-0.02-0.005]./0.14);
 
+fuselage = cockpit + fus_body + fus_tail;
+fuselage.A
 %% create Wing
 Wing = baff.model.Wing.UniformWing(span*hinge_eta,0.1,0.1,...
     baff.model.Material.Stiff,Chord,beam_loc,"NAeroStations",11);
 Wing.A = baff.util.rotz(-90);
-Wing.eta = 0.5;
+Wing.Eta = 0.5;
 Wing.Offset = [-span*hinge_eta*0.5;0;fus_rad*0.66];
-fus_body.add(Wing);
+fuselage.add(Wing);
 
 %% create RHS Wingtip
 hinge_rhs = baff.model.Hinge();
 hinge_rhs.HingeVector = baff.util.rotz(flare)*[1;0;0];
 hinge_rhs.Rotation = -fold;
-hinge_rhs.eta = 1;
+hinge_rhs.Eta = 1;
 hinge_rhs.Offset = [(beam_loc-0.5)*Chord 0 0];
 hinge_rhs.Name = 'SAH_RHS';
 Wing.add(hinge_rhs);
@@ -53,7 +50,7 @@ hinge_rhs.add(Wingtip_rhs);
 hinge_lhs = baff.model.Hinge();
 hinge_lhs.HingeVector = baff.util.rotz(-flare)*[1;0;0];
 hinge_lhs.Rotation = fold;
-hinge_lhs.eta = 0;
+hinge_lhs.Eta = 0;
 hinge_lhs.Offset = [(beam_loc-0.5)*Chord 0 0];
 hinge_lhs.Name = 'SAH_lhs';
 Wing.add(hinge_lhs);
@@ -69,17 +66,17 @@ hinge_lhs.add(Wingtip_lhs);
 Htp = baff.model.Wing.UniformWing(hSpan,0.1,0.1,...
     baff.model.Material.Stiff,hChord,beam_loc,"NAeroStations",11);
 Htp.A = baff.util.rotz(-90);
-Htp.eta = 0.5;
+Htp.Eta = 0.93;
 Htp.Offset = [-hSpan*0.5;0;-fus_rad*0.25];
-fus_tail.add(Htp);
+fuselage.add(Htp);
 
 %% create vtp
 Vtp = baff.model.Wing.UniformWing(vSpan,0.1,0.1,...
     baff.model.Material.Stiff,vChord,beam_loc,"NAeroStations",11);
 Vtp.A = baff.util.rotz(-90)*baff.util.rotx(-90);
-Vtp.eta = 0.5;
+Vtp.Eta = 0.93;
 Vtp.Offset = [0;0;-fus_rad*0.25];
-fus_tail.add(Vtp);
+fuselage.add(Vtp);
 
 %% create model
 delete test.h5
@@ -87,7 +84,7 @@ baff.model.Model.GenTempHdf5('test.h5');
 
 tic;
 model = baff.model.Model;
-model.AddElement(cockpit);
+model.AddElement(fuselage);
 model.UpdateIdx();
 model.ToBaff('test.h5');
 toc;

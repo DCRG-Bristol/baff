@@ -1,43 +1,42 @@
-classdef BeamStation < matlab.mixin.Heterogeneous
+classdef Beam < baff.model.station.Base
     %BEAMSTATION Summary of this class goes here
     %   Detailed explanation goes here
 
     properties
-        eta = 0;
         A = 1;
         Ixx = 0;
         Izz = 0;
         Mat = baff.model.Material.Stiff;
     end
+    methods (Static)
+        obj = FromBaff(filepath,loc);
+        TemplateHdf5(filepath,loc);
+    end
     methods
-        function obj = BeamStation(eta,opts)
+        function obj = Beam(eta,opts)
             arguments
                 eta
+                opts.EtaDir = [0;1;0]
                 opts.Mat = baff.model.Material.Stiff;
                 opts.A = 1;
                 opts.Ixx = 1;
                 opts.Izz = 1;
             end
-            obj.eta = eta;
+            obj.Eta = eta;
+            obj.EtaDir = opts.EtaDir;
             obj.A = opts.A;
             obj.Ixx = opts.Ixx;
             obj.Izz = opts.Izz;
             obj.Mat = opts.Mat;
         end
-        function out = plus(obj,delta_eta)
-            for i = 1:length(delta_eta)
-                out(i) = obj;
-                out(i).eta = out(i).eta + delta_eta(i);
-            end
-        end
         function stations = interpolate(obj,etas)
-            old_eta = [obj.eta];
+            old_eta = [obj.Eta];
             As = interp1(old_eta,[obj.A],etas,"linear");
             Ixxs = interp1(old_eta,[obj.Ixx],etas,"linear");
             Izzs = interp1(old_eta,[obj.Izz],etas,"linear");
-            stations = baff.model.BeamStation.empty;
+            stations = baff.model.station.Beam.empty;
             for i = 1:length(etas)
-                stations(i) = baff.model.BeamStation(etas(i),"A",As(i),...
+                stations(i) = baff.model.station.Beam(etas(i),"A",As(i),...
                     "Ixx",Ixxs(i),"Izz",Izzs(i));
                 if i == length(etas)
                     stations(i).Mat = obj(end).Mat;
@@ -67,7 +66,7 @@ classdef BeamStation < matlab.mixin.Heterogeneous
                 width
                 opts.Mat = baff.model.Material.Stiff;
             end
-            obj = baff.model.BeamStation(eta,Ixx=height^3*width/12,Izz=width^3*height/12,...
+            obj = baff.model.station.Beam(eta,Ixx=height^3*width/12,Izz=width^3*height/12,...
                 A=height*width, Mat = opts.Mat);
         end
     end

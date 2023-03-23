@@ -26,7 +26,7 @@ inertias = [ones(1,5)*82,26;ones(1,5)*73,32;ones(1,5)*151,56]*1e-6;
 % load('Wing2ndMass.mat')
 for i = 1:length(xs)
     tmp_mass = baff.model.Mass(mass(i));
-    tmp_mass.eta = ys(i)/(L*eta_hinge);
+    tmp_mass.Eta = ys(i)/(L*eta_hinge);
     tmp_mass.Offset(1) = xs(i);
     tmp_mass.Name = sprintf('tmp_mass_%.0f',i);
     tmp_mass.InertiaTensor = diag(inertias(:,i)');
@@ -38,14 +38,14 @@ hinge = baff.model.Hinge();
 hinge.HingeVector = baff.util.rotz(FlareAngle)*[1;0;0];
 hinge.Rotation = -FoldAngle;
 hinge.isLocked = 0;
-hinge.eta = 1;
+hinge.Eta = 1;
 hinge.Offset = [(BarChordwisePos-0.5)*WingChord L*(eta_hinge-eta_beam) 0];
 hinge.Name = 'SAH';
 mainBeam.add(hinge);
 
 % add wingtip
 wingtip = baff.model.Wing.UniformWing(0.2,4e-3,30e-3,baff.model.Material.Stiff,WingChord,0.5,NStations=4);
-wingtip.eta = 1;
+wingtip.Eta = 1;
 wingtip.Name = 'Wingtip';
 hinge.add(wingtip);
 

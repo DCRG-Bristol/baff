@@ -26,7 +26,7 @@ inertias = [ones(1,5)*82,26;ones(1,5)*73,32;ones(1,5)*151,56]*1e-6;
 % load('Wing2ndMass.mat')
 for i = 1:length(xs)
     tmp_mass = baff.model.Mass(mass(i));
-    tmp_mass.eta = ys(i)/(L*eta_hinge);
+    tmp_mass.Eta = ys(i)/(L*eta_hinge);
     tmp_mass.Offset(1) = xs(i);
     tmp_mass.Name = sprintf('tmp_mass_%.0f',i);
     tmp_mass.InertiaTensor = diag(inertias(:,i)');

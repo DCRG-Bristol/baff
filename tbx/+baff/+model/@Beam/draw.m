@@ -8,7 +8,8 @@ Origin = opts.Origin + opts.A*(obj.Offset);
 Rot = opts.A*obj.A;
 %plot beam
 N = length(obj.Stations);
-points = repmat([obj.Stations.eta],3,1).*repmat(obj.EtaDir.*obj.EtaLength,1,N);
+etas = [obj.Stations.Eta].*obj.EtaLength;
+points = repmat(etas(2:end)-etas(1:end-1),3,1).*[obj.Stations.EtaDir];
 points = repmat(Origin,1,N) + Rot*points;
 p = plot3(points(1,:),points(2,:),points(3,:),'-');
 p.Color = 'c';

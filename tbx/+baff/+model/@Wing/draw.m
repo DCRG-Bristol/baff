@@ -8,8 +8,11 @@ Origin = opts.Origin + opts.A*(obj.Offset);
 Rot = opts.A*obj.A;
 %plot beam
 N = length(obj.Stations);
-points = repmat([obj.Stations.eta],3,1).*repmat(obj.EtaDir.*obj.EtaLength,1,N);
-points = repmat(Origin,1,N) + Rot*points;
+% etas = [obj.Stations.Eta].*obj.EtaLength;
+points = cell2mat(arrayfun(@(x)obj.GetPos(x),[obj.Stations.Eta],'UniformOutput',false));
+% points = repmat(etas(2:end)-etas(1:end-1),3,1).*[obj.Stations.EtaDir];
+% points = repmat([obj.Stations.Eta],3,1).*repmat(obj.EtaDir.*obj.EtaLength,1,N);
+points = repmat(Origin,1,N) + Rot*points.*obj.EtaLength;
 p = plot3(points(1,:),points(2,:),points(3,:),'-');
 p.Color = 'c';
 p.Tag = 'Beam';
@@ -19,7 +22,7 @@ for i = 1:length(obj.Stations)
 end
 %plot Aero Stations
 for i = 1:length(obj.AeroStations)
-    eta_vector = obj.EtaDir.*obj.AeroStations(i).eta*obj.EtaLength;
+    eta_vector = obj.Stations.GetPos(obj.AeroStations(i).Eta).*obj.EtaLength;
     obj.AeroStations(i).draw(Origin=(Origin+Rot*eta_vector),A=Rot)
 end
 %plot children

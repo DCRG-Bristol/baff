@@ -3,13 +3,12 @@ classdef Element < matlab.mixin.Heterogeneous & handle
     %   Detailed explanation goes here
     properties
         Offset (3,1) double
-        eta (1,1) double = 0;
+        Eta (1,1) double = 0;
         A (3,3) double = eye(3); % Rotation Matrix
         Children (:,1) baff.model.Element = baff.model.Element.empty;
         Parent baff.model.Element = baff.model.Element.empty;
         Name string = "";
         EtaLength = 0;
-        EtaDir = [0;1;0];
         Index = 0;
     end
     methods(Static)
@@ -25,7 +24,7 @@ classdef Element < matlab.mixin.Heterogeneous & handle
                 opts.Name = 'Default Component'
                 opts.A = eye(3);
             end
-            obj.eta = opts.eta;
+            obj.Eta = opts.eta;
             obj.Offset = opts.Offset;
             obj.A = opts.A;
             obj.Name = opts.Name;
@@ -38,6 +37,9 @@ classdef Element < matlab.mixin.Heterogeneous & handle
             childObj.Parent = obj;
             obj.Children(end+1) = childObj;
         end
+        function X = GetPos(obj,eta)
+            X = [0;0;0];
+        end
         function draw(obj,opts)
             arguments
                 obj
@@ -47,7 +49,7 @@ classdef Element < matlab.mixin.Heterogeneous & handle
             Origin = opts.Origin + opts.A*obj.Offset;
             Rot = opts.A*obj.A;
             for i =  1:length(obj.Children)
-                eta_vector = obj.EtaDir.*obj.Children(i).eta*obj.EtaLength;
+                eta_vector = obj.GetPos(obj.Children(i).Eta).*obj.EtaLength;
                 obj.Children(i).draw(Origin=(Origin+Rot*eta_vector),A=Rot);
             end
         end
@@ -70,19 +72,17 @@ classdef Element < matlab.mixin.Heterogeneous & handle
         end
         function BaffToProp(obj,filepath,loc)
             offs = h5read(filepath,sprintf('%s/Offset',loc));
-            etas = h5read(filepath,sprintf('%s/eta',loc));
+            etas = h5read(filepath,sprintf('%s/Eta',loc));
             As = h5read(filepath,sprintf('%s/A',loc));
             Names = h5read(filepath,sprintf('%s/Name',loc));
             etaLengths = h5read(filepath,sprintf('%s/EtaLength',loc));
-            etaDirs = h5read(filepath,sprintf('%s/EtaDir',loc));
             Indexs = h5read(filepath,sprintf('%s/Index',loc));
             for i = 1:length(obj)
                 obj(i).Offset = offs(:,i);
-                obj(i).eta = etas(i);
+                obj(i).Eta = etas(i);
                 obj(i).A = reshape(As(:,i),3,3);
                 obj(i).Name = Names(i);
                 obj(i).EtaLength = etaLengths(i);
-                obj(i).EtaDir = etaDirs(:,i);
                 obj(i).Index = Indexs(i);
             end
         end
@@ -91,11 +91,10 @@ classdef Element < matlab.mixin.Heterogeneous & handle
             if N ~= 0
                 %fill easy data
                 h5write(filepath,sprintf('%s/Offset',loc),[obj.Offset],[1 1],[3 N]);
-                h5write(filepath,sprintf('%s/eta',loc),[obj.eta],[1 1],[1 N]);
+                h5write(filepath,sprintf('%s/Eta',loc),[obj.Eta],[1 1],[1 N]);
                 h5write(filepath,sprintf('%s/A',loc),reshape([obj.A],9,[]),[1 1],[9 N]);
                 h5write(filepath,sprintf('%s/Name',loc),[obj.Name],[1 1],[1 N]);
                 h5write(filepath,sprintf('%s/EtaLength',loc),[obj.EtaLength],[1 1],[1 N]);
-                h5write(filepath,sprintf('%s/EtaDir',loc),[obj.EtaDir],[1 1],[3 N]);
                 h5write(filepath,sprintf('%s/Index',loc),[obj.Index],[1 1],[1 N]);
                 pIdx = zeros(1,N);
                 for i = 1:N
@@ -125,11 +124,10 @@ classdef Element < matlab.mixin.Heterogeneous & handle
         function TemplateHdf5(filepath,loc)
             %create place holders
             h5create(filepath,sprintf('%s/Offset',loc),[3 inf],"Chunksize",[3,10]);
-            h5create(filepath,sprintf('%s/eta',loc),[1 inf],"Chunksize",[1,10]);
+            h5create(filepath,sprintf('%s/Eta',loc),[1 inf],"Chunksize",[1,10]);
             h5create(filepath,sprintf('%s/A',loc),[9 inf],"Chunksize",[9,10]);
             h5create(filepath,sprintf('%s/Name',loc),[1 inf],"Chunksize",[1,10],Datatype="string");
             h5create(filepath,sprintf('%s/EtaLength',loc),[1 inf],"Chunksize",[1,10]);
-            h5create(filepath,sprintf('%s/EtaDir',loc),[3 inf],"Chunksize",[3,10]);
             h5create(filepath,sprintf('%s/Index',loc),[1 inf],"Chunksize",[1,10]);
             h5create(filepath,sprintf('%s/Parent',loc),[1 inf],"Chunksize",[1,10],"Fillvalue",nan);
             h5create(filepath,sprintf('%s/Children',loc),[256 inf],"Chunksize",[256,10],"Fillvalue",nan);

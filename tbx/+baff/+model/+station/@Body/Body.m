@@ -1,17 +1,20 @@
-classdef BodyStation < matlab.mixin.Heterogeneous
+classdef Body < baff.model.station.Base  
     %BEAMSTATION Summary of this class goes here
     %   Detailed explanation goes here
 
     properties
-        eta = 0;
         A = 1;
         Radius = 1;
         Ixx = 0;
         Izz = 0;
         Mat = baff.model.Material.Stiff;
     end
+    methods (Static)
+        obj = FromBaff(filepath,loc);
+        TemplateHdf5(filepath,loc);
+    end
     methods
-        function obj = BodyStation(eta,opts)
+        function obj = Body(eta,opts)
             arguments
                 eta
                 opts.radius = 1;
@@ -19,29 +22,26 @@ classdef BodyStation < matlab.mixin.Heterogeneous
                 opts.A = 1;
                 opts.Ixx = 1;
                 opts.Izz = 1;
+                opts.EtaDir = [0;1;0];
             end
-            obj.eta = eta;
+            obj.Eta = eta;
             obj.A = opts.A;
             obj.Ixx = opts.Ixx;
             obj.Izz = opts.Izz;
             obj.Mat = opts.Mat;
             obj.Radius = opts.radius;
-        end
-        function out = plus(obj,delta_eta)
-            for i = 1:length(delta_eta)
-                out(i) = obj;
-                out(i).eta = out(i).eta + delta_eta(i);
-            end
+            obj.EtaDir = opts.EtaDir;
         end
         function stations = interpolate(obj,etas)
-            old_eta = [obj.eta];
+            old_eta = [obj.Eta];
             As = interp1(old_eta,[obj.A],etas,"linear");
             Ixxs = interp1(old_eta,[obj.Ixx],etas,"linear");
             Izzs = interp1(old_eta,[obj.Izz],etas,"linear");
-            stations = baff.model.BeamStation.empty;
+            Rs = interp1(old_eta,[obj.Radius],etas,"linear");
+            stations = baff.model.stations.Body.empty;
             for i = 1:length(etas)
-                stations(i) = baff.model.BeamStation(etas(i),"A",As(i),...
-                    "Ixx",Ixxs(i),"Izz",Izzs(i));
+                stations(i) = baff.model.stations.Body(etas(i),"radius",Rs(i),...
+                    "A",As(i),"Ixx",Ixxs(i),"Izz",Izzs(i));
                 if i == length(etas)
                     stations(i).Mat = obj(end).Mat;
                 else

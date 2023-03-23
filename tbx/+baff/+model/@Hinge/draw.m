@@ -17,7 +17,7 @@ p.Tag = 'Hinge';
 Origin = opts.Origin + opts.A*obj.Offset;
 Rot = opts.A*obj.A*baff.util.Rodrigues(obj.HingeVector,obj.Rotation);
 for i =  1:length(obj.Children)
-    eta_vector = [0;obj.Children(i).eta;0]*obj.EtaLength;
+    eta_vector = [0;obj.Children(i).Eta;0]*obj.EtaLength;
     obj.Children(i).draw(Origin=(Origin+Rot*eta_vector),A=Rot);
 end
 end

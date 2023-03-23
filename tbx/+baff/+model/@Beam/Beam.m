@@ -2,7 +2,7 @@ classdef Beam < baff.model.Element
     %BEAM Summary of this class goes here
     %   Detailed explanation goes here
     properties
-        Stations (1,:) baff.model.BeamStation = [baff.model.BeamStation(0),baff.model.BeamStation(1)];
+        Stations (1,:) baff.model.station.Beam = [baff.model.station.Beam(0),baff.model.station.Beam(1)];
     end
     methods(Static)
         obj = FromBaff(filepath,loc);
@@ -17,6 +17,9 @@ classdef Beam < baff.model.Element
             end
             CompStruct = namedargs2cell(CompOpts);
             obj = obj@baff.model.Element(CompStruct{:});
+        end
+        function X = GetPos(obj,eta)
+            X = obj.Stations.GetPos(eta);
         end
     end
     methods(Static)

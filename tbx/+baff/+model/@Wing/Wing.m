@@ -2,7 +2,7 @@ classdef Wing < baff.model.Beam
     %WING Summary of this class goes here
     %   Detailed explanation goes here
     properties
-        AeroStations (1,:) baff.model.AeroStation;
+        AeroStations (1,:) baff.model.station.Aero;
     end
     
     methods
@@ -18,6 +18,9 @@ classdef Wing < baff.model.Beam
             CompStruct = namedargs2cell(CompOpts);
             obj = obj@baff.model.Beam(CompStruct{:});
             obj.AeroStations = aeroStations;
+        end
+        function X = GetPos(obj,eta)
+            X = obj.Stations.GetPos(eta);
         end
     end
     methods(Static)
@@ -38,8 +41,8 @@ classdef Wing < baff.model.Beam
                 opts.etaBeamMax = 1
             end
             % create root stations
-            station = baff.model.BeamStation.Bar(0,barHeight,barWidth,Mat=Material);
-            aeroStation = baff.model.AeroStation(0,Chord,BeamLoc);
+            station = baff.model.station.Beam.Bar(0,barHeight,barWidth,Mat=Material);
+            aeroStation = baff.model.station.Aero(0,Chord,BeamLoc);
             %create end aero station
             aeroStations = aeroStation + linspace(0,opts.etaAeroMax,opts.NAeroStations);
             %gen wing

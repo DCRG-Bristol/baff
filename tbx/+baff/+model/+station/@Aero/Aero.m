@@ -1,40 +1,39 @@
-classdef AeroStation < matlab.mixin.Heterogeneous
+classdef Aero < baff.model.station.Base  
     %BEAMSTATION Summary of this class goes here
     %   Detailed explanation goes here
 
     properties
-        eta double = 0;
         Chord double = 1;
         Twist double = 0;
         BeamLoc double = 0.25;
     end
+    methods (Static)
+        obj = FromBaff(filepath,loc);
+        TemplateHdf5(filepath,loc);
+    end
     methods
-        function obj = AeroStation(eta,chord,beamLoc,opts)
+        function obj = Aero(eta,chord,beamLoc,opts)
             arguments
                 eta
                 chord
                 beamLoc
                 opts.Twist = 0;
+                opts.EtaDir = [0;1;0];
             end
-            obj.eta = eta;
+            obj.Eta = eta;
             obj.Chord = chord;
             obj.BeamLoc = beamLoc;
             obj.Twist = opts.Twist;
-        end
-        function out = plus(obj,delta_eta)
-            for i = 1:length(delta_eta)
-                out(i) = obj;
-                out(i).eta = out(i).eta + delta_eta(i);
-            end
+            obj.EtaDir = opts.EtaDir;
         end
         function stations = interpolate(obj,etas)
-            old_eta = [obj.eta];
+            old_eta = [obj.Eta];
             Chords = interp1(old_eta,[obj.Chord],etas,"linear");
             BeamLocs = interp1(old_eta,[obj.BeamLoc],etas,"linear");
             Twists = interp1(old_eta,[obj.Twist],etas,"linear");
-            stations = baff.model.AeroStation.empty;
+            stations = baff.model.station.Aero.empty;
             for i = 1:length(etas)
-                stations(i) = baff.model.AeroStation(etas(i),Chords(i),BeamLocs(i),"Twist",Twists(i));
+                stations(i) = baff.model.station.Aero(etas(i),Chords(i),BeamLocs(i),"Twist",Twists(i));
             end
         end
         function draw(obj,opts)
