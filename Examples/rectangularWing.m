@@ -16,7 +16,8 @@ twists = linspace(0,10,10);
 for i = 1:10
     mainBeam.AeroStations(i).Twist = twists(i);
 end
-
+% Add Control Surface
+mainBeam.ControlSurfaces(1) =  baff.model.ControlSurface("Ail",[0.7 0.9],[0.25 0.25]);
 
 % Add Masses
 xs = [-21,-21,-21,-21,-21,-17]*1e-3 + (BarChordwisePos-0.25)*WingChord;

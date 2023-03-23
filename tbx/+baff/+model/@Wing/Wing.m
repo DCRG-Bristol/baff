@@ -3,6 +3,7 @@ classdef Wing < baff.model.Beam
     %   Detailed explanation goes here
     properties
         AeroStations (1,:) baff.model.station.Aero;
+        ControlSurfaces (1,:) baff.model.ControlSurface;
     end
     
     methods

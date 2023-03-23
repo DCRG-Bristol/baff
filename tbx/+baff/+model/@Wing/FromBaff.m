@@ -14,12 +14,18 @@ aStations = baff.model.station.Aero.FromBaff(filepath,loc);
 bIdx = h5readatt(filepath,[loc,'/'],'BeamStationsIdx');
 bStations = baff.model.station.Beam.FromBaff(filepath,loc);
 
+%% create controlsurfaces
+cIdx = h5readatt(filepath,[loc,'/'],'ControlSurfacesIdx');
+ControlSurfs = baff.model.ControlSurface.FromBaff(filepath,loc);
+
 %%create wings
 aSum = [0,cumsum(aIdx)'];
 bSum = [0,cumsum(bIdx)'];
+cSum = [0,cumsum(cIdx)'];
 for i = 1:Qty
     obj(i) = baff.model.Wing(aStations((aSum(i)+1):(aSum(i)+aIdx(i))));
     obj(i).Stations = bStations((bSum(i)+1):(bSum(i)+bIdx(i)));
+    obj(i).ControlSurfaces = ControlSurfs((cSum(i)+1):(cSum(i)+cIdx(i)));
 end
 BaffToProp(obj,filepath,loc);    
 end

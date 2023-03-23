@@ -36,6 +36,19 @@ classdef Aero < baff.model.station.Base
                 stations(i) = baff.model.station.Aero(etas(i),Chords(i),BeamLocs(i),"Twist",Twists(i));
             end
         end
+        function X = GetPos(obj,eta,pChord)
+            arguments
+                obj baff.model.station.Aero
+                eta (1,1) double
+                pChord (1,:) double
+            end
+            etas = [obj.Eta];
+            chord = interp1(etas,[obj.Chord],eta,"linear");
+            beamLoc = interp1(etas,[obj.BeamLoc],eta,"linear");
+            twist = interp1(etas,[obj.Twist],eta,"linear");
+            points = repmat([beamLoc;0;0],1,length(pChord))-[pChord;zeros(2,length(pChord))];
+            X = baff.util.roty(twist)*points.*chord;
+        end
         function draw(obj,opts)
             arguments
                 obj

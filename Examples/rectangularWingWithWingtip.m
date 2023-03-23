@@ -18,6 +18,10 @@ mainBeam = baff.model.Wing.UniformWing(L*eta_beam,BarThickness,BarWidth...
     "etaAeroMax",eta_hinge/eta_beam,"NAeroStations",10);
 mainBeam.Name = 'Wing 1';
 
+% Add Control Surface
+mainBeam.ControlSurfaces(1) =  baff.model.ControlSurface("Ail",[0.7 0.9],[0.25 0.25]);
+mainBeam.ControlSurfaces(2) =  baff.model.ControlSurface("Flap",[0.15 0.4],[0.35 0.35]);
+
 % Add Masses
 xs = [-21,-21,-21,-21,-21,-17]*1e-3 + (BarChordwisePos-0.25)*WingChord;
 ys = [100,240,380,520,660,767]*1e-3;
@@ -48,6 +52,9 @@ wingtip = baff.model.Wing.UniformWing(0.2,4e-3,30e-3,baff.model.Material.Stiff,W
 wingtip.Eta = 1;
 wingtip.Name = 'Wingtip';
 hinge.add(wingtip);
+
+% Add Control Surface
+wingtip.ControlSurfaces(1) =  baff.model.ControlSurface("Tab",[0.5 0.95],[0.3 0.3]);
 
 %add wingtip mass
 tmp_mass = baff.model.Mass(0.167);

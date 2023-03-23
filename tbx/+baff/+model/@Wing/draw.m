@@ -25,6 +25,9 @@ for i = 1:length(obj.AeroStations)
     eta_vector = obj.Stations.GetPos(obj.AeroStations(i).Eta).*obj.EtaLength;
     obj.AeroStations(i).draw(Origin=(Origin+Rot*eta_vector),A=Rot)
 end
+% plot control Surfaces
+obj.ControlSurfaces.draw(obj,Origin=Origin,A=Rot);
+
 %plot children
 optsCell = namedargs2cell(opts);
 draw@baff.model.Element(obj,optsCell{:});
