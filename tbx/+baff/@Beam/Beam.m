@@ -19,7 +19,7 @@ classdef Beam < baff.Element
             obj = obj@baff.Element(CompStruct{:});
         end
         function X = GetPos(obj,eta)
-            X = obj.Stations.GetPos(eta);
+            X = obj.Stations.GetPos(eta)*obj.EtaLength;
         end
     end
     methods(Static)

@@ -49,7 +49,7 @@ classdef Element < matlab.mixin.Heterogeneous & handle
             Origin = opts.Origin + opts.A*obj.Offset;
             Rot = opts.A*obj.A;
             for i =  1:length(obj.Children)
-                eta_vector = obj.GetPos(obj.Children(i).Eta).*obj.EtaLength;
+                eta_vector = obj.GetPos(obj.Children(i).Eta);
                 obj.Children(i).draw(Origin=(Origin+Rot*eta_vector),A=Rot);
             end
         end

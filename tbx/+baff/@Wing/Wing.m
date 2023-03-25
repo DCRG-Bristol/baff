@@ -21,7 +21,7 @@ classdef Wing < baff.Beam
             obj.AeroStations = aeroStations;
         end
         function X = GetPos(obj,eta)
-            X = obj.Stations.GetPos(eta);
+            X = obj.Stations.GetPos(eta)*obj.EtaLength;
         end
     end
     methods(Static)
