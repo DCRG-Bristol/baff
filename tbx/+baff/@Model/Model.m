@@ -11,6 +11,13 @@ classdef Model < handle
         Orphans (:,1) baff.Element = baff.Beam.empty
     end
     methods
+        function new = Rebuild(obj)
+            new = baff.Model();
+            new.Name = obj.Name;
+            for i = 1:length(obj.Orphans)
+                new.AddElement(obj.Orphans(i));
+            end
+        end
         function AddElement(obj,ele)
             % add element
             if isa(ele,'baff.Element')
