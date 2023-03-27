@@ -20,6 +20,8 @@ classdef BluffBody < baff.Element
                 newLength = len1 + len2;
                 eta1 = eta1*len1/newLength;
                 eta2 = len1/newLength + eta2*len2/newLength;
+                eta1(end) = eta1(end) - 0.5e-4;
+                eta2(1) = eta2(1) + 0.5e-4;
                 stations = [obj1.Stations,obj2.Stations];
                 etas = [eta1,eta2];
                 for i = 1:length(stations)
@@ -48,6 +50,42 @@ classdef BluffBody < baff.Element
         end
     end
     methods(Static)
+        function obj = FromEta(len,eta,radius,opts)
+            arguments
+                len (1,1) double
+                eta (:,1) double
+                radius  (:,1) double
+                opts.Material = baff.Material.Stiff;
+                opts.Density = nan;
+                opts.NStations = 10;
+            end
+            if isnan(opts.Density) && isnan(opts.NStations)
+                error('Either Density of NStations must be non zero')
+            end
+            obj = baff.BluffBody();
+            obj.EtaLength = len;
+            station = baff.station.Body(0,radius=radius(1),Mat=opts.Material);
+            stations = station + eta;
+            for i = 1:length(stations)
+                stations(i).Radius = radius(i);
+            end
+            delta = eta(2:end)-eta(1:end-1);
+            if ~isnan(opts.NStations)
+                Ns = round(delta*(opts.NStations-1)); 
+            else
+                Ns = round(delta*len/opts.Density);
+            end
+            if Ns == 0
+                Ns = 1;
+            end
+            tmp_etas = [0];
+            for i = 1:(length(eta)-1)
+                tmp = linspace(eta(i),eta(i+1),Ns(i)+1);
+                tmp_etas = [tmp_etas,tmp(2:end)];
+            end
+            obj.Stations = stations.interpolate(tmp_etas);
+        end
+
         function obj = Cylinder(len,radius,opts)
             arguments
                 len
