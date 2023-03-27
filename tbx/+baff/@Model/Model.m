@@ -33,7 +33,22 @@ classdef Model < handle
                 obj.Orphans(end+1) = ele;
             end
         end
-        function draw(obj)
+        function draw(obj,fig_handle)
+            arguments
+                obj
+                fig_handle = figure;
+            end
+            hold on
+            UserData.obj = obj;
+            fig_handle.UserData = UserData;
+            xlabel('X');
+            ylabel('Y');
+            zlabel('Z');
+            set(fig_handle, 'WindowButtonDownFcn',    @baff.util.plotting.BtnDwnCallback, ...
+                      'WindowScrollWheelFcn',   @baff.util.plotting.ScrollWheelCallback, ...
+                      'KeyPressFcn',            @baff.util.plotting.KeyPressCallback, ...
+                      'WindowButtonUpFcn',      @baff.util.plotting.BtnUpCallback)
+            %draw the elements
             for i = 1:length(obj.Orphans)
                 obj.Orphans(i).draw();
             end
