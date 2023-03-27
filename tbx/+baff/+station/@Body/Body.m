@@ -1,13 +1,9 @@
-classdef Body < baff.station.Base  
+classdef Body < baff.station.Beam  
     %BEAMSTATION Summary of this class goes here
     %   Detailed explanation goes here
 
     properties
-        A = 1;
         Radius = 1;
-        Ixx = 0;
-        Izz = 0;
-        Mat = baff.Material.Stiff;
     end
     methods (Static)
         obj = FromBaff(filepath,loc);
@@ -24,6 +20,7 @@ classdef Body < baff.station.Base
                 opts.Izz = 1;
                 opts.EtaDir = [0;1;0];
             end
+            obj = obj@baff.station.Beam(eta);
             obj.Eta = eta;
             obj.A = opts.A;
             obj.Ixx = opts.Ixx;
@@ -38,9 +35,9 @@ classdef Body < baff.station.Base
             Ixxs = interp1(old_eta,[obj.Ixx],etas,"linear");
             Izzs = interp1(old_eta,[obj.Izz],etas,"linear");
             Rs = interp1(old_eta,[obj.Radius],etas,"linear");
-            stations = baff.stations.Body.empty;
+            stations = baff.station.Body.empty;
             for i = 1:length(etas)
-                stations(i) = baff.stations.Body(etas(i),"radius",Rs(i),...
+                stations(i) = baff.station.Body(etas(i),"radius",Rs(i),...
                     "A",As(i),"Ixx",Ixxs(i),"Izz",Izzs(i));
                 if i == length(etas)
                     stations(i).Mat = obj(end).Mat;
