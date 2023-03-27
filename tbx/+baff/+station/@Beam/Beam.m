@@ -3,9 +3,9 @@ classdef Beam < baff.station.Base
     %   Detailed explanation goes here
 
     properties
-        A = 1;
-        Ixx = 0;
-        Izz = 0;
+        A = 1;        % cross sectional area
+        I = eye(3);   % moment of inertia tensor
+        tau = eye(3); % elongation tensor
         Mat = baff.Material.Stiff;
     end
     methods (Static)
@@ -19,25 +19,28 @@ classdef Beam < baff.station.Base
                 opts.EtaDir = [0;1;0]
                 opts.Mat = baff.Material.Stiff;
                 opts.A = 1;
-                opts.Ixx = 1;
-                opts.Izz = 1;
+                opts.I = eye(3);
+                opts.tau = eye(3);
             end
             obj.Eta = eta;
             obj.EtaDir = opts.EtaDir;
             obj.A = opts.A;
-            obj.Ixx = opts.Ixx;
-            obj.Izz = opts.Izz;
+            obj.I = opts.I;
+            obj.tau = opts.tau;
             obj.Mat = opts.Mat;
         end
         function stations = interpolate(obj,etas)
             old_eta = [obj.Eta];
             As = interp1(old_eta,[obj.A],etas,"linear");
-            Ixxs = interp1(old_eta,[obj.Ixx],etas,"linear");
-            Izzs = interp1(old_eta,[obj.Izz],etas,"linear");
+            EtaDirs = interp1(old_eta,[obj.EtaDir]',etas,"previous")';
+            Is = interp1(old_eta,cell2mat(arrayfun(@(x)x.I(:),obj,'UniformOutput',false))',etas,"linear");
+            taus = interp1(old_eta,cell2mat(arrayfun(@(x)x.tau(:),obj,'UniformOutput',false))',etas,"linear");
             stations = baff.station.Beam.empty;
             for i = 1:length(etas)
-                stations(i) = baff.station.Beam(etas(i),"A",As(i),...
-                    "Ixx",Ixxs(i),"Izz",Izzs(i));
+                stations(i) = baff.station.Beam(etas(i),"A",As(i));
+                stations(i).I = reshape(Is(i,:),3,3);
+                stations(i).tau = reshape(taus(i,:),3,3);
+                stations(i).EtaDir = EtaDirs(:,i);
                 if i == length(etas)
                     stations(i).Mat = obj(end).Mat;
                 else
@@ -66,8 +69,11 @@ classdef Beam < baff.station.Base
                 width
                 opts.Mat = baff.Material.Stiff;
             end
-            obj = baff.station.Beam(eta,Ixx=height^3*width/12,Izz=width^3*height/12,...
-                A=height*width, Mat = opts.Mat);
+            Ixx = height^3*width/12;
+            Izz = width^3*height/12;
+            Iyy = Ixx + Izz;
+            I = diag([Ixx,Iyy,Izz]);
+            obj = baff.station.Beam(eta, I=I, A=height*width, Mat=opts.Mat);
         end
     end
 end

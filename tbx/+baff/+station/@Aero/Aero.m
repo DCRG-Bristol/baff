@@ -29,11 +29,13 @@ classdef Aero < baff.station.Base
         function stations = interpolate(obj,etas)
             old_eta = [obj.Eta];
             Chords = interp1(old_eta,[obj.Chord],etas,"linear");
+            EtaDirs = interp1(old_eta,[obj.EtaDir]',etas,"previous")';
             BeamLocs = interp1(old_eta,[obj.BeamLoc],etas,"linear");
             Twists = interp1(old_eta,[obj.Twist],etas,"linear");
             stations = baff.station.Aero.empty;
             for i = 1:length(etas)
                 stations(i) = baff.station.Aero(etas(i),Chords(i),BeamLocs(i),"Twist",Twists(i));
+                stations(i).EtaDir = EtaDirs(:,i);
             end
         end
         function X = GetPos(obj,eta,pChord)
