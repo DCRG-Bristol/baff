@@ -7,9 +7,11 @@ classdef Wing < baff.Beam
     end
     
     methods
-        function obj = Wing(aeroStations,CompOpts)
+        function obj = Wing(aeroStations,opts,CompOpts)
             arguments
                 aeroStations
+                opts.BeamStations = [baff.station.Beam(0),baff.station.Beam(1)];
+                opts.EtaLength = 1;
                 CompOpts.eta = 0
                 CompOpts.Offset
                 CompOpts.Name = "Wing"
@@ -18,7 +20,9 @@ classdef Wing < baff.Beam
             %   Detailed explanation goes here
             CompStruct = namedargs2cell(CompOpts);
             obj = obj@baff.Beam(CompStruct{:});
+            obj.Stations = opts.BeamStations;
             obj.AeroStations = aeroStations;
+            obj.EtaLength = opts.EtaLength;
         end
         function X = GetPos(obj,eta)
             X = obj.Stations.GetPos(eta)*obj.EtaLength;
@@ -51,6 +55,59 @@ classdef Wing < baff.Beam
             obj.EtaLength = length;
             % add beam station Info
             obj.Stations = station + linspace(0,opts.etaBeamMax,opts.NStations);
+        end
+        function wing = FromLETESweep(span,RootChord,etas,LESweep,TESweep,BeamLoc,Material,opts)
+            arguments
+                span
+                RootChord
+                etas
+                LESweep
+                TESweep
+                BeamLoc
+                Material
+                opts.Dihedral = 0;
+            end
+            N = length(etas);
+            delta = etas(2:end) - etas(1:end-1);
+            if length(opts.Dihedral)==1
+                opts.Dihedral = opts.Dihedral*ones(1,N);
+            end
+            % make beam stations
+            station = baff.station.Beam(0,Mat=Material);
+            beamStations = station + etas;
+            %get le points
+            le = zeros(3,N);
+            for i = 1:N-1
+                vec = [-tand(LESweep(i))*delta(i)*span;...
+                    delta(i)*span;...
+                    -tand(opts.Dihedral(i))*delta(i)*span];
+                le(:,i+1) = le(:,i) + vec;
+            end
+            %get te points
+            te = zeros(3,N);
+            te(:,1) = [-RootChord;0;0];
+            for i = 1:N-1
+                vec = [-tand(TESweep(i))*delta(i)*span;...
+                    delta(i)*span;...
+                    -tand(opts.Dihedral(i))*delta(i)*span];
+                te(:,i+1) = te(:,i) + vec;
+            end
+            % get spar loc 
+            locs = le + (te-le).*BeamLoc;
+            vecs = (locs(:,2:end)-locs(:,1:end-1))./span./repmat(delta,3,1);
+            for i=1:N-1
+                beamStations(i).EtaDir = vecs(:,i);
+            end
+            % get chords
+            chords = vecnorm(te-le);
+            %gen aero stations
+            aeroStation = baff.station.Aero(0,chords(1),BeamLoc);
+            aeroStations = aeroStation + etas;
+            for i = 1:length(aeroStations)
+                aeroStations(i).Chord = chords(i);
+            end
+            %make wing
+            wing = baff.Wing(aeroStations,"BeamStations",beamStations,"EtaLength",span);
         end
     end
 end
