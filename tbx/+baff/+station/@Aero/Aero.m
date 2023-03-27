@@ -61,6 +61,20 @@ classdef Aero < baff.station.Base
             p.Color = 'k';
             p.Tag = 'WingSection';
         end
+        function area = GetNormArea(obj)
+            area = sum(obj.GetNormAreas);
+        end
+        function areas = GetNormAreas(obj)
+            if length(obj)<2
+                areas = 0;
+                return
+            end
+            areas = zeros(1,length(obj)-1);
+            for i = 1:length(obj)-1
+                span = (obj(i+1).Eta - obj(i).Eta);
+                areas(i) = 0.5*(obj(i).Chord+obj(i+1).Chord)/span;
+            end
+        end
     end
     methods(Static)
     end
