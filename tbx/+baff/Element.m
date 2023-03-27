@@ -2,14 +2,17 @@ classdef Element < matlab.mixin.Heterogeneous & handle
     %COMPONENT Summary of this class goes here
     %   Detailed explanation goes here
     properties
-        Offset (3,1) double
-        Eta (1,1) double = 0;
         A (3,3) double = eye(3); % Rotation Matrix
-        Children (:,1) baff.Element = baff.Element.empty;
-        Parent baff.Element = baff.Element.empty;
-        Name string = "";
-        EtaLength = 0;
-        Index = 0;
+        Offset (3,1) double = [0;0;0]; % Offset of the element in the parent element's coordinate system
+        isAbsolute = false; %if true, the element is referenced to the global coordinate system, otherwise it is referenced to the parent element
+        Eta (1,1) double = 0; %eta coordinate of the element in the parent element's coordinate system
+        EtaLength = 0;      % Length of the element in the eta direction
+        
+        Parent baff.Element = baff.Element.empty; % Parent element
+        Children (:,1) baff.Element = baff.Element.empty; % Children elements
+        
+        Name string = "";    % Name of the element       
+        Index = 0;          % Unique index for each element (for use in HDF5 files to link parents and children)
     end
     methods(Static)
         function obj = FromBaff(filepath,loc)
@@ -49,8 +52,12 @@ classdef Element < matlab.mixin.Heterogeneous & handle
             Origin = opts.Origin + opts.A*obj.Offset;
             Rot = opts.A*obj.A;
             for i =  1:length(obj.Children)
-                eta_vector = obj.GetPos(obj.Children(i).Eta);
-                obj.Children(i).draw(Origin=(Origin+Rot*eta_vector),A=Rot);
+                if obj.Children(i).isAbsolute
+                    obj.Children(i).draw(Origin=Origin,A=Rot);
+                else
+                    eta_vector = obj.GetPos(obj.Children(i).Eta);
+                    obj.Children(i).draw(Origin=(Origin+Rot*eta_vector),A=Rot);
+                end
             end
         end
         function LinkElements(obj,filepath,loc,linker)
