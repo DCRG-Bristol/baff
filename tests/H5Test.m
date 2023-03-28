@@ -6,6 +6,7 @@ classdef H5Test < matlab.unittest.TestCase
     % build some objects to compare
     methods(TestClassSetup)
         function buildModels(testCase)
+            %build some elements with non-default values
             mat1 = baff.Material(1,2,3);
             st = baff.station.Beam(0,"A",2,"EtaDir",rand(3,1),"I",rand(3),"tau",rand(3),"Mat",mat1);
             beam1 = baff.Beam("eta",0,"Stations",st + [0,0.5,1]);
@@ -14,6 +15,9 @@ classdef H5Test < matlab.unittest.TestCase
             ast = baff.station.Aero(0,rand(1),rand(1),"EtaDir",rand(3,1),"Twist",rand(1));
             wing1 = baff.Wing(ast + [0:0.25:1],"BeamStations",st + [0,0.5,1],"eta",0,"EtaLength",2);
             wing2 = baff.Wing(ast + [0:0.25:1],"BeamStations",st + [0:0.5:1],"eta",1,"EtaLength",2);
+            control1 = baff.ControlSurface('Test',[0.5,0.75],[0.2,0.2]);
+            control2 = baff.ControlSurface('Test2',[0.25,0.5],[0.2,0.2]);
+            wing2.ControlSurfaces = [control1,control2];
             con1 = baff.Constraint("ComponentNums",123456);
             hinge1 = baff.Hinge("HingeVector",rand(3,1),"Rotation",rand(1),"eta",1);
             mass1 = baff.Mass(rand(1),"Iyy",rand(1),"eta",0.6);
