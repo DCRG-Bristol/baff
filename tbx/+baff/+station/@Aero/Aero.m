@@ -12,6 +12,18 @@ classdef Aero < baff.station.Base
         TemplateHdf5(filepath,loc);
     end
     methods
+        function val = eq(obj1,obj2)
+            if length(obj1)~= length(obj2) || ~isa(obj2,'baff.station.Aero')
+                val = false;
+                return
+            end
+            val = eq@baff.station.Base(obj1,obj2);
+            for i = 1:length(obj1)
+                val = val && obj1(i).Chord == obj2(i).Chord;
+                val = val && obj1(i).Twist == obj2(i).Twist;
+                val = val && obj1(i).BeamLoc == obj2(i).BeamLoc;
+            end
+        end
         function obj = Aero(eta,chord,beamLoc,opts)
             arguments
                 eta

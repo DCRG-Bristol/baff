@@ -10,8 +10,8 @@ Fs = h5read(filepath,sprintf('%s/Force',loc));
 Ms = h5read(filepath,sprintf('%s/Moment',loc));
 for i = 1:Qty
     obj(i) = baff.Point();
-    obj(i).Force = Fs(i);
-    obj(i).Moment = Ms(i);
+    obj(i).Force = Fs(:,i);
+    obj(i).Moment = Ms(:,i);
 end
 BaffToProp(obj,filepath,loc);
 end

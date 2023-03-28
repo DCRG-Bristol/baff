@@ -20,6 +20,30 @@ classdef Element < matlab.mixin.Heterogeneous & handle
         end
     end
     methods
+        function val = ne(obj1,obj2)
+            val = ~(obj1.eq(obj2));
+        end
+        function val = eq(obj1,obj2)
+            if length(obj1)~= length(obj2) || ~isa(obj2,'baff.Element')
+                val = false;
+                return
+            end
+            val = true;
+            for i = 1:length(obj1)
+                val = val && all(obj1(i).A == obj2(i).A,'all');
+                val = val && all(obj1(i).Offset == obj2(i).Offset,'all');
+                val = val && obj1(i).isAbsolute == obj2(i).isAbsolute;
+                val = val && obj1(i).Eta == obj2(i).Eta;
+                val = val && obj1(i).EtaLength == obj2(i).EtaLength;
+%                 val = val && obj1(i).Parent == obj2(i).Parent;
+                val = val && obj1(i).Children == obj2(i).Children;
+                % dont check index as its only there to facitliate read/write...
+                % dont check name to be able to see if the actual element
+                % is the same
+            end
+        end
+    end
+    methods
         function obj = Element(opts)
             arguments
                 opts.Offset = [0;0;0];

@@ -9,14 +9,30 @@ classdef Beam < baff.Element
         TemplateHdf5(filepath,loc);
     end
     methods
-        function obj = Beam(CompOpts)
+        function val = eq(obj1,obj2)
+            if length(obj1)~= length(obj2) || ~isa(obj2,'baff.Beam')
+                val = false;
+                return
+            end
+            val = eq@baff.Element(obj1,obj2);
+            for i = 1:length(obj1)
+                val = val && obj1(i).Stations == obj2(i).Stations;
+            end
+        end
+        function obj = Beam(CompOpts,opts)
             arguments
                 CompOpts.eta = 0
                 CompOpts.Offset
                 CompOpts.Name = "Beam" 
+                opts.Stations = baff.station.Beam.empty;
+                opts.EtaLength = 1;
             end
             CompStruct = namedargs2cell(CompOpts);
             obj = obj@baff.Element(CompStruct{:});
+            if ~isempty(opts.Stations)
+                obj.Stations = opts.Stations;
+            end
+            obj.EtaLength = opts.EtaLength;
         end
         function X = GetPos(obj,eta)
             X = obj.Stations.GetPos(eta)*obj.EtaLength;

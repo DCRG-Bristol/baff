@@ -10,6 +10,16 @@ classdef Body < baff.station.Beam
         TemplateHdf5(filepath,loc);
     end
     methods
+        function val = eq(obj1,obj2)
+            if length(obj1)~= length(obj2) || ~isa(obj2,'baff.station.Body')
+                val = false;
+                return
+            end
+            val = eq@baff.station.Beam(obj1,obj2);
+            for i = 1:length(obj1)
+                val = val && obj1(i).Radius == obj2(i).Radius;
+            end
+        end
         function obj = Body(eta,opts)
             arguments
                 eta

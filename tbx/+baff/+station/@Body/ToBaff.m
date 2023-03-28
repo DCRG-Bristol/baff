@@ -9,9 +9,9 @@ function ToBaff(obj,filepath,loc)
     h5write(filepath,sprintf('%s/BodyStations/Eta',loc),[obj.Eta],[1 1],[1 N]);
     h5write(filepath,sprintf('%s/BodyStations/EtaDir',loc),[obj.EtaDir],[1 1],[3 N]);
     h5write(filepath,sprintf('%s/BodyStations/Radius',loc),[obj.Radius],[1 1],[1 N]);
-    h5write(filepath,sprintf('%s/BodyStations/A',loc),[obj.Eta],[1 1],[1 N]);
-    h5write(filepath,sprintf('%s/BodyStations/Ixx',loc),[obj.Eta],[1 1],[1 N]);
-    h5write(filepath,sprintf('%s/BodyStations/Izz',loc),[obj.Eta],[1 1],[1 N]);
+    h5write(filepath,sprintf('%s/BodyStations/A',loc),[obj.A],[1 1],[1 N]);
+    h5write(filepath,sprintf('%s/BodyStations/I',loc),reshape([obj.I],9,[]),[1 1],[9 N]);
+    h5write(filepath,sprintf('%s/BodyStations/Tau',loc),reshape([obj.tau],9,[]),[1 1],[9 N]);
     h5write(filepath,sprintf('%s/BodyStations/E',loc),arrayfun(@(x)x.Mat.E,obj),[1 1],[1 N]);
     h5write(filepath,sprintf('%s/BodyStations/G',loc),arrayfun(@(x)x.Mat.G,obj),[1 1],[1 N]);
     h5write(filepath,sprintf('%s/BodyStations/rho',loc),arrayfun(@(x)x.Mat.rho,obj),[1 1],[1 N]);

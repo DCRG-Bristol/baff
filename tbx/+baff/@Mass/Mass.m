@@ -10,6 +10,17 @@ classdef Mass < baff.Point
         TemplateHdf5(filepath,loc);
     end
     methods
+        function val = eq(obj1,obj2)
+            if length(obj1)~= length(obj2) || ~isa(obj2,'baff.Mass')
+                val = false;
+                return
+            end
+            val = eq@baff.Element(obj1,obj2);
+            for i = 1:length(obj1)
+                val = val && obj1(i).mass == obj2(i).mass;
+                val = val && all(obj1(i).InertiaTensor == obj2(i).InertiaTensor,'all');
+            end
+        end
         function obj = Mass(mass,opts,CompOpts)
             arguments
                 mass

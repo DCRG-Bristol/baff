@@ -9,6 +9,16 @@ classdef BluffBody < baff.Element
         TemplateHdf5(filepath,loc);
     end
     methods
+        function val = eq(obj1,obj2)
+            if length(obj1)~= length(obj2) || ~isa(obj2,'baff.BluffBody')
+                val = false;
+                return
+            end
+            val = eq@baff.Element(obj1,obj2);
+            for i = 1:length(obj1)
+                val = val && obj1(i).Stations == obj2(i).Stations;
+            end
+        end
         function out = plus(obj1,obj2)
             if isa(obj2,'baff.BluffBody')
                 eta1 = [obj1.Stations.Eta];
@@ -36,14 +46,18 @@ classdef BluffBody < baff.Element
         end
     end
     methods
-        function obj = BluffBody(CompOpts)
+        function obj = BluffBody(CompOpts,opts)
             arguments
                 CompOpts.eta = 0
                 CompOpts.Offset
                 CompOpts.Name = "Beam" 
+                opts.Stations = baff.station.Body.empty;
             end
             CompStruct = namedargs2cell(CompOpts);
             obj = obj@baff.Element(CompStruct{:});
+            if ~isempty(opts.Stations)
+                obj.Stations = opts.Stations;
+            end
         end
         function X = GetPos(obj,eta)
             X = obj.Stations.GetPos(eta)*obj.EtaLength;

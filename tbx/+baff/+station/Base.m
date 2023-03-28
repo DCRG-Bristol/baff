@@ -6,6 +6,20 @@ classdef (Abstract) Base < matlab.mixin.Heterogeneous
     end
     
     methods
+        function val = ne(obj1,obj2)
+            val = ~(obj1.eq(obj2));
+        end
+        function val = eq(obj1,obj2)
+            if length(obj1)~= length(obj2) || ~isa(obj2,'baff.station.Base')
+                val = false;
+                return
+            end
+            val = true;
+            for i = 1:length(obj1)
+                val = val && obj1(i).Eta == obj2(i).Eta;
+                val = val && all(obj1(i).EtaDir == obj2(i).EtaDir);
+            end
+        end
         function out = plus(obj,delta_eta)
             for i = 1:length(delta_eta)
                 out(i) = obj;

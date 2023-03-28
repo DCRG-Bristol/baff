@@ -11,6 +11,22 @@ classdef Material
     end
     
     methods
+        function val = ne(obj1,obj2)
+            val = ~(obj1.eq(obj2));
+        end
+        function val = eq(obj1,obj2)
+            if length(obj1)~= length(obj2) || ~isa(obj2,'baff.Material')
+                val = false;
+                return
+            end
+            val = true;
+            for i = 1:length(obj1)
+                val = val && obj1(i).E == obj2(i).E;
+                val = val && obj1(i).G == obj2(i).G;
+                val = val && obj1(i).rho == obj2(i).rho;
+                val = val && obj1(i).nu == obj2(i).nu;
+            end
+        end
         function obj = Material(E,nu,rho)
             obj.E = E;
             obj.nu = nu;

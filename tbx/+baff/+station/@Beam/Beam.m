@@ -13,6 +13,19 @@ classdef Beam < baff.station.Base
         TemplateHdf5(filepath,loc);
     end
     methods
+        function val = eq(obj1,obj2)
+            if length(obj1)~= length(obj2) || ~isa(obj2,'baff.station.Beam')
+                val = false;
+                return
+            end
+            val = eq@baff.station.Base(obj1,obj2);
+            for i = 1:length(obj1)
+                val = val && obj1(i).A == obj2(i).A;
+                val = val && all(obj1(i).I == obj2(i).I,'all');
+                val = val && all(obj1(i).tau == obj2(i).tau,'all');
+                val = val && obj1(i).Mat == obj2(i).Mat;
+            end
+        end
         function obj = Beam(eta,opts)
             arguments
                 eta

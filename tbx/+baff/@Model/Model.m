@@ -11,6 +11,17 @@ classdef Model < handle
         Orphans (:,1) baff.Element = baff.Beam.empty
     end
     methods
+        function val = ne(obj1,obj2)
+            val = ~(obj1.eq(obj2));
+        end
+        function val = eq(obj1,obj2)
+            if length(obj1)>1 || length(obj1)~=length(obj2) || ~isa(obj2,'baff.Model')
+                val = false;
+                return
+            end
+            val = true;
+            val = val && obj1.Orphans == obj2.Orphans;
+        end
         function new = Rebuild(obj)
             new = baff.Model();
             new.Name = obj.Name;

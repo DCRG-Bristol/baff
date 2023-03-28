@@ -7,6 +7,17 @@ classdef Wing < baff.Beam
     end
     
     methods
+        function val = eq(obj1,obj2)
+            if length(obj1)~= length(obj2) || ~isa(obj2,'baff.Wing')
+                val = false;
+                return
+            end
+            val = eq@baff.Beam(obj1,obj2);
+            for i = 1:length(obj1)
+                val = val && obj1(i).AeroStations == obj2(i).AeroStations;
+                val = val && obj1(i).ControlSurfaces == obj2(i).ControlSurfaces;
+            end
+        end
         function obj = Wing(aeroStations,opts,CompOpts)
             arguments
                 aeroStations

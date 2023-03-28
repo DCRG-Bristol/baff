@@ -10,6 +10,21 @@ classdef ControlSurface
     end
     
     methods
+        function val = ne(obj1,obj2)
+            val = ~(obj1.eq(obj2));
+        end
+        function val = eq(obj1,obj2)
+            if length(obj1)~= length(obj2) || ~isa(obj2,'baff.ControlSurface')
+                val = false;
+                return
+            end
+            val = true;
+            for i = 1:length(obj1)
+                val = val && obj1(i).Name == obj2(i).Name;
+                val = val && all(obj1(i).Etas == obj2(i).Etas);
+                val = val && all(obj1(i).pChord == obj2(i).pChord);
+            end
+        end
         function obj = ControlSurface(name,etas,pChords)
             arguments
                 name string

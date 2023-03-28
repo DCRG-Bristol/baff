@@ -10,6 +10,18 @@ classdef Point < baff.Element
         TemplateHdf5(filepath,loc);
     end
     methods
+        function val = eq(obj1,obj2)
+            if length(obj1)~= length(obj2) || ~isa(obj2,'baff.Point')
+                val = false;
+                return
+            end
+            val = eq@baff.Element(obj1,obj2);
+            for i = 1:length(obj1)
+                val = val && all(obj1(i).Force == obj2(i).Force);
+                val = val && all(obj1(i).Moment == obj2(i).Moment);
+            end
+        end
+        
         function obj = Point(CompOpts,opts)
             arguments
                 CompOpts.eta = 0
