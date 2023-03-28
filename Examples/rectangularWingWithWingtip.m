@@ -94,7 +94,7 @@ toc;
 f = figure(2);
 clf;
 hold on
-model2.draw();
+model2.draw(f);
 ax = gca;
 ax.Clipping = false;
 ax.ZAxis.Direction = "reverse";

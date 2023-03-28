@@ -1,4 +1,4 @@
-function draw(obj,opts)
+function p = draw(obj,opts)
 arguments
     obj
     opts.Origin (3,1) double = [0,0,0];
@@ -15,17 +15,21 @@ p.Color = 'c';
 p.Tag = 'Beam';
 %plot Beam Stations
 for i = 1:length(obj.Stations)
-    obj.Stations(i).draw(Origin=points(:,i),A=Rot)
+    plt_obj = obj.Stations(i).draw(Origin=points(:,i),A=Rot);
+    p = [p,plt_obj];
 end
 %plot Aero Stations
 for i = 1:length(obj.AeroStations)
     eta_vector = obj.Stations.GetPos(obj.AeroStations(i).Eta).*obj.EtaLength;
-    obj.AeroStations(i).draw(Origin=(Origin+Rot*eta_vector),A=Rot)
+    plt_obj = obj.AeroStations(i).draw(Origin=(Origin+Rot*eta_vector),A=Rot);
+    p = [p,plt_obj];
 end
 % plot control Surfaces
-obj.ControlSurfaces.draw(obj,Origin=Origin,A=Rot);
+plt_obj = obj.ControlSurfaces.draw(obj,Origin=Origin,A=Rot);
+p = [p,plt_obj];
 
 %plot children
 optsCell = namedargs2cell(opts);
-draw@baff.Element(obj,optsCell{:});
+plt_obj = draw@baff.Element(obj,optsCell{:});
+p = [p,plt_obj];
 end

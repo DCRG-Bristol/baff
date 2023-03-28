@@ -58,7 +58,7 @@ classdef Body < baff.station.Beam
                 end
             end
         end
-        function draw(obj,opts)
+        function plt_obj = draw(obj,opts)
             arguments
                 obj
                 opts.Origin (3,1) double = [0,0,0];
@@ -69,14 +69,17 @@ classdef Body < baff.station.Beam
                 N = length(th);
                 positions = obj.Radius*[cos(th);zeros(1,N);sin(th)];
                 pos = repmat(opts.Origin,1,N) + opts.A*positions;
-                p = plot3(pos(1,:),pos(2,:),pos(3,:),'-');
-                p.Color = [0.4 0.4 0.4];
-                p.Tag = 'Body';
+                plt_obj = plot3(pos(1,:),pos(2,:),pos(3,:),'-');
+                plt_obj.Color = [0.4 0.4 0.4];
+                plt_obj.Tag = 'Body';
+            else
+                plt_obj = [];
             end
             p = plot3(opts.Origin(1,:),opts.Origin(2,:),opts.Origin(3,:),'o');
             p.MarkerFaceColor = [0.4 0.4 0.4];
             p.Color = [0.4 0.4 0.4];
             p.Tag = 'Body';
+            plt_obj = [p,plt_obj];
         end
     end
     methods(Static)

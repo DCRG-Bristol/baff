@@ -60,9 +60,13 @@ classdef Model < handle
                       'KeyPressFcn',            @baff.util.plotting.KeyPressCallback, ...
                       'WindowButtonUpFcn',      @baff.util.plotting.BtnUpCallback)
             %draw the elements
+            plt_obj = [];
             for i = 1:length(obj.Orphans)
-                obj.Orphans(i).draw();
+                p = obj.Orphans(i).draw();
+                plt_obj = [plt_obj,p];
             end
+            [names,idx] = unique(arrayfun(@(x)string(x.Tag),plt_obj));
+            lg = legend(plt_obj(idx),names,'ItemHitFcn', @baff.util.plotting.cbToggleVisible);
         end
 
         function UpdateIdx(obj)
@@ -108,7 +112,7 @@ classdef Model < handle
             end
             % populate parents and children
             for i = 1:length(names)
-                if isa(obj.(names{i}),'baff.Element') && ~strcmp(names{i},'Orphans')
+                if isa(obj.(names{i}),'baff.Element') && ~strcmp(names{i},'Orphans') && ~isempty(obj.(names{i}))
                     obj.(names{i}).LinkElements(filename,sprintf('/BAFF/%s',names{i}),linker);
                     %populate orphans
                     for j = 1:length(obj.(names{i}))

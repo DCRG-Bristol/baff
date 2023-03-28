@@ -1,4 +1,4 @@
-function draw(obj,opts)
+function p = draw(obj,opts)
 arguments
     obj
     opts.Origin (3,1) double = [0,0,0];
@@ -16,9 +16,11 @@ p.Color = 'c';
 p.Tag = 'Beam';
 %plot Beam Stations
 for i = 1:length(obj.Stations)
-    obj.Stations(i).draw(Origin=points(:,i),A=Rot)
+    plt_obj = obj.Stations(i).draw(Origin=points(:,i),A=Rot);
+    p = [p,plt_obj];
 end
 %plot children
 optsCell = namedargs2cell(opts);
-draw@baff.Element(obj,optsCell{:});
+plt_obj = draw@baff.Element(obj,optsCell{:});
+p = [p,plt_obj];
 end

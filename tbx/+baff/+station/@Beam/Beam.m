@@ -62,7 +62,7 @@ classdef Beam < baff.station.Base
                 end
             end
         end
-        function draw(obj,opts)
+        function p = draw(obj,opts)
             arguments
                 obj
                 opts.Origin (3,1) double = [0,0,0];

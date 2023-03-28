@@ -37,7 +37,7 @@ classdef Point < baff.Element
             obj.Moment = opts.Moment;
             obj.Force = opts.Force;
         end
-        function draw(obj,opts)
+        function p = draw(obj,opts)
             arguments
                 obj
                 opts.Origin (3,1) double = [0,0,0];
@@ -52,7 +52,8 @@ classdef Point < baff.Element
             p.Tag = 'Point';
             %plot children
             optsCell = namedargs2cell(opts);
-            draw@baff.Element(obj,optsCell{:});
+            plt_obj = draw@baff.Element(obj,optsCell{:});
+            p = [p,plt_obj];
         end
     end
 end

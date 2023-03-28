@@ -63,7 +63,7 @@ classdef Aero < baff.station.Base
             points = repmat([beamLoc;0;0],1,length(pChord))-[pChord;zeros(2,length(pChord))];
             X = baff.util.roty(twist)*points.*chord;
         end
-        function draw(obj,opts)
+        function p = draw(obj,opts)
             arguments
                 obj
                 opts.Origin (3,1) double = [0,0,0];

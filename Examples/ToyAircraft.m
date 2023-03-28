@@ -96,10 +96,10 @@ model.UpdateIdx();
 model.ToBaff('test.h5');
 toc;
 
-figure(1);
+f = figure(1);
 clf;
 hold on
-model.draw()
+model.draw(f)
 ax = gca;
 ax.Clipping = false;
 ax.ZAxis.Direction = "reverse";
@@ -109,10 +109,10 @@ axis equal
 tic;
 model2 = baff.Model.FromBaff('test.h5');
 toc;
-figure(2);
+f = figure(2);
 clf;
 hold on
-model2.draw;
+model2.draw(f);
 ax = gca;
 ax.Clipping = false;
 ax.ZAxis.Direction = "reverse";

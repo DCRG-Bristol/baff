@@ -1,4 +1,4 @@
-function draw(obj,opts)
+function p = draw(obj,opts)
 arguments
     obj
     opts.Origin (3,1) double = [0,0,0];
@@ -18,6 +18,7 @@ Origin = opts.Origin + opts.A*obj.Offset;
 Rot = opts.A*obj.A*baff.util.Rodrigues(obj.HingeVector,obj.Rotation);
 for i =  1:length(obj.Children)
     eta_vector = [0;obj.Children(i).Eta;0]*obj.EtaLength;
-    obj.Children(i).draw(Origin=(Origin+Rot*eta_vector),A=Rot);
+    plt_obj = obj.Children(i).draw(Origin=(Origin+Rot*eta_vector),A=Rot);
+    p = [p,plt_obj];
 end
 end

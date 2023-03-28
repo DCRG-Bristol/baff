@@ -32,7 +32,7 @@ classdef Constraint < baff.Element
             obj = obj@baff.Element(CompStruct{:});
             obj.ComponentNums = opts.ComponentNums;
         end
-        function draw(obj,opts)
+        function p = draw(obj,opts)
             arguments
                 obj
                 opts.Origin (3,1) double = [0,0,0];
@@ -47,7 +47,8 @@ classdef Constraint < baff.Element
             p.Tag = 'Constraint';
             %plot children
             optsCell = namedargs2cell(opts);
-            draw@baff.Element(obj,optsCell{:});
+            plt_obj = draw@baff.Element(obj,optsCell{:});
+            p = [p,plt_obj];
         end
     end
 end

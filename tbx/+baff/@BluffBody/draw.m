@@ -1,4 +1,4 @@
-function draw(obj,opts)
+function p = draw(obj,opts)
 arguments
     obj
     opts.Origin (3,1) double = [0,0,0];
@@ -13,12 +13,17 @@ points = cell2mat(arrayfun(@(x)obj.GetPos(x),[obj.Stations.Eta],'UniformOutput',
 points = repmat(Origin,1,N) + Rot*points;
 p = plot3(points(1,:),points(2,:),points(3,:),'-');
 p.Color = 'c';
-p.Tag = 'Beam';
+p.Tag = 'Body';
 %plot Beam Stations
 for i = 1:length(obj.Stations)
-    obj.Stations(i).draw(Origin=points(:,i),A=Rot)
+    plt_obj = obj.Stations(i).draw(Origin=points(:,i),A=Rot);
+    for j = 1:length(plt_obj)
+        plt_obj(j).Tag = 'Body';
+    end
+    p = [p,plt_obj];
 end
 %plot children
 optsCell = namedargs2cell(opts);
-draw@baff.Element(obj,optsCell{:});
+plt_obj = draw@baff.Element(obj,optsCell{:});
+p = [p,plt_obj];
 end

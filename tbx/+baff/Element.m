@@ -67,12 +67,13 @@ classdef Element < matlab.mixin.Heterogeneous & handle
         function X = GetPos(obj,eta)
             X = [0;0;0];
         end
-        function draw(obj,opts)
+        function plt_obj = draw(obj,opts)
             arguments
                 obj
                 opts.Origin (3,1) double = [0,0,0];
                 opts.A (3,3) double = eye(3);
             end
+            plt_obj= [];
             Origin = opts.Origin + opts.A*obj.Offset;
             Rot = opts.A*obj.A;
             for i =  1:length(obj.Children)
@@ -80,24 +81,8 @@ classdef Element < matlab.mixin.Heterogeneous & handle
                     obj.Children(i).draw(Origin=Origin,A=Rot);
                 else
                     eta_vector = obj.GetPos(obj.Children(i).Eta);
-                    obj.Children(i).draw(Origin=(Origin+Rot*eta_vector),A=Rot);
-                end
-            end
-        end
-        function LinkElements(obj,filepath,loc,linker)
-            if ~isempty(obj)
-                pIdx = h5read(filepath,sprintf('%s/Parent',loc));
-                cIdx = h5read(filepath,sprintf('%s/Children',loc));
-                cIdx = cIdx(~isnan(cIdx(:,1)),:);
-                for i = 1:length(obj)
-                    if pIdx(i) > 0
-                        obj(i).Parent = linker(i);
-                    end
-                    for j = 1:size(cIdx,1)
-                        if cIdx(j,i)>0
-                            obj(i).Children(end+1) = linker(cIdx(j,i));
-                        end
-                    end
+                    tmp_obj = obj.Children(i).draw(Origin=(Origin+Rot*eta_vector),A=Rot);
+                    plt_obj = [plt_obj,tmp_obj];
                 end
             end
         end
@@ -149,6 +134,26 @@ classdef Element < matlab.mixin.Heterogeneous & handle
             end
         end
         function ToBaff(obj,filepath)
+            warning('ToBaff not implemented in class %s',class(obj))
+        end
+    end
+    methods(Sealed)
+        function LinkElements(obj,filepath,loc,linker)
+            if ~isempty(obj)
+                pIdx = h5read(filepath,sprintf('%s/Parent',loc));
+                cIdx = h5read(filepath,sprintf('%s/Children',loc));
+                cIdx = cIdx(~isnan(cIdx(:,1)),:);
+                for i = 1:length(obj)
+                    if pIdx(i) > 0
+                        obj(i).Parent = linker(i);
+                    end
+                    for j = 1:size(cIdx,1)
+                        if cIdx(j,i)>0
+                            obj(i).Children(end+1) = linker(cIdx(j,i));
+                        end
+                    end
+                end
+            end
         end
     end
     methods(Static)

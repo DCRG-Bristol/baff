@@ -46,7 +46,7 @@ classdef Mass < baff.Point
                                 opts.Ixy,opts.Iyy,opts.Iyz;...
                                 opts.Ixz,opts.Iyz,opts.Izz];
         end
-        function draw(obj,opts)
+        function p = draw(obj,opts)
             arguments
                 obj
                 opts.Origin (3,1) double = [0,0,0];
@@ -61,7 +61,8 @@ classdef Mass < baff.Point
             p.Tag = 'Mass';
             %plot children
             optsCell = namedargs2cell(opts);
-            draw@baff.Element(obj,optsCell{:});
+            plt_obj = draw@baff.Element(obj,optsCell{:});
+            p = [p,plt_obj];
         end
     end
 end
