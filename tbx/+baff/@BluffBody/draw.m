@@ -9,7 +9,6 @@ Rot = opts.A*obj.A;
 %plot beam
 N = length(obj.Stations);
 points = cell2mat(arrayfun(@(x)obj.GetPos(x),[obj.Stations.Eta],'UniformOutput',false));
-% points = repmat(etas(2:end)-etas(1:end-1),3,1).*[obj.Stations(1:end-1).EtaDir];
 points = repmat(Origin,1,N) + Rot*points;
 p = plot3(points(1,:),points(2,:),points(3,:),'-');
 p.Color = 'c';

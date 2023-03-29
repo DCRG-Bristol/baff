@@ -29,7 +29,8 @@ classdef Beam < baff.station.Base
         function obj = Beam(eta,opts)
             arguments
                 eta
-                opts.EtaDir = [0;1;0]
+                opts.EtaDir = [1;0;0]
+                opts.StationDir = [0;1;0];
                 opts.Mat = baff.Material.Stiff;
                 opts.A = 1;
                 opts.I = eye(3);
@@ -37,6 +38,7 @@ classdef Beam < baff.station.Base
             end
             obj.Eta = eta;
             obj.EtaDir = opts.EtaDir;
+            obj.StationDir = opts.StationDir;
             obj.A = opts.A;
             obj.I = opts.I;
             obj.tau = opts.tau;

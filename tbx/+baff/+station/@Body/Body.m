@@ -27,7 +27,8 @@ classdef Body < baff.station.Beam
                 opts.Mat = baff.Material.Stiff;
                 opts.A = 1;
                 opts.I = eye(3);
-                opts.EtaDir = [0;1;0];
+                opts.EtaDir = [1;0;0];
+                opts.StationDir = [0;1;0];
             end
             obj = obj@baff.station.Beam(eta);
             obj.Eta = eta;
@@ -36,6 +37,7 @@ classdef Body < baff.station.Beam
             obj.Mat = opts.Mat;
             obj.Radius = opts.radius;
             obj.EtaDir = opts.EtaDir;
+            obj.StationDir = opts.StationDir;
         end
         function stations = interpolate(obj,etas)
             old_eta = [obj.Eta];
@@ -67,8 +69,15 @@ classdef Body < baff.station.Beam
             if obj.Radius>0
                 th = 0:pi/50:2*pi;
                 N = length(th);
-                positions = obj.Radius*[cos(th);zeros(1,N);sin(th)];
-                pos = repmat(opts.Origin,1,N) + opts.A*positions;
+                stDir = obj.StationDir./norm(obj.StationDir);
+                z = cross(obj.EtaDir./norm(obj.EtaDir),stDir);
+                perp = cross(stDir,z);
+                R = obj.StationDir./norm(obj.StationDir)*obj.Radius;
+                pos = zeros(3,N);
+                for i = 1:N
+                    pos(:,i) = baff.util.Rodrigues(perp,th(i))*R;
+                end
+                pos = repmat(opts.Origin,1,N) + opts.A*pos;
                 plt_obj = plot3(pos(1,:),pos(2,:),pos(3,:),'-');
                 plt_obj.Color = [0.4 0.4 0.4];
                 plt_obj.Tag = 'Body';
@@ -80,6 +89,22 @@ classdef Body < baff.station.Beam
             p.Color = [0.4 0.4 0.4];
             p.Tag = 'Body';
             plt_obj = [p,plt_obj];
+        end
+        function vol = GetNormVolume(obj)
+            vol = sum(obj.GetNormVolmes);
+        end
+        function vols = GetNormVolumes(obj)
+            if length(obj)<2
+                vols = 0;
+                return
+            end
+            vols = zeros(1,length(obj)-1);
+            for i = 1:length(obj)-1
+                span = (obj(i+1).Eta - obj(i).Eta);
+                A1 = pi*obj(i).Radius.^2;
+                A2 = pi*obj(i+1).Radius.^2;
+                vols(i) = 1/3*span*(A1+A2+sqrt(A1*A2));
+            end
         end
     end
     methods(Static)

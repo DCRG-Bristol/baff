@@ -2,7 +2,8 @@ classdef (Abstract) Base < matlab.mixin.Heterogeneous
     
     properties
         Eta (1,1) double;
-        EtaDir (3,1) double = [0;1;0];
+        EtaDir (3,1) double = [1;0;0];
+        StationDir (3,1) double = [0;1;0];
     end
     
     methods

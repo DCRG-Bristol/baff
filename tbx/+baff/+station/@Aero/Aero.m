@@ -30,7 +30,8 @@ classdef Aero < baff.station.Base
                 chord
                 beamLoc
                 opts.Twist = 0;
-                opts.EtaDir = [0;1;0];
+                opts.EtaDir = [1;0;0];
+                opts.StationDir = [0;1;0];
             end
             obj.Eta = eta;
             obj.Chord = chord;
@@ -57,10 +58,15 @@ classdef Aero < baff.station.Base
                 pChord (1,:) double
             end
             etas = [obj.Eta];
+            stDir = [obj.StationDir]./vecnorm([obj.StationDir]);
+            if abs(sum(stDir-repmat(stDir(:,1),1,size(stDir,2)),"all"))>1e-6
+                warning('This method currently assumes all aerodynamic stations are parrallel')
+            end
+            stDir = stDir(:,1);
             chord = interp1(etas,[obj.Chord],eta,"linear");
             beamLoc = interp1(etas,[obj.BeamLoc],eta,"linear");
             twist = interp1(etas,[obj.Twist],eta,"linear");
-            points = repmat([beamLoc;0;0],1,length(pChord))-[pChord;zeros(2,length(pChord))];
+            points = repmat(stDir,1,length(pChord)).*+(beamLoc - pChord);
             X = baff.util.roty(twist)*points.*chord;
         end
         function p = draw(obj,opts)
@@ -69,8 +75,11 @@ classdef Aero < baff.station.Base
                 opts.Origin (3,1) double = [0,0,0];
                 opts.A (3,3) double = eye(3);
             end
-            le_te = [obj.BeamLoc,obj.BeamLoc-1;0,0;0,0]*obj.Chord;
-            points = opts.Origin + opts.A*baff.util.roty(obj.Twist)*le_te;
+            stDir = obj.StationDir./vecnorm(obj.StationDir);
+            le_te = [stDir*obj.BeamLoc,stDir*(obj.BeamLoc-1)].*obj.Chord;
+            z = cross(obj.EtaDir./norm(obj.EtaDir),stDir);
+            perp = cross(stDir,z);
+            points = opts.Origin + opts.A*baff.util.Rodrigues(perp,obj.Twist)*le_te;
             p = plot3(points(1,:),points(2,:),points(3,:),'-o');
             p.Color = 'k';
             p.Tag = 'WingSection';

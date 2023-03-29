@@ -8,6 +8,7 @@ function ToBaff(obj,filepath,loc)
 
     h5write(filepath,sprintf('%s/AeroStations/Eta',loc),[obj.Eta],[1 1],[1 N]);
     h5write(filepath,sprintf('%s/AeroStations/EtaDir',loc),[obj.EtaDir],[1 1],[3 N]);
+    h5write(filepath,sprintf('%s/AeroStations/StationDir',loc),[obj.StationDir],[1 1],[3 N]);
     h5write(filepath,sprintf('%s/AeroStations/Chord',loc),[obj.Chord],[1 1],[1 N]);
     h5write(filepath,sprintf('%s/AeroStations/Twist',loc),[obj.Twist],[1 1],[1 N]);
     h5write(filepath,sprintf('%s/AeroStations/BeamLoc',loc),[obj.BeamLoc],[1 1],[1 N]);
