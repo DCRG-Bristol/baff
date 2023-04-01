@@ -7,6 +7,9 @@ classdef Hinge < baff.Element
         K = 1e-4;
         C = 0;
         isLocked = false;
+
+        %% drawing properties
+        RefLength = 1;
     end
     methods(Static)
         obj = FromBaff(filepath,loc);

@@ -7,7 +7,7 @@ end
 Origin = opts.Origin + opts.A*(obj.Offset);
 Rot = opts.A*obj.A;
 %plot hinge
-points = [obj.HingeVector,-obj.HingeVector]*0.1;
+points = [obj.HingeVector,-obj.HingeVector]*obj.RefLength/2;
 points = repmat(Origin,1,2) + Rot*points;
 p = plot3(points(1,:),points(2,:),points(3,:),'--o');
 p.Color = 'r';
