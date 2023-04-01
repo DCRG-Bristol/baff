@@ -22,9 +22,49 @@ classdef (Abstract) Base < matlab.mixin.Heterogeneous
             end
         end
         function out = plus(obj,delta_eta)
+            if length(obj) == 1
+                out = repmat(obj,1,length(delta_eta));
+            elseif length(delta_eta) ~= length(obj)
+                error('length of obj must be 1 or equal to length of delta_eta')
+            else
+                out = obj;
+            end
             for i = 1:length(delta_eta)
-                out(i) = obj;
                 out(i).Eta = out(i).Eta + delta_eta(i);
+            end
+        end
+        function out = minus(obj,delta_eta)
+            if length(obj) == 1
+                out = repmat(obj,1,length(delta_eta));
+            elseif length(delta_eta) ~= length(obj)
+                error('length of obj must be 1 or equal to length of delta_eta')
+            else
+                out = obj;
+            end
+            for i = 1:length(delta_eta)
+                out(i).Eta = out(i).Eta - delta_eta(i);
+            end
+        end
+        function out = rdivide(obj,delta_eta)
+            if length(obj) == 1
+                out = repmat(obj,1,length(delta_eta));
+            elseif length(delta_eta) ~= length(obj)
+                error('length of obj must be 1 or equal to length of delta_eta')
+            else
+                out = obj;
+            end
+            for i = 1:length(delta_eta)
+                out(i).Eta = out(i).Eta ./ delta_eta(i);
+            end
+        end
+        function out = Normalise(obj,NormEta)
+            arguments
+                obj
+                NormEta = obj(end).Eta
+            end
+            out = obj;
+            for i = 1:length(obj)
+                out(i).Eta = (out(i).Eta - obj(1).Eta) / (NormEta - obj(1).Eta);
             end
         end
         function X = GetPos(obj,eta)
