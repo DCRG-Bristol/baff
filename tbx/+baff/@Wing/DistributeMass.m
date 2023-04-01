@@ -5,6 +5,7 @@ function obj = DistributeMass(obj, mass, Nele,opts)
         Nele
         opts.BeamOffset = 0;
         opts.tag = 'wing_mass';
+        opts.IncludeTips = false;
     end
     % create N lumped masses spread across the wing with the fraction at each
     % point proportional to the chord at each point
@@ -13,8 +14,12 @@ function obj = DistributeMass(obj, mass, Nele,opts)
     NormAreas = secs.GetNormAreas();
     masses = NormAreas./sum(NormAreas) * mass;
     % get postions of the masses
-    etas = linspace(obj.AeroStations(1).Eta,obj.AeroStations(end).Eta,(2*Nele)+1);
-    etas = etas(2:2:(end-1));
+    if opts.IncludeTips
+        etas = linspace(obj.AeroStations(1).Eta,obj.AeroStations(end).Eta,Nele);
+    else
+        etas = linspace(obj.AeroStations(1).Eta,obj.AeroStations(end).Eta,(2*Nele)+1);
+        etas = etas(2:2:(end-1));
+    end
     secs = obj.AeroStations.interpolate(etas);
     %create the point masses and add to the wing
     for i = 1:Nele
