@@ -6,6 +6,8 @@ classdef Aero < baff.station.Base
         Chord double = 1;
         Twist double = 0;
         BeamLoc double = 0.25;
+        Airfoil string = "NACA0012";
+        ThicknessRatio double = 1;
     end
     methods (Static)
         obj = FromBaff(filepath,loc);
@@ -32,23 +34,34 @@ classdef Aero < baff.station.Base
                 opts.Twist = 0;
                 opts.EtaDir = [1;0;0];
                 opts.StationDir = [0;1;0];
+                opts.Airfoil = "NACA0012";
+                opts.ThicknessRatio = 1;
             end
             obj.Eta = eta;
             obj.Chord = chord;
             obj.BeamLoc = beamLoc;
             obj.Twist = opts.Twist;
             obj.EtaDir = opts.EtaDir;
+            obj.StationDir = opts.StationDir;
+            obj.Airfoil = opts.Airfoil;
+            obj.ThicknessRatio = opts.ThicknessRatio;
         end
         function stations = interpolate(obj,etas)
             old_eta = [obj.Eta];
             Chords = interp1(old_eta,[obj.Chord],etas,"linear");
             EtaDirs = interp1(old_eta,[obj.EtaDir]',etas,"previous")';
+            StationDirs = interp1(old_eta,[obj.StationDir]',etas,"previous")';
             BeamLocs = interp1(old_eta,[obj.BeamLoc],etas,"linear");
             Twists = interp1(old_eta,[obj.Twist],etas,"linear");
+            Airfoils = interp1(old_eta,1:length(old_eta),etas,"previous");
+            ThicknessRatios = interp1(old_eta,[obj.ThicknessRatio],etas,"linear");
             stations = baff.station.Aero.empty;
             for i = 1:length(etas)
                 stations(i) = baff.station.Aero(etas(i),Chords(i),BeamLocs(i),"Twist",Twists(i));
                 stations(i).EtaDir = EtaDirs(:,i);
+                stations(i).StationDir = StationDirs(:,i);
+                stations(i).Airfoil = obj(Airfoils(i)).Airfoil;
+                stations(i).ThicknessRatio = ThicknessRatios(i);
             end
         end
         function X = GetPos(obj,eta,pChord)

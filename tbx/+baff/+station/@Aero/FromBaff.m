@@ -13,9 +13,12 @@ stationDirs = h5read(filepath,sprintf('%s/AeroStations/StationDir',loc));
 chords = h5read(filepath,sprintf('%s/AeroStations/Chord',loc));
 twists = h5read(filepath,sprintf('%s/AeroStations/Twist',loc));
 beamlocs = h5read(filepath,sprintf('%s/AeroStations/BeamLoc',loc));
+Airfoils = h5read(filepath,sprintf('%s/AeroStations/Airfoil',loc));
+TRs = h5read(filepath,sprintf('%s/AeroStations/ThicknessRatio',loc));
 for i = 1:Qty
     obj(i) = baff.station.Aero(etas(i),chords(i),beamlocs(i),...
-    "Twist",twists(i),"EtaDir",etaDirs(:,i),"StationDir",stationDirs(:,i));
+    "Twist",twists(i),"EtaDir",etaDirs(:,i),"StationDir",stationDirs(:,i),...
+    "Airfoil",Airfoils(i),"ThicknessRatio",TRs(i));
 end
 end
 
