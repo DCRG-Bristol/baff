@@ -48,6 +48,7 @@ classdef Beam < baff.station.Base
             old_eta = [obj.Eta];
             As = interp1(old_eta,[obj.A],etas,"linear");
             EtaDirs = interp1(old_eta,[obj.EtaDir]',etas,"previous")';
+            StationDirs = interp1(old_eta,[obj.StationDir]',etas,"previous")';
             Is = interp1(old_eta,cell2mat(arrayfun(@(x)x.I(:),obj,'UniformOutput',false))',etas,"linear");
             taus = interp1(old_eta,cell2mat(arrayfun(@(x)x.tau(:),obj,'UniformOutput',false))',etas,"linear");
             stations = baff.station.Beam.empty;
@@ -56,6 +57,7 @@ classdef Beam < baff.station.Base
                 stations(i).I = reshape(Is(i,:),3,3);
                 stations(i).tau = reshape(taus(i,:),3,3);
                 stations(i).EtaDir = EtaDirs(:,i);
+                stations(i).StationDir = StationDirs(:,i);
                 if i == length(etas)
                     stations(i).Mat = obj(end).Mat;
                 else
