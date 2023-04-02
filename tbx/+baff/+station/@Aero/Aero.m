@@ -72,15 +72,26 @@ classdef Aero < baff.station.Base
             end
             etas = [obj.Eta];
             stDir = [obj.StationDir]./vecnorm([obj.StationDir]);
-            if abs(sum(stDir-repmat(stDir(:,1),1,size(stDir,2)),"all"))>1e-6
-                warning('This method currently assumes all aerodynamic stations are parrallel')
+            if length(obj) == 1
+                stDir = stDir(:,1);
+                chord =   [obj.Chord];
+                beamLoc = [obj.BeamLoc];
+                twist =   [obj.Twist];
+                etaDir = obj.EtaDir;
+            else
+                if abs(sum(stDir-repmat(stDir(:,1),1,size(stDir,2)),"all"))>1e-6
+                    warning('This method currently assumes all aerodynamic stations are parrallel')
+                end
+                stDir = stDir(:,1);
+                chord = interp1(etas,[obj.Chord],eta,"linear");
+                beamLoc = interp1(etas,[obj.BeamLoc],eta,"linear");
+                twist = interp1(etas,[obj.Twist],eta,"linear");
+                etaDir = interp1(etas,[obj.EtaDir]',eta,"previous")';
             end
-            stDir = stDir(:,1);
-            chord = interp1(etas,[obj.Chord],eta,"linear");
-            beamLoc = interp1(etas,[obj.BeamLoc],eta,"linear");
-            twist = interp1(etas,[obj.Twist],eta,"linear");
+            z = cross(etaDir./norm(etaDir),stDir);
+            perp = cross(stDir,z);
             points = repmat(stDir,1,length(pChord)).*+(beamLoc - pChord);
-            X = baff.util.roty(twist)*points.*chord;
+            X = baff.util.Rodrigues(perp,deg2rad(twist))*points.*chord;
         end
         function p = draw(obj,opts)
             arguments
@@ -92,7 +103,7 @@ classdef Aero < baff.station.Base
             le_te = [stDir*obj.BeamLoc,stDir*(obj.BeamLoc-1)].*obj.Chord;
             z = cross(obj.EtaDir./norm(obj.EtaDir),stDir);
             perp = cross(stDir,z);
-            points = opts.Origin + opts.A*baff.util.Rodrigues(perp,obj.Twist)*le_te;
+            points = opts.Origin + opts.A*baff.util.Rodrigues(perp,deg2rad(obj.Twist))*le_te;
             p = plot3(points(1,:),points(2,:),points(3,:),'-o');
             p.Color = 'k';
             p.Tag = 'WingSection';

@@ -78,11 +78,15 @@ classdef Wing < baff.Beam
                 Material
                 opts.Dihedral = 0;
                 opts.ThicknessRatio = 0.12;
+                opts.Twist = 0;
             end
             N = length(etas);
             delta = etas(2:end) - etas(1:end-1);
             if length(opts.Dihedral)==1
                 opts.Dihedral = opts.Dihedral*ones(1,N);
+            end
+            if length(opts.Twist)==1
+                opts.Twist = opts.Twist*ones(1,N);
             end
             if length(opts.ThicknessRatio)==1
                 opts.ThicknessRatio = opts.ThicknessRatio*ones(1,N);
@@ -121,6 +125,7 @@ classdef Wing < baff.Beam
             for i = 1:length(aeroStations)
                 aeroStations(i).Chord = chords(i);
                 aeroStations(i).ThicknessRatio = opts.ThicknessRatio(i);
+                aeroStations(i).Twist = opts.Twist(i);
             end
             %make wing
             wing = baff.Wing(aeroStations,"BeamStations",beamStations,"EtaLength",span);
