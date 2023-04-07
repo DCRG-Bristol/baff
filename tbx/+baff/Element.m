@@ -19,7 +19,26 @@ classdef Element < matlab.mixin.Heterogeneous & handle
             error('NotImplemented')
         end
     end
+    methods(Sealed)
+        function val = GetMass(obj,opts)
+            arguments
+                obj
+                opts.IncludeChildren (1,1) logical = false;
+            end
+            val = zeros(size(obj));
+            for i = 1:length(obj)
+                val(i) = obj(i).GetElementMass();
+                if opts.IncludeChildren
+                    optsCell = namedargs2cell(opts);
+                    val(i) = val(i) + sum(obj(i).Children.GetMass(optsCell{:}));
+                end
+            end
+        end
+    end
     methods
+        function val = GetElementMass(obj)
+            val = zeros(size(obj));
+        end
         function val = ne(obj1,obj2)
             val = ~(obj1.eq(obj2));
         end

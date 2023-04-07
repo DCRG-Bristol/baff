@@ -98,6 +98,15 @@ classdef Model < handle
                 end
             end
         end
+        function val = GetMass(obj)
+            val = 0;
+            names = fieldnames(obj);
+            for i = 1:length(names)
+                if isa(obj.(names{i}),'baff.Element') && ~strcmp(names{i},'Orphans')
+                    val = val + sum(obj.(names{i}).GetElementMass());
+                end
+            end
+        end
 
         function AssignChildren(obj,filename)
             % get linker object

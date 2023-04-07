@@ -10,6 +10,9 @@ classdef Mass < baff.Point
         TemplateHdf5(filepath,loc);
     end
     methods
+        function val = GetElementMass(obj)
+            val = [obj.mass];
+        end
         function val = eq(obj1,obj2)
             if length(obj1)~= length(obj2) || ~isa(obj2,'baff.Mass')
                 val = false;

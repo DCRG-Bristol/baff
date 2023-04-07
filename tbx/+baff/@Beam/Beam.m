@@ -37,6 +37,12 @@ classdef Beam < baff.Element
         function X = GetPos(obj,eta)
             X = obj.Stations.GetPos(eta)*obj.EtaLength;
         end
+        function mass = GetElementMass(obj)
+            mass = zeros(size(obj));
+            for i = 1:length(obj)
+                mass(i) = sum(obj(i).Stations.GetEtaMass().*obj(i).EtaLength);
+            end
+        end
     end
     methods(Static)
         function obj = Bar(length,height,width,Material)

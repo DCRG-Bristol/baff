@@ -44,6 +44,20 @@ classdef Beam < baff.station.Base
             obj.tau = opts.tau;
             obj.Mat = opts.Mat;
         end
+        function mass = GetEtaMass(obj)
+            if length(obj)==1
+                mass = 0;
+                return;
+            end
+            mass = zeros(1,length(obj)-1);
+            for i = 1:length(obj)-1
+                delta = obj(i+1).Eta-obj(i).Eta;
+                A1 = obj(i).A;
+                A2 = obj(i+1).A;
+                vol = delta/3*(A1+A2+sqrt(A1*A2));
+                mass(i) = vol*obj(i).Mat.rho;
+            end
+        end
         function stations = interpolate(obj,etas)
             old_eta = [obj.Eta];
             As = interp1(old_eta,[obj.A],etas,"linear");
