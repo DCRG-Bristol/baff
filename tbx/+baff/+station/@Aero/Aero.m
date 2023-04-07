@@ -122,6 +122,22 @@ classdef Aero < baff.station.Base
                 areas(i) = 0.5*(obj(i).Chord+obj(i+1).Chord)/span;
             end
         end
+        function vol = GetNormVolume(obj)
+            vol = sum(obj.GetNormVolumes);
+        end
+        function vols = GetNormVolumes(obj)
+            if length(obj)<2
+                vols = 0;
+                return
+            end
+            vols = zeros(1,length(obj)-1);
+            for i = 1:length(obj)-1
+                span = (obj(i+1).Eta - obj(i).Eta);
+                A1 = obj(i).Chord.^2 * obj(i).ThicknessRatio;
+                A2 = obj(i+1).Chord.^2 * obj(i+1).ThicknessRatio;
+                vols(i) = span/3*(A1+A2+sqrt(A1*A2)); 
+            end
+        end
     end
     methods(Static)
     end
