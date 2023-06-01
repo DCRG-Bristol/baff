@@ -6,6 +6,23 @@ classdef Wing < baff.Beam
         ControlSurfaces (1,:) baff.ControlSurface;
     end
     
+
+    properties(Dependent)
+        PlanformArea
+        Span
+        MAC
+    end
+    methods
+        function A = get.PlanformArea(obj)
+                A = obj.AeroStations.GetNormArea * obj.EtaLength;
+        end
+        function b = get.Span(obj)
+            b = abs(obj.AeroStations(end).Eta-obj.AeroStations(1).Eta) * obj.EtaLength;
+        end
+        function mac = get.MAC(obj)
+            mac = obj.AeroStations.GetMAC;
+        end
+    end
     methods
         function val = eq(obj1,obj2)
             if length(obj1)~= length(obj2) || ~isa(obj2,'baff.Wing')

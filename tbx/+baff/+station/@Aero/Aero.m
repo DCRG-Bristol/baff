@@ -119,7 +119,26 @@ classdef Aero < baff.station.Base
             areas = zeros(1,length(obj)-1);
             for i = 1:length(obj)-1
                 span = (obj(i+1).Eta - obj(i).Eta);
-                areas(i) = 0.5*(obj(i).Chord+obj(i+1).Chord)/span;
+                areas(i) = 0.5*(obj(i).Chord+obj(i+1).Chord)*span;
+            end
+        end
+        function mac = GetMAC(obj)
+            areas = GetNormAreas(obj);
+            macs = GetMACs(obj);
+            mac = 1./sum(areas).*sum(macs.*areas);
+        end
+        function macs = GetMACs(obj)
+            if length(obj)<2
+                macs = obj.Chord;
+                return
+            end
+            macs = zeros(1,length(obj)-1);
+            for i = 1:length(obj)-1
+                cs = [obj(i).Chord,obj(i+1).Chord];
+                b = (obj(i+1).Eta - obj(i).Eta);
+                m = (cs(2)-cs(1))/b;
+                area = 1/2*sum(cs)*b;
+                macs(i) = 1/area*(1/3*m^2*b^3+m*cs(1)*b^2+cs(1)^2*b);
             end
         end
         function vol = GetNormVolume(obj)
