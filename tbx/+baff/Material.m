@@ -27,11 +27,18 @@ classdef Material
                 val = val && obj1(i).nu == obj2(i).nu;
             end
         end
-        function obj = Material(E,nu,rho)
+        function obj = Material(E,nu,rho,Name)
+            arguments
+                E
+                nu
+                rho
+                Name = "";
+            end
             obj.E = E;
             obj.nu = nu;
             obj.rho = rho;
             obj.G  = E / (2 * (1 + nu));
+            obj.Name = Name;
         end
     end
     methods(Static)
@@ -41,6 +48,10 @@ classdef Material
         end
         function obj = Stainless304()
             obj = baff.Material(193e9,0.29,7930);
+            obj.Name = "Stainless304";
+        end
+        function obj = Stainless316()
+            obj = baff.Material(193e9,0.27,8000);
             obj.Name = "Stainless304";
         end
         function obj = Stainless400()
