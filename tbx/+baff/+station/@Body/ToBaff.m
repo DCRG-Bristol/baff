@@ -12,6 +12,7 @@ function ToBaff(obj,filepath,loc)
     h5write(filepath,sprintf('%s/BodyStations/Radius',loc),[obj.Radius],[1 1],[1 N]);
     h5write(filepath,sprintf('%s/BodyStations/A',loc),[obj.A],[1 1],[1 N]);
     h5write(filepath,sprintf('%s/BodyStations/I',loc),reshape([obj.I],9,[]),[1 1],[9 N]);
+    h5write(filepath,sprintf('%s/BodyStations/J',loc),[obj.J],[1 1],[1 N]);
     h5write(filepath,sprintf('%s/BodyStations/Tau',loc),reshape([obj.tau],9,[]),[1 1],[9 N]);
     h5write(filepath,sprintf('%s/BodyStations/E',loc),arrayfun(@(x)x.Mat.E,obj),[1 1],[1 N]);
     h5write(filepath,sprintf('%s/BodyStations/G',loc),arrayfun(@(x)x.Mat.G,obj),[1 1],[1 N]);

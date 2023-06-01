@@ -6,6 +6,7 @@ function TemplateHdf5(filepath,loc)
     h5create(filepath,sprintf('%s/BodyStations/Radius',loc),[1 inf],"Chunksize",[1,10]);
     h5create(filepath,sprintf('%s/BodyStations/A',loc),[1 inf],"Chunksize",[1,10]);
     h5create(filepath,sprintf('%s/BodyStations/I',loc),[9 inf],"Chunksize",[9,10]);
+    h5create(filepath,sprintf('%s/BodyStations/J',loc),[1 inf],"Chunksize",[1,10]);
     h5create(filepath,sprintf('%s/BodyStations/Tau',loc),[9 inf],"Chunksize",[9,10]);
     h5create(filepath,sprintf('%s/BodyStations/E',loc),[1 inf],"Chunksize",[1,10]);
     h5create(filepath,sprintf('%s/BodyStations/G',loc),[1 inf],"Chunksize",[1,10]);

@@ -1,10 +1,11 @@
 classdef Beam < baff.station.Base
-    %BEAMSTATION Summary of this class goes here
-    %   Detailed explanation goes here
+    %BEAMSTATION Creates a beam station
+    %   x direction along beam
 
     properties
         A = 1;        % cross sectional area
-        I = eye(3);   % moment of inertia tensor
+        I = eye(3);   % 2nd Moment of Area tensor
+        J = 1         % Torsional Constant
         tau = eye(3); % elongation tensor
         Mat = baff.Material.Stiff;
     end
@@ -22,6 +23,7 @@ classdef Beam < baff.station.Base
             for i = 1:length(obj1)
                 val = val && obj1(i).A == obj2(i).A;
                 val = val && all(obj1(i).I == obj2(i).I,'all');
+                val = val && obj1(i).J == obj2(i).J;
                 val = val && all(obj1(i).tau == obj2(i).tau,'all');
                 val = val && obj1(i).Mat == obj2(i).Mat;
             end
@@ -34,6 +36,7 @@ classdef Beam < baff.station.Base
                 opts.Mat = baff.Material.Stiff;
                 opts.A = 1;
                 opts.I = eye(3);
+                opts.J = 1;
                 opts.tau = eye(3);
             end
             obj.Eta = eta;
@@ -41,6 +44,7 @@ classdef Beam < baff.station.Base
             obj.StationDir = opts.StationDir;
             obj.A = opts.A;
             obj.I = opts.I;
+            obj.J = opts.J;
             obj.tau = opts.tau;
             obj.Mat = opts.Mat;
         end
@@ -64,11 +68,13 @@ classdef Beam < baff.station.Base
             EtaDirs = interp1(old_eta,[obj.EtaDir]',etas,"previous")';
             StationDirs = interp1(old_eta,[obj.StationDir]',etas,"previous")';
             Is = interp1(old_eta,cell2mat(arrayfun(@(x)x.I(:),obj,'UniformOutput',false))',etas,"linear");
+            Js = interp1(old_eta,[obj.J],etas,"linear");
             taus = interp1(old_eta,cell2mat(arrayfun(@(x)x.tau(:),obj,'UniformOutput',false))',etas,"linear");
             stations = baff.station.Beam.empty;
             for i = 1:length(etas)
                 stations(i) = baff.station.Beam(etas(i),"A",As(i));
                 stations(i).I = reshape(Is(i,:),3,3);
+                stations(i).J = Js(i);
                 stations(i).tau = reshape(taus(i,:),3,3);
                 stations(i).EtaDir = EtaDirs(:,i);
                 stations(i).StationDir = StationDirs(:,i);
@@ -100,11 +106,19 @@ classdef Beam < baff.station.Base
                 width
                 opts.Mat = baff.Material.Stiff;
             end
-            Ixx = height^3*width/12;
+            Iyy = height^3*width/12;
             Izz = width^3*height/12;
-            Iyy = Ixx + Izz;
+            Ixx = Iyy + Izz;
+            if height>=width
+                a = height;
+                b = width;
+            else
+                a = width;
+                b = height;
+            end
+            J = a*b^3*(1/3-0.2085*(b/a)*(1-(b^4)/(12*a^4)));
             I = diag([Ixx,Iyy,Izz]);
-            obj = baff.station.Beam(eta, I=I, A=height*width, Mat=opts.Mat);
+            obj = baff.station.Beam(eta, I=I, A=height*width, J=J, Mat=opts.Mat);
         end
     end
 end

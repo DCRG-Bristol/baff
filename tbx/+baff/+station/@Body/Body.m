@@ -27,6 +27,7 @@ classdef Body < baff.station.Beam
                 opts.Mat = baff.Material.Stiff;
                 opts.A = 1;
                 opts.I = eye(3);
+                opts.J = 1;
                 opts.EtaDir = [1;0;0];
                 opts.StationDir = [0;1;0];
             end
@@ -34,6 +35,7 @@ classdef Body < baff.station.Beam
             obj.Eta = eta;
             obj.A = opts.A;
             obj.I = opts.I;
+            obj.J = opts.J;
             obj.Mat = opts.Mat;
             obj.Radius = opts.radius;
             obj.EtaDir = opts.EtaDir;
@@ -45,11 +47,12 @@ classdef Body < baff.station.Beam
             EtaDirs = interp1(old_eta,[obj.EtaDir]',etas,"previous")';
             StationDirs = interp1(old_eta,[obj.StationDir]',etas,"previous")';
             Is = interp1(old_eta,cell2mat(arrayfun(@(x)x.I(:),obj,'UniformOutput',false))',etas,"linear");
+            Js = interp1(old_eta,[obj.J],etas,"linear");
             taus = interp1(old_eta,cell2mat(arrayfun(@(x)x.tau(:),obj,'UniformOutput',false))',etas,"linear");
             Rs = interp1(old_eta,[obj.Radius],etas,"linear");
             stations = baff.station.Body.empty;
             for i = 1:length(etas)
-                stations(i) = baff.station.Body(etas(i),"radius",Rs(i),"A",As(i));
+                stations(i) = baff.station.Body(etas(i),"radius",Rs(i),"A",As(i),"J",Js(i));
                 stations(i).I = reshape(Is(i,:),3,3);
                 stations(i).tau = reshape(taus(i,:),3,3);
                 stations(i).EtaDir = EtaDirs(:,i);
