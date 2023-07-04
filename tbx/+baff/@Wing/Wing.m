@@ -72,10 +72,11 @@ classdef Wing < baff.Beam
                 opts.NStations = 2
                 opts.etaAeroMax = 1
                 opts.etaBeamMax = 1
+                opts.LiftCurveSlope = 2*pi;
             end
             % create root stations
             station = baff.station.Beam.Bar(0,barHeight,barWidth,Mat=Material);
-            aeroStation = baff.station.Aero(0,Chord,BeamLoc);
+            aeroStation = baff.station.Aero(0,Chord,BeamLoc,LiftCurveSlope=opts.LiftCurveSlope);
             %create end aero station
             aeroStations = aeroStation + linspace(0,opts.etaAeroMax,opts.NAeroStations);
             %gen wing

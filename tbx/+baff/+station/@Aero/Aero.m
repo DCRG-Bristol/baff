@@ -8,6 +8,7 @@ classdef Aero < baff.station.Base
         BeamLoc double = 0.25;
         Airfoil string = "NACA0012";
         ThicknessRatio double = 1;
+        LiftCurveSlope double = 2*pi;
     end
     methods (Static)
         obj = FromBaff(filepath,loc);
@@ -36,6 +37,7 @@ classdef Aero < baff.station.Base
                 opts.StationDir = [0;1;0];
                 opts.Airfoil = "NACA0012";
                 opts.ThicknessRatio = 1;
+                opts.LiftCurveSlope = 2*pi;
             end
             obj.Eta = eta;
             obj.Chord = chord;
@@ -45,6 +47,7 @@ classdef Aero < baff.station.Base
             obj.StationDir = opts.StationDir;
             obj.Airfoil = opts.Airfoil;
             obj.ThicknessRatio = opts.ThicknessRatio;
+            obj.LiftCurveSlope = opts.LiftCurveSlope;
         end
         function stations = interpolate(obj,etas)
             old_eta = [obj.Eta];
@@ -55,6 +58,7 @@ classdef Aero < baff.station.Base
             Twists = interp1(old_eta,[obj.Twist],etas,"linear");
             Airfoils = interp1(old_eta,1:length(old_eta),etas,"previous");
             ThicknessRatios = interp1(old_eta,[obj.ThicknessRatio],etas,"linear");
+            LiftCurveSlopes = interp1(old_eta,[obj.LiftCurveSlope],etas,"linear");
             stations = baff.station.Aero.empty;
             for i = 1:length(etas)
                 stations(i) = baff.station.Aero(etas(i),Chords(i),BeamLocs(i),"Twist",Twists(i));
@@ -62,6 +66,7 @@ classdef Aero < baff.station.Base
                 stations(i).StationDir = StationDirs(:,i);
                 stations(i).Airfoil = obj(Airfoils(i)).Airfoil;
                 stations(i).ThicknessRatio = ThicknessRatios(i);
+                stations(i).LiftCurveSlope = LiftCurveSlopes(i);
             end
         end
         function X = GetPos(obj,eta,pChord)

@@ -8,5 +8,6 @@ function TemplateHdf5(filepath,loc)
     h5create(filepath,sprintf('%s/AeroStations/BeamLoc',loc),[1 inf],"Chunksize",[1,10]);
     h5create(filepath,sprintf('%s/AeroStations/Airfoil',loc),[1 inf],"Chunksize",[1,10],"Datatype","string");
     h5create(filepath,sprintf('%s/AeroStations/ThicknessRatio',loc),[1 inf],"Chunksize",[1,10]);
+    h5create(filepath,sprintf('%s/AeroStations/LiftCurveSlope',loc),[1 inf],"Chunksize",[1,10]);
 end
 
