@@ -41,6 +41,29 @@ classdef Body < baff.station.Beam
             obj.EtaDir = opts.EtaDir;
             obj.StationDir = opts.StationDir;
         end
+        function Vol = NormVolume(obj)
+            etas = [obj.Eta];
+            Rs = [obj.Radius];
+            Vol = 0;
+            for i=2:length(etas)
+                span = etas(i)-etas(i-1);
+                Vol = Vol + 1/3*span*pi*(Rs(i-1)^2+Rs(i-1)*Rs(i)+Rs(i)^2);
+            end
+        end
+        function Area = NormWettedArea(obj)
+            etas = [obj.Eta];
+            Rs = [obj.Radius];
+            Area = 0;
+            for i=2:length(etas)
+                span = etas(i)-etas(i-1);
+                Area = Area + span*pi*(Rs(i-1)+Rs(i));
+                if i==1
+                    Area = Area + span*pi*Rs(i-1);
+                elseif i==length(etas)
+                    Area = Area + span*pi*Rs(i);
+                end
+            end
+        end
         function stations = interpolate(obj,etas)
             old_eta = [obj.Eta];
             As = interp1(old_eta,[obj.A],etas,"linear");

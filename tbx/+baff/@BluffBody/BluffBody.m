@@ -67,6 +67,12 @@ classdef BluffBody < baff.Element
         function X = GetPos(obj,eta)
             X = obj.Stations.GetPos(eta)*obj.EtaLength;
         end
+        function Area = WettedArea(obj)
+            Area = obj.Stations.NormWettedArea()*obj.EtaLength;            
+        end
+        function Vol = Volume(obj)
+            Vol = obj.Stations.NormVolume()*obj.EtaLength;
+        end
     end
     methods(Static)
         function obj = FromEta(len,eta,radius,opts)
@@ -124,13 +130,39 @@ classdef BluffBody < baff.Element
                 radius
                 opts.Material = baff.Material.Stiff;
                 opts.NStations = 10;
+                opts.Inverted = false;
+                opts.EtaFrustrum = 0;
             end
             obj = baff.BluffBody();
             obj.EtaLength = len;
             station = baff.station.Body(0,radius=radius,Mat=opts.Material);
             obj.Stations = station + linspace(0,1,opts.NStations);
 %             theta = @(eta,a,b)acos(eta)
-            rad = @(eta,a,b)b*sin(acos(1-eta));
+            dFrustrum = 1-opts.EtaFrustrum;
+            if ~opts.Inverted
+                rad = @(eta,a,b)b*sin(acos(1-(eta*dFrustrum+opts.EtaFrustrum)));
+            else
+                rad = @(eta,a,b)b*sin(acos(eta*dFrustrum));
+            end
+            for i = 1:length(obj.Stations)
+                obj.Stations(i).Radius = rad(obj.Stations(i).Eta,len,radius);
+            end
+        end
+        function obj = Parabola(len,radius,opts)
+            arguments
+                len
+                radius
+                opts.Material = baff.Material.Stiff;
+                opts.NStations = 10;
+                opts.Dir = 0;
+            end
+            obj = baff.BluffBody();
+            obj.EtaLength = len;
+            station = baff.station.Body(0,radius=radius,Mat=opts.Material);
+            obj.Stations = station + linspace(0,1,opts.NStations);
+%             theta = @(eta,a,b)acos(eta)
+%             rad = @(eta,a,b)b*sin(acos(1-eta));
+            rad= @(eta,a,b)b*sqrt((eta-opts.Dir));
             for i = 1:length(obj.Stations)
                 obj.Stations(i).Radius = rad(obj.Stations(i).Eta,len,radius);
             end
