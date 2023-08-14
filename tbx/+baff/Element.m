@@ -14,7 +14,11 @@ classdef Element < matlab.mixin.Heterogeneous & handle
         Name string = "";    % Name of the element       
         Index = 0;          % Unique index for each element (for use in HDF5 files to link parents and children)
     end
+    methods
+        function val = Type(obj)
             val = "Element"
+        end
+    end
     methods(Static)
         function obj = FromBaff(filepath,loc)
             error('NotImplemented')
