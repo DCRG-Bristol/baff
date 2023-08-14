@@ -127,24 +127,19 @@ classdef Aero < baff.station.Base
                 areas(i) = 0.5*(obj(i).Chord+obj(i+1).Chord)*span;
             end
         end
-        function mac = GetMAC(obj)
-            areas = GetNormAreas(obj);
-            macs = GetMACs(obj);
-            mac = 1./sum(areas).*sum(macs.*areas);
+        function area = getSubNormArea(obj,x)
+            Etas = [obj.Eta];
+            area = obj.interpolate([Etas(Etas<x),x]).GetNormArea();
         end
-        function macs = GetMACs(obj)
-            if length(obj)<2
-                macs = obj.Chord;
-                return
-            end
-            macs = zeros(1,length(obj)-1);
-            for i = 1:length(obj)-1
-                cs = [obj(i).Chord,obj(i+1).Chord];
-                b = (obj(i+1).Eta - obj(i).Eta);
-                m = (cs(2)-cs(1))/b;
-                area = 1/2*sum(cs)*b;
-                macs(i) = 1/area*(1/3*m^2*b^3+m*cs(1)*b^2+cs(1)^2*b);
-            end
+        function c_bar = GetMeanChord(obj)
+            c = 0;
+            areas = GetNormAreas(obj);
+            c_bar = sum(areas)./(obj(end).Eta - obj(1).Eta);
+        end
+        function [mgc,eta_mgc] = GetMGC(obj)
+            area = obj.GetNormArea();
+            eta_mgc = fminsearch(@(x)(obj.getSubNormArea(x)/area-0.5)^2,0.5);
+            mgc = obj.interpolate(eta_mgc).Chord;
         end
         function vol = GetNormVolume(obj)
             vol = sum(obj.GetNormVolumes);
