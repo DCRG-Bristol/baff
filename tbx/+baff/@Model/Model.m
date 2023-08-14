@@ -106,6 +106,22 @@ classdef Model < handle
                 end
             end
         end
+        function [X,mass] = GetCoM(obj)
+            masses = [0];
+            Xs = [0;0;0];
+            names = fieldnames(obj);
+            for i = 1:length(names)
+                if isa(obj.(names{i}),'baff.Element') && ~strcmp(names{i},'Orphans')
+                    [X_tmp,mass_tmp] = obj.(names{i}).GetElementCoM();
+                    Xs = [Xs,X_tmp];
+                    masses = [masses,mass_tmp];
+                end
+            end
+            masses = masses(2:end);
+            Xs = Xs(:,2:end);
+            mass = sum(masses);
+            X = sum(Xs.*repmat(masses,3,1),2)./mass;
+        end
 
         function AssignChildren(obj,filename)
             % get linker object

@@ -44,6 +44,10 @@ classdef Element < matlab.mixin.Heterogeneous & handle
         function val = GetElementMass(obj)
             val = zeros(size(obj));
         end
+        function [Xs,masses] = GetElementCoM(obj)
+            Xs = zeros(3,length(obj));
+            masses = zeros(1,length(obj));
+        end
         function val = ne(obj1,obj2)
             val = ~(obj1.eq(obj2));
         end
@@ -90,6 +94,17 @@ classdef Element < matlab.mixin.Heterogeneous & handle
         end
         function X = GetPos(obj,eta)
             X = [0;0;0];
+        end
+        function X = GetGlobalPos(obj,Eta,Offset)
+            arguments
+                obj
+                Eta
+                Offset = [0;0;0];
+            end
+            X =  obj.Offset + obj.A' * (obj.GetPos(Eta) + Offset);
+            if ~isempty(obj.Parent)
+                X = obj.Parent.GetGlobalPos(obj.Eta,X);
+            end
         end
         function plt_obj = draw(obj,opts)
             arguments
