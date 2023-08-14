@@ -10,7 +10,6 @@ classdef Wing < baff.Beam
     properties(Dependent)
         PlanformArea
         Span
-        MAC
     end
     methods
         function A = get.PlanformArea(obj)
@@ -19,8 +18,19 @@ classdef Wing < baff.Beam
         function b = get.Span(obj)
             b = abs(obj.AeroStations(end).Eta-obj.AeroStations(1).Eta) * obj.EtaLength;
         end
-        function mac = get.MAC(obj)
-            mac = obj.AeroStations.GetMAC;
+        function [mac,X] = GetMGC(obj,pChord)
+            arguments
+                obj
+                pChord = 0
+            end
+            [mac,eta] = obj.AeroStations.GetMGC;
+            X = obj.GetGlobalPos(eta,obj.AeroStations.GetPos(eta,pChord));
+        end
+        function [mac,X] = GetMAC(obj)
+            [mac,X] = GetMGC(obj);
+        end
+        function val = Type(obj)
+            val ="Wing";
         end
     end
     methods

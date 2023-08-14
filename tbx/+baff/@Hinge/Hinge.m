@@ -16,6 +16,11 @@ classdef Hinge < baff.Element
         TemplateHdf5(filepath,loc);
     end
     methods
+        function val = Type(obj)
+            val ="Hinge";
+        end
+    end
+    methods
         function val = eq(obj1,obj2)
             if length(obj1)~= length(obj2) || ~isa(obj2,'baff.Hinge')
                 val = false;

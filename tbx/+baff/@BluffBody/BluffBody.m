@@ -9,6 +9,11 @@ classdef BluffBody < baff.Element
         TemplateHdf5(filepath,loc);
     end
     methods
+        function val = Type(obj)
+            val ="BluffBody";
+        end
+    end
+    methods
         function val = eq(obj1,obj2)
             if length(obj1)~= length(obj2) || ~isa(obj2,'baff.BluffBody')
                 val = false;

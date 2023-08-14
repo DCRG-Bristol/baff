@@ -32,8 +32,7 @@ classdef Model < handle
         function AddElement(obj,ele)
             % add element
             if isa(ele,'baff.Element')
-                cName = strsplit(class(ele),'.');
-                obj.(cName{end})(end+1) = ele;
+                obj.(ele.Type)(end+1) = ele;
             end
             % add its Children
             for cIdx = 1:length(ele.Children)
