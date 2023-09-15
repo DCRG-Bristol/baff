@@ -1,18 +1,9 @@
 function ToBaff(obj,filepath,loc)
+N = length(obj);
+h5writeatt(filepath,[loc,'/'],'Qty', N);
+if N ~= 0
     % write default items
-    PropToBaff(obj,filepath,loc);
-    %% write mass specific items
-    N = length(obj);
-    h5writeatt(filepath,[loc,'/'],'Qty', N);
-    if N == 0
-        return
-    end
-    %% sort out beam stations
-    Bstations = [obj.Stations];
-    Bstations.ToBaff(filepath,loc);
-    BNs = arrayfun(@(x)length(x.Stations),obj);
-    h5writeatt(filepath,sprintf('%s/',loc),'BeamStationsIdx', BNs);
-
+    ToBaff@baff.Beam(obj,filepath,loc);
     %% sort out Aero stations
     Bstations = [obj.AeroStations];
     Bstations.ToBaff(filepath,loc);
@@ -24,4 +15,5 @@ function ToBaff(obj,filepath,loc)
     cs.ToBaff(filepath,loc);
     cNs = arrayfun(@(x)length(x.ControlSurfaces),obj);
     h5writeatt(filepath,sprintf('%s/',loc),'ControlSurfacesIdx', cNs);
+end
 end

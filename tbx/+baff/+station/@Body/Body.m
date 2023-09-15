@@ -41,9 +41,17 @@ classdef Body < baff.station.Beam
             obj.EtaDir = opts.EtaDir;
             obj.StationDir = opts.StationDir;
         end
-        function Vol = NormVolume(obj)
+        function Vol = NormVolume(obj,etaLim)
+            arguments
+                obj
+                etaLim = [0,1]
+            end 
             etas = [obj.Eta];
             Rs = [obj.Radius];
+            idx = etas>=etaLim(1) & etas<=etaLim(2);
+            Rs = [interp1(etas,Rs,etaLim(1)),Rs(idx),interp1(etas,Rs,etaLim(2))];
+            etas = [etaLim(1),etas(idx),etaLim(2)];
+            
             Vol = 0;
             for i=2:length(etas)
                 span = etas(i)-etas(i-1);

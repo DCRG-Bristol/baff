@@ -6,6 +6,8 @@ classdef Model < handle
         Constraint (:,1) baff.Constraint = baff.Constraint.empty
         Hinge (:,1) baff.Hinge = baff.Hinge.empty
         Mass (:,1) baff.Mass = baff.Mass.empty
+        Fuel (:,1) baff.Fuel = baff.Fuel.empty
+        Payload (:,1) baff.Payload = baff.Payload.empty
         Point (:,1) baff.Point = baff.Point.empty
         Wing (:,1) baff.Wing = baff.Wing.empty
         Orphans (:,1) baff.Element = baff.Beam.empty
@@ -106,22 +108,31 @@ classdef Model < handle
                 end
             end
         end
-        function [X,mass] = GetCoM(obj)
-            masses = [0];
-            Xs = [0;0;0];
+        function val = GetOEM(obj)
+            val = 0;
             names = fieldnames(obj);
             for i = 1:length(names)
                 if isa(obj.(names{i}),'baff.Element') && ~strcmp(names{i},'Orphans')
-                    [X_tmp,mass_tmp] = obj.(names{i}).GetElementCoM();
-                    Xs = [Xs,X_tmp];
-                    masses = [masses,mass_tmp];
+                    val = val + sum(obj.(names{i}).GetElementOEM());
                 end
+            end
+        end
+        function [X,mass] = GetCoM(obj)
+            masses = [0];
+            Xs = [0;0;0];
+            for i = 1:length(obj.Orphans)
+                [tmpX,tmpM] = obj.Orphans(i).GetCoM();
+                tmpX = obj.Orphans(i).A' * tmpX;
+                tmpX = tmpX + repmat(obj.Orphans(i).Offset,1,length(tmpM)) + obj.Orphans(i).Offset;
+                Xs = [Xs,tmpX];
+                masses = [masses,tmpM];
             end
             masses = masses(2:end);
             Xs = Xs(:,2:end);
             mass = sum(masses);
             X = sum(Xs.*repmat(masses,3,1),2)./mass;
         end
+
 
         function AssignChildren(obj,filename)
             % get linker object

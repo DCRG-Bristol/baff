@@ -65,6 +65,22 @@ classdef Wing < baff.Beam
         function X = GetPos(obj,eta)
             X = obj.Stations.GetPos(eta)*obj.EtaLength;
         end
+        function Area = WettedArea(obj)
+            Area = zeros(size(obj));      
+        end
+        function [sweepAngles] = GetSweepAngles(obj,cEta)
+            sweepAngles = zeros(1,length(obj)-1);
+            aSt = obj.AeroStations;
+            for i = 1:length(aSt)-1
+                A = aSt(i).StationDir;
+                p1 = aSt.GetPos(aSt(i).Eta,cEta) + obj.Stations.GetPos(aSt(i).Eta)*obj.EtaLength;
+                p2 = aSt.GetPos(aSt(i+1).Eta,cEta) + obj.Stations.GetPos(aSt(i+1).Eta)*obj.EtaLength;
+                B = p2-p1;
+                Z = cross(A,B);
+                X = cross(Z,A);
+                sweepAngles(i) = acosd(dot(X,B)/(norm(X)*norm(B)));
+            end
+        end
     end
     methods(Static)
         obj = FromBaff(filepath,loc);
@@ -154,6 +170,7 @@ classdef Wing < baff.Beam
                 aeroStations(i).Chord = chords(i);
                 aeroStations(i).ThicknessRatio = opts.ThicknessRatio(i);
                 aeroStations(i).Twist = opts.Twist(i);
+                aeroStations(i).Airfoil = baff.Airfoil.NACA(0,0);
             end
             %make wing
             wing = baff.Wing(aeroStations,"BeamStations",beamStations,"EtaLength",span);

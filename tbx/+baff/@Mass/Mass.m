@@ -23,7 +23,7 @@ classdef Mass < baff.Point
             masses = [obj.mass];
             Xs = zeros(3,length(obj));
             for i = 1:length(obj)
-                Xs(:,i) = obj(i).GetGlobalPos(0,obj(i).Offset);
+                Xs(:,i) = obj(i).GetGlobalPos(0,0);
             end
         end
         function val = eq(obj1,obj2)
