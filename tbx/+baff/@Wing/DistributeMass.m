@@ -46,7 +46,9 @@ function obj = DistributeMass(obj, mass, Nele,opts)
         else
             tmp_mass = baff.Mass(masses(i),"eta",etas(i),"Name",sprintf('%s_%.0f',opts.tag,i));
         end
-        tmp_mass.Offset = [opts.BeamOffset*secs(i).Chord;0;0];
+        if opts.BeamOffset ~= 0
+            tmp_mass.Offset = secs(i).StationDir./norm(secs(i).StationDir)*opts.BeamOffset*secs(i).Chord;
+        end
         obj.add(tmp_mass);
     end
 end

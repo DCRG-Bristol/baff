@@ -132,6 +132,12 @@ classdef Element < matlab.mixin.Heterogeneous & handle
                 X = obj.Parent.GetGlobalPos(obj.Eta,X);
             end
         end
+        function A = GetGlobalA(obj)
+            A = obj.A';
+            if ~isempty(obj.Parent)
+                A = obj.Parent.GetGlobalA() * A;
+            end
+        end
         function plt_obj = draw(obj,opts)
             arguments
                 obj

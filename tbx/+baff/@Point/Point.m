@@ -2,8 +2,10 @@ classdef Point < baff.Element
     %POINT Summary of this class goes here
     %   Detailed explanation goes here
     properties
-        Force = nan(3,1); % force applied to this gridpoint (in local coordinate system)
-        Moment = nan(3,1); % moment applied to this gridpoint (in local coordinate system)
+        Force (3,1) double= nan(3,1); % force applied to this gridpoint (in local coordinate system)
+        Moment (3,1) double= nan(3,1); % moment applied to this gridpoint (in local coordinate system)
+
+        VectorPltScaling = 1;
     end
     methods(Static)
         obj = FromBaff(filepath,loc);
@@ -11,7 +13,7 @@ classdef Point < baff.Element
     end
     methods
         function val = Type(obj)
-            val ="Wing";
+            val ="Point";
         end
     end
     methods
@@ -55,6 +57,13 @@ classdef Point < baff.Element
             p.MarkerFaceColor = 'g';
             p.Color = 'g';
             p.Tag = 'Point';
+            if norm(obj.Force)>0
+                v = Rot*obj.Force(:).*obj.VectorPltScaling;
+                o = [Origin(1,1);Origin(2,1);Origin(3,1)];
+                vo = [o,o+v];
+                p = plot3(vo(1,:),vo(2,:),vo(3,:),'-r','LineWidth',1.5);
+                p.Tag = 'Force';
+            end
             %plot children
             optsCell = namedargs2cell(opts);
             plt_obj = draw@baff.Element(obj,optsCell{:});
