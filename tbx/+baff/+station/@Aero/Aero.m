@@ -148,7 +148,11 @@ classdef Aero < baff.station.Base
             areas = GetNormAreas(obj);
             c_bar = sum(areas)./(obj(end).Eta - obj(1).Eta);
         end
-        function [mgc,eta_mgc] = GetMGC(obj)
+        function [mgc,eta_mgc] = GetMGC(obj,target)
+            arguments
+                obj
+                target = 0.5
+            end
             area = obj.GetNormArea();
             etas = [obj.Eta];
             chords = [obj.Chord];
@@ -158,7 +162,7 @@ classdef Aero < baff.station.Base
                 ci = [chords(etas<x),chord_i];
                 a = trapz(ei,ci); 
             end
-            eta_mgc = fminsearch(@(x)(half_area(x)/area-0.5)^2,0.5);
+            eta_mgc = fminsearch(@(x)(half_area(x)/area-target)^2,target);
             mgc = obj.interpolate(eta_mgc).Chord;
         end
         

@@ -13,24 +13,48 @@ classdef Wing < baff.Beam
     end
     methods
         function A = get.PlanformArea(obj)
-                A = obj.AeroStations.GetNormArea * obj.EtaLength;
+            A = obj.AeroStations.GetNormArea * obj.EtaLength;
+        end
+        function val = Type(obj)
+            val ="Wing";
         end
         function b = get.Span(obj)
             b = abs(obj.AeroStations(end).Eta-obj.AeroStations(1).Eta) * obj.EtaLength;
+        end
+    end
+    methods(Sealed=true)   
+        function As = PlanformAreas(obj)
+            As = length(obj);
+            for i = 1;length(obj)
+                As(i) = obj(i).AeroStations.GetNormArea * obj(i).EtaLength;
+            end
+        end
+        function bs = Spans(obj)
+            bs = length(obj);
+            for i = 1;length(obj)
+                bs(i) = abs(obj(i).AeroStations(end).Eta-obj(i).AeroStations(1).Eta) * obj.EtaLength;
+            end
         end
         function [mac,X] = GetMGC(obj,pChord)
             arguments
                 obj
                 pChord = 0
             end
-            [mac,eta] = obj.AeroStations.GetMGC;
-            X = obj.GetGlobalPos(eta,obj.AeroStations.GetPos(eta,pChord));
+            if length(obj)==1
+                [mac,eta] = obj.AeroStations.GetMGC;
+                X = obj.GetGlobalPos(eta,obj.AeroStations.GetPos(eta,pChord));
+            else
+                As = [obj.PlanformArea];
+                idx = find(cumsum(As)>=sum(As)/2,1);
+                As = [0,As];
+                target_A = sum(As)/2 - As(idx);
+                target = target_A/As(idx+1);
+                [mac,eta] = obj(idx).AeroStations.GetMGC(target);
+                X = obj(idx).GetGlobalPos(eta,obj(idx).AeroStations.GetPos(eta,pChord));
+            end
         end
         function [mac,X] = GetMAC(obj)
             [mac,X] = GetMGC(obj);
-        end
-        function val = Type(obj)
-            val ="Wing";
         end
     end
     methods
