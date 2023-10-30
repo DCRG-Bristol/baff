@@ -22,9 +22,6 @@ classdef (Abstract) Base < matlab.mixin.Heterogeneous
             end
         end
         function out = plus(obj,delta_eta)
-            if length(delta_eta) == 1
-                delta_eta = repmat(delta_eta,1,length(obj));
-            end
             if length(obj) == 1
                 out = repmat(obj,1,length(delta_eta));
             elseif length(delta_eta) ~= length(obj)
@@ -37,9 +34,6 @@ classdef (Abstract) Base < matlab.mixin.Heterogeneous
             end
         end
         function out = minus(obj,delta_eta)
-            if length(delta_eta) == 1
-                delta_eta = repmat(delta_eta,1,length(obj));
-            end
             if length(obj) == 1
                 out = repmat(obj,1,length(delta_eta));
             elseif length(delta_eta) ~= length(obj)
@@ -90,16 +84,6 @@ classdef (Abstract) Base < matlab.mixin.Heterogeneous
             etas = [etas(idx),eta];
             delta = repmat(etas(2:end)-etas(1:end-1),3,1).*dirs;
             X = sum(delta,2);
-        end
-        function [lenLocus,kappa] = GetLocus(obj)
-            % gets the length of the locus formed by the stations and returns the 
-            % normalised positon of the stations along the locus
-            etas = [obj.Eta];
-            dirs = [obj.EtaDir];
-            seg_locus_len = (etas(2:end)-etas(1:end-1)).*vecnorm(dirs(:,1:end-1));
-            lenLocus = sum(seg_locus_len);
-            kappa = [0,cumsum(seg_locus_len)/lenLocus];
-            kappa = round(kappa,12);
         end
     end
     methods (Abstract)

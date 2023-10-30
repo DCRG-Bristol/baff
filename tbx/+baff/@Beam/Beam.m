@@ -54,8 +54,7 @@ classdef Beam < baff.Element
             for i = 1:length(obj)
                 [EtaCoM,mass] = obj(i).Stations.GetEtaCoM();
                 masses(i) = mass.*obj(i).EtaLength;
-                % Xs(:,i) = obj(i).GetGlobalPos(EtaCoM);
-                Xs(:,i) = obj(i).GetPos(EtaCoM);
+                Xs(:,i) = obj(i).GetGlobalPos(EtaCoM);
             end
         end
     end
