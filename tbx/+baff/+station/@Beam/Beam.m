@@ -61,15 +61,15 @@ classdef Beam < baff.station.Base
                 A2 = obj(i+1).A;
                 if A1==A2
                     etaCoMs(i) = obj(i).Eta + z/2;
-                    masses(i) = A1*z*obj(i).Mat.rho;
+                    masses(i) = A1*z*obj(i).Mat.rho*norm(obj(i).EtaDir);
                 else
-                    z_p = A1*z/(A1-A2);
+                    z_p = sqrt(A1)*z/(sqrt(A1)-sqrt(A2));
                     vol_p = z_p/3*A1;
                     z_bar = z_p-z;
                     vol_bar = z_bar/3*A2;
                     vol = vol_p-vol_bar;
-                    etaCoMs(i) = (vol_p*z_p+vol_bar*z_bar)/vol + obj(i).Eta;
-                    masses(i) = vol*obj(i).Mat.rho;
+                    etaCoMs(i) = (vol_p*z_p/4-vol_bar*(z+z_bar/4))/vol + obj(i).Eta;
+                    masses(i) = vol*obj(i).Mat.rho*norm(obj(i).EtaDir);
                 end
             end
             mass = sum(masses);
@@ -90,7 +90,7 @@ classdef Beam < baff.station.Base
                 A1 = obj(i).A;
                 A2 = obj(i+1).A;
                 vol = delta/3*(A1+A2+sqrt(A1*A2));
-                mass(i) = vol*obj(i).Mat.rho;
+                mass(i) = vol*obj(i).Mat.rho*norm(obj(i).EtaDir);
             end
         end
         function stations = interpolate(obj,etas)
