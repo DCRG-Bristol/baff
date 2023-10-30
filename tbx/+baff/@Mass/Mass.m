@@ -10,8 +10,21 @@ classdef Mass < baff.Point
         TemplateHdf5(filepath,loc);
     end
     methods
+        function val = Type(obj)
+            val ="Mass";
+        end
+    end
+    
+    methods
         function val = GetElementMass(obj)
             val = [obj.mass];
+        end
+        function [Xs,masses] = GetElementCoM(obj)
+            masses = [obj.mass];
+            Xs = zeros(3,length(obj));
+            for i = 1:length(obj)
+                Xs(:,i) = obj(i).GetGlobalPos(0,0);
+            end
         end
         function val = eq(obj1,obj2)
             if length(obj1)~= length(obj2) || ~isa(obj2,'baff.Mass')

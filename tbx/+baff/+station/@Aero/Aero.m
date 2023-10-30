@@ -6,7 +6,7 @@ classdef Aero < baff.station.Base
         Chord double = 1;
         Twist double = 0;
         BeamLoc double = 0.25;
-        Airfoil string = "NACA0012";
+        Airfoil baff.Airfoil = baff.Airfoil.NACA_sym;
         ThicknessRatio double = 1;
         LiftCurveSlope double = 2*pi;
     end
@@ -35,7 +35,7 @@ classdef Aero < baff.station.Base
                 opts.Twist = 0;
                 opts.EtaDir = [1;0;0];
                 opts.StationDir = [0;1;0];
-                opts.Airfoil = "NACA0012";
+                opts.Airfoil = baff.Airfoil.NACA_sym;
                 opts.ThicknessRatio = 1;
                 opts.LiftCurveSlope = 2*pi;
             end
@@ -127,39 +127,82 @@ classdef Aero < baff.station.Base
                 areas(i) = 0.5*(obj(i).Chord+obj(i+1).Chord)*span;
             end
         end
-        function mac = GetMAC(obj)
-            areas = GetNormAreas(obj);
-            macs = GetMACs(obj);
-            mac = 1./sum(areas).*sum(macs.*areas);
-        end
-        function macs = GetMACs(obj)
+        function areas = GetNormWettedAreas(obj)
             if length(obj)<2
-                macs = obj.Chord;
+                areas = 0;
                 return
             end
-            macs = zeros(1,length(obj)-1);
+            perimeters = arrayfun(@(x)x.NormPerimeter,[obj.Airfoil]).*[obj.Chord];
+            deltaEta = [obj(2:end).Eta]-[obj(1:end-1).Eta];
+            areas = 0.5*(perimeters(1:end-1)+perimeters(2:end)).*deltaEta;
+        end
+        function area = GetNormWettedArea(obj)
+            area = sum(obj.GetNormWettedAreas);
+        end
+        function area = getSubNormArea(obj,x)
+            Etas = [obj.Eta];
+            area = obj.interpolate([Etas(Etas<x),x]).GetNormArea();
+        end
+        function c_bar = GetMeanChord(obj)
+            c = 0;
+            areas = GetNormAreas(obj);
+            c_bar = sum(areas)./(obj(end).Eta - obj(1).Eta);
+        end
+        function [mgc,eta_mgc] = GetMGC(obj,target)
+            arguments
+                obj
+                target = 0.5
+            end
+            area = obj.GetNormArea();
+            etas = [obj.Eta];
+            chords = [obj.Chord];
+            function a = half_area(x)
+                chord_i = interp1(etas,chords,x);
+                ei = [etas(etas<x),x];
+                ci = [chords(etas<x),chord_i];
+                a = trapz(ei,ci); 
+            end
+            eta_mgc = fminsearch(@(x)(half_area(x)/area-target)^2,target);
+            mgc = obj.interpolate(eta_mgc).Chord;
+        end
+        
+        function [mgcs,thicknessRatios] = GetMGCs(obj)
+            mgcs = zeros(1,length(obj)-1);
+            thicknessRatios = zeros(1,length(obj)-1);
             for i = 1:length(obj)-1
-                cs = [obj(i).Chord,obj(i+1).Chord];
-                b = (obj(i+1).Eta - obj(i).Eta);
-                m = (cs(2)-cs(1))/b;
-                area = 1/2*sum(cs)*b;
-                macs(i) = 1/area*(1/3*m^2*b^3+m*cs(1)*b^2+cs(1)^2*b);
+                tr = obj(i+1).Chord/obj(i).Chord;
+                mgcs(i) = 2/3*obj(i).Chord*(1+tr+tr^2)/(1+tr);
+                thicknessRatios(i) = (obj(i).ThicknessRatio + obj(i+1).ThicknessRatio)/2;
             end
         end
-        function vol = GetNormVolume(obj)
-            vol = sum(obj.GetNormVolumes);
+        function vol = GetNormVolume(obj,cEtas,Etas)
+            arguments
+                obj
+                cEtas (1,2) double = [0 1]
+                Etas (1,2) double = [nan nan]
+            end
+            vol = sum(obj.GetNormVolumes(cEtas));
         end
-        function vols = GetNormVolumes(obj)
+        function vols = GetNormVolumes(obj,cEtas,Etas)
+            arguments
+                obj
+                cEtas (1,2) double = [0 1]
+                Etas (1,2) double = [nan nan]
+            end
             if length(obj)<2
                 vols = 0;
                 return
             end
+            if ~isnan(Etas(1))
+                idx = [obj.Eta]>Etas(1) & [obj.Eta]<Etas(2);
+                obj = obj.interpolate([Etas(1),[obj(idx).Eta],Etas(2)]);
+            end
             vols = zeros(1,length(obj)-1);
+            A = [obj.Chord].^2.*[obj.ThicknessRatio];
+            A = A.*arrayfun(@(x)x.GetNormArea(cEtas),[obj.Airfoil]);
             for i = 1:length(obj)-1
                 span = (obj(i+1).Eta - obj(i).Eta);
-                A1 = obj(i).Chord.^2 * obj(i).ThicknessRatio;
-                A2 = obj(i+1).Chord.^2 * obj(i+1).ThicknessRatio;
-                vols(i) = span/3*(A1+A2+sqrt(A1*A2)); 
+                vols(i) = span/3*(A(i)+A(i+1)+sqrt(A(i)*A(i+1))); 
             end
         end
     end

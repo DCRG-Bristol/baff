@@ -110,14 +110,14 @@ ax.Clipping = false;
 axis equal
 
 %% read file and plot again
-% tic;
-% model2 = baff.Model.FromBaff('test.h5');
-% toc;
-% f = figure(2);
-% clf;
-% hold on
-% model2.draw(f);
-% ax = gca;
-% ax.Clipping = false;
-% ax.ZAxis.Direction = "reverse";
-% axis equal
+tic;
+model2 = baff.Model.FromBaff('test.h5');
+toc;
+f = figure(2);
+clf;
+hold on
+model2.draw(f);
+ax = gca;
+ax.Clipping = false;
+ax.ZAxis.Direction = "reverse";
+axis equal

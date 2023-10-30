@@ -1,14 +1,9 @@
 function ToBaff(obj,filepath,loc)
+N = length(obj);
+h5writeatt(filepath,[loc,'/'],'Qty', N);
+if N ~= 0
     % write default items
-    PropToBaff(obj,filepath,loc);
-    %% write mass specific items
-    N = length(obj);
-    if N == 0
-        h5writeatt(filepath,[loc,'/'],'Qty', 0);
-        return
-    end
-    %fill data
+    ToBaff@baff.Element(obj,filepath,loc);
     h5write(filepath,sprintf('%s/ComponentNums',loc),[obj.ComponentNums],[1,1],[1,N]);
-
-    h5writeatt(filepath,[loc,'/'],'Qty', length(obj));
+end
 end

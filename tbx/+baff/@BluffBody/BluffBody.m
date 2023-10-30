@@ -9,6 +9,11 @@ classdef BluffBody < baff.Element
         TemplateHdf5(filepath,loc);
     end
     methods
+        function val = Type(obj)
+            val ="BluffBody";
+        end
+    end
+    methods
         function val = eq(obj1,obj2)
             if length(obj1)~= length(obj2) || ~isa(obj2,'baff.BluffBody')
                 val = false;
@@ -46,21 +51,28 @@ classdef BluffBody < baff.Element
         end
     end
     methods
-        function obj = BluffBody(CompOpts,opts)
+        function obj = BluffBody(opts)
             arguments
-                CompOpts.eta = 0
-                CompOpts.Offset
-                CompOpts.Name = "Beam" 
-                opts.Stations = baff.station.Body.empty;
+                opts.eta = 0
+                opts.Offset = [0;0;0];
+                opts.Name = "Beam" 
+                opts.Stations = [baff.station.Body(0),baff.station.Body(1)];
             end
-            CompStruct = namedargs2cell(CompOpts);
-            obj = obj@baff.Element(CompStruct{:});
-            if ~isempty(opts.Stations)
-                obj.Stations = opts.Stations;
-            end
+            obj = obj@baff.Element("eta",opts.eta,"Offset",opts.Offset,"Name",opts.Name);
+            obj.Stations = opts.Stations;
         end
         function X = GetPos(obj,eta)
             X = obj.Stations.GetPos(eta)*obj.EtaLength;
+        end
+        function Area = WettedArea(obj)
+            Area = obj.Stations.NormWettedArea()*obj.EtaLength;            
+        end
+        function Vol = Volume(obj,etaLims)
+            arguments
+                obj
+                etaLims = [0,1]
+            end                
+            Vol = obj.Stations.NormVolume(etaLims)*obj.EtaLength;
         end
     end
     methods(Static)
@@ -76,8 +88,7 @@ classdef BluffBody < baff.Element
             if isnan(opts.Density) && isnan(opts.NStations)
                 error('Either Density of NStations must be non zero')
             end
-            obj = baff.BluffBody();
-            obj.EtaLength = len;
+            
             station = baff.station.Body(0,radius=radius(1),Mat=opts.Material);
             stations = station + eta;
             for i = 1:length(stations)
@@ -97,7 +108,8 @@ classdef BluffBody < baff.Element
                 tmp = linspace(eta(i),eta(i+1),Ns(i)+1);
                 tmp_etas = [tmp_etas,tmp(2:end)];
             end
-            obj.Stations = stations.interpolate(tmp_etas);
+            obj = baff.BluffBody("Stations",stations.interpolate(tmp_etas));
+            obj.EtaLength = len;
         end
 
         function obj = Cylinder(len,radius,opts)
@@ -107,10 +119,9 @@ classdef BluffBody < baff.Element
                 opts.Material = baff.Material.Stiff;
                 opts.NStations = 10;
             end
-            obj = baff.BluffBody();
-            obj.EtaLength = len;
             station = baff.station.Body(0,radius=radius,Mat=opts.Material);
-            obj.Stations = station + linspace(0,1,opts.NStations);
+            obj = baff.BluffBody("Stations",station + linspace(0,1,opts.NStations));
+            obj.EtaLength = len;
         end
 
         function obj = SemiSphere(len,radius,opts)
@@ -119,16 +130,40 @@ classdef BluffBody < baff.Element
                 radius
                 opts.Material = baff.Material.Stiff;
                 opts.NStations = 10;
+                opts.Inverted = false;
+                opts.EtaFrustrum = 0;
             end
-            obj = baff.BluffBody();
-            obj.EtaLength = len;
             station = baff.station.Body(0,radius=radius,Mat=opts.Material);
-            obj.Stations = station + linspace(0,1,opts.NStations);
-%             theta = @(eta,a,b)acos(eta)
-            rad = @(eta,a,b)b*sin(acos(1-eta));
-            for i = 1:length(obj.Stations)
-                obj.Stations(i).Radius = rad(obj.Stations(i).Eta,len,radius);
+            stations = station + linspace(0,1,opts.NStations);
+            
+            dFrustrum = 1-opts.EtaFrustrum;
+            if ~opts.Inverted
+                rad = @(eta,a,b)b*sin(acos(1-(eta*dFrustrum+opts.EtaFrustrum)));
+            else
+                rad = @(eta,a,b)b*sin(acos(eta*dFrustrum));
             end
+            for i = 1:length(stations)
+                stations(i).Radius = rad(stations(i).Eta,len,radius);
+            end
+            obj = baff.BluffBody("Stations",stations);
+            obj.EtaLength = len;
+        end
+        function obj = Parabola(len,radius,opts)
+            arguments
+                len
+                radius
+                opts.Material = baff.Material.Stiff;
+                opts.NStations = 10;
+                opts.Dir = 0;
+            end
+            station = baff.station.Body(0,radius=radius,Mat=opts.Material);
+            stations = station + linspace(0,1,opts.NStations);
+            rad= @(eta,a,b)b*sqrt((eta-opts.Dir));
+            for i = 1:length(stations)
+                stations(i).Radius = rad(stations(i).Eta,len,radius);
+            end
+            obj = baff.BluffBody("Stations",stations);
+            obj.EtaLength = len;
         end
         function obj = Cone(len,radius_start,radius_end,opts)
             arguments
@@ -140,10 +175,13 @@ classdef BluffBody < baff.Element
             end
             optsCell = namedargs2cell(opts);
             obj = baff.BluffBody.Cylinder(len,radius_start,optsCell{:});
+            stations = obj.Stations;
             rs = linspace(radius_start,radius_end,opts.NStations);
             for i = 1:length(rs)
-                obj.Stations(i).Radius = rs(i);
+                stations(i).Radius = rs(i);
             end
+            obj = baff.BluffBody("Stations",stations);
+            obj.EtaLength = len;
         end
     end
 end

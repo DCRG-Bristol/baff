@@ -9,6 +9,11 @@ classdef Beam < baff.Element
         TemplateHdf5(filepath,loc);
     end
     methods
+        function val = Type(obj)
+            val ="Beam";
+        end
+    end
+    methods
         function val = eq(obj1,obj2)
             if length(obj1)~= length(obj2) || ~isa(obj2,'baff.Beam')
                 val = false;
@@ -41,6 +46,15 @@ classdef Beam < baff.Element
             mass = zeros(size(obj));
             for i = 1:length(obj)
                 mass(i) = sum(obj(i).Stations.GetEtaMass().*obj(i).EtaLength);
+            end
+        end
+        function [Xs,masses] = GetElementCoM(obj)
+            masses = zeros(1,length(obj));
+            Xs = zeros(3,length(obj));
+            for i = 1:length(obj)
+                [EtaCoM,mass] = obj(i).Stations.GetEtaCoM();
+                masses(i) = mass.*obj(i).EtaLength;
+                Xs(:,i) = obj(i).GetGlobalPos(EtaCoM);
             end
         end
     end

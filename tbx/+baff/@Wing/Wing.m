@@ -10,17 +10,51 @@ classdef Wing < baff.Beam
     properties(Dependent)
         PlanformArea
         Span
-        MAC
     end
     methods
         function A = get.PlanformArea(obj)
-                A = obj.AeroStations.GetNormArea * obj.EtaLength;
+            A = obj.AeroStations.GetNormArea * obj.EtaLength;
+        end
+        function val = Type(obj)
+            val ="Wing";
         end
         function b = get.Span(obj)
             b = abs(obj.AeroStations(end).Eta-obj.AeroStations(1).Eta) * obj.EtaLength;
         end
-        function mac = get.MAC(obj)
-            mac = obj.AeroStations.GetMAC;
+    end
+    methods(Sealed=true)   
+        function As = PlanformAreas(obj)
+            As = length(obj);
+            for i = 1;length(obj)
+                As(i) = obj(i).AeroStations.GetNormArea * obj(i).EtaLength;
+            end
+        end
+        function bs = Spans(obj)
+            bs = length(obj);
+            for i = 1;length(obj)
+                bs(i) = abs(obj(i).AeroStations(end).Eta-obj(i).AeroStations(1).Eta) * obj.EtaLength;
+            end
+        end
+        function [mac,X] = GetMGC(obj,pChord)
+            arguments
+                obj
+                pChord = 0
+            end
+            if length(obj)==1
+                [mac,eta] = obj.AeroStations.GetMGC;
+                X = obj.GetGlobalPos(eta,obj.AeroStations.GetPos(eta,pChord));
+            else
+                As = [obj.PlanformArea];
+                idx = find(cumsum(As)>=sum(As)/2,1);
+                As = [0,As];
+                target_A = sum(As)/2 - As(idx);
+                target = target_A/As(idx+1);
+                [mac,eta] = obj(idx).AeroStations.GetMGC(target);
+                X = obj(idx).GetGlobalPos(eta,obj(idx).AeroStations.GetPos(eta,pChord));
+            end
+        end
+        function [mac,X] = GetMAC(obj)
+            [mac,X] = GetMGC(obj);
         end
     end
     methods
@@ -54,6 +88,22 @@ classdef Wing < baff.Beam
         end
         function X = GetPos(obj,eta)
             X = obj.Stations.GetPos(eta)*obj.EtaLength;
+        end
+        function Area = WettedArea(obj)
+            Area = zeros(size(obj));      
+        end
+        function [sweepAngles] = GetSweepAngles(obj,cEta)
+            sweepAngles = zeros(1,length(obj)-1);
+            aSt = obj.AeroStations;
+            for i = 1:length(aSt)-1
+                A = aSt(i).StationDir;
+                p1 = aSt.GetPos(aSt(i).Eta,cEta) + obj.Stations.GetPos(aSt(i).Eta)*obj.EtaLength;
+                p2 = aSt.GetPos(aSt(i+1).Eta,cEta) + obj.Stations.GetPos(aSt(i+1).Eta)*obj.EtaLength;
+                B = p2-p1;
+                Z = cross(A,B);
+                X = cross(Z,A);
+                sweepAngles(i) = acosd(dot(X,B)/(norm(X)*norm(B)));
+            end
         end
     end
     methods(Static)
@@ -144,6 +194,7 @@ classdef Wing < baff.Beam
                 aeroStations(i).Chord = chords(i);
                 aeroStations(i).ThicknessRatio = opts.ThicknessRatio(i);
                 aeroStations(i).Twist = opts.Twist(i);
+                aeroStations(i).Airfoil = baff.Airfoil.NACA(0,0);
             end
             %make wing
             wing = baff.Wing(aeroStations,"BeamStations",beamStations,"EtaLength",span);

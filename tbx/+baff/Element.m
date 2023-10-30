@@ -14,6 +14,11 @@ classdef Element < matlab.mixin.Heterogeneous & handle
         Name string = "";    % Name of the element       
         Index = 0;          % Unique index for each element (for use in HDF5 files to link parents and children)
     end
+    methods
+        function val = Type(obj)
+            val = "Element";
+        end
+    end
     methods(Static)
         function obj = FromBaff(filepath,loc)
             error('NotImplemented')
@@ -36,8 +41,39 @@ classdef Element < matlab.mixin.Heterogeneous & handle
         end
     end
     methods
+        function Area = WettedArea(obj)
+            Area = zeros(size(obj));      
+        end
         function val = GetElementMass(obj)
             val = zeros(size(obj));
+        end
+        function val = GetElementOEM(obj)
+            val = GetElementMass(obj);
+        end
+        function [Xs,masses] = GetElementCoM(obj)
+            Xs = zeros(3,length(obj));
+            masses = zeros(1,length(obj));
+        end
+        function [X,mass] = GetCoM(obj)
+            if length(obj)>1
+                error('Currently only works on scalar calls')
+            end
+            Xs = zeros(3,length(obj));
+            masses = obj.GetElementMass();
+            for i = 1:length(obj.Children)
+                tmpObj = obj.Children(i);
+                [tmpX,tmpM] = tmpObj.GetCoM();
+                tmpX = tmpObj.A' * tmpX;
+                tmpX = tmpX + repmat(obj.GetPos(tmpObj.Eta)+tmpObj.Offset,1,length(tmpM));
+                Xs = [Xs,tmpX];
+                masses = [masses,tmpM];
+            end
+            mass = sum(masses);
+            if mass == 0
+                X = mean(Xs,2);
+            else
+                X = sum(Xs.*repmat(masses,3,1),2)./mass;
+            end
         end
         function val = ne(obj1,obj2)
             val = ~(obj1.eq(obj2));
@@ -54,7 +90,6 @@ classdef Element < matlab.mixin.Heterogeneous & handle
                 val = val && obj1(i).isAbsolute == obj2(i).isAbsolute;
                 val = val && obj1(i).Eta == obj2(i).Eta;
                 val = val && obj1(i).EtaLength == obj2(i).EtaLength;
-%                 val = val && obj1(i).Parent == obj2(i).Parent;
                 val = val && obj1(i).Children == obj2(i).Children;
                 % dont check index as its only there to facitliate read/write...
                 % dont check name to be able to see if the actual element
@@ -85,6 +120,23 @@ classdef Element < matlab.mixin.Heterogeneous & handle
         end
         function X = GetPos(obj,eta)
             X = [0;0;0];
+        end
+        function X = GetGlobalPos(obj,Eta,Offset)
+            arguments
+                obj
+                Eta
+                Offset = [0;0;0];
+            end
+            X =  obj.Offset + obj.A' * (obj.GetPos(Eta) + Offset);
+            if ~isempty(obj.Parent)
+                X = obj.Parent.GetGlobalPos(obj.Eta,X);
+            end
+        end
+        function A = GetGlobalA(obj)
+            A = obj.A';
+            if ~isempty(obj.Parent)
+                A = obj.Parent.GetGlobalA() * A;
+            end
         end
         function plt_obj = draw(obj,opts)
             arguments
@@ -152,8 +204,37 @@ classdef Element < matlab.mixin.Heterogeneous & handle
                 end
             end
         end
-        function ToBaff(obj,filepath)
-            warning('ToBaff not implemented in class %s',class(obj))
+        function ToBaff(obj,filepath,loc)
+            N = length(obj);
+            h5writeatt(filepath,[loc,'/'],'Qty', N);
+            if N ~= 0
+                %fill easy data
+                h5write(filepath,sprintf('%s/Offset',loc),[obj.Offset],[1 1],[3 N]);
+                h5write(filepath,sprintf('%s/Eta',loc),[obj.Eta],[1 1],[1 N]);
+                h5write(filepath,sprintf('%s/A',loc),reshape([obj.A],9,[]),[1 1],[9 N]);
+                h5write(filepath,sprintf('%s/Name',loc),[obj.Name],[1 1],[1 N]);
+                h5write(filepath,sprintf('%s/EtaLength',loc),[obj.EtaLength],[1 1],[1 N]);
+                h5write(filepath,sprintf('%s/Index',loc),[obj.Index],[1 1],[1 N]);
+                pIdx = zeros(1,N);
+                for i = 1:N
+                    if ~isempty(obj(i).Parent)
+                        pIdx(i) = obj(i).Parent.Index;
+                    end
+                end
+                h5write(filepath,sprintf('%s/Parent',loc),pIdx,[1 1],[1 N]);
+                %deal with children
+                maxChildren = max(arrayfun(@(x)length(x.Children),obj));
+                if maxChildren == 0
+                    h5write(filepath,sprintf('%s/Children',loc),zeros(1,N),[1,1],[1 N]);
+                else
+                    child_idx = zeros(maxChildren,N);
+                    for i = 1:length(obj)
+                        nc = length(obj(i).Children);
+                        child_idx(1:nc,i) = arrayfun(@(x)x.Index,obj(i).Children);
+                    end
+                    h5write(filepath,sprintf('%s/Children',loc),child_idx,[1,1],[maxChildren N]);
+                end
+            end
         end
     end
     methods(Sealed)

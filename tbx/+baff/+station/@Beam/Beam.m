@@ -48,6 +48,37 @@ classdef Beam < baff.station.Base
             obj.tau = opts.tau;
             obj.Mat = opts.Mat;
         end
+        function [EtaCoM,mass] = GetEtaCoM(obj)
+            if length(obj)==1
+                mass = 0;
+                return;
+            end
+            masses = zeros(1,length(obj)-1);
+            etaCoMs = zeros(1,length(obj)-1);
+            for i = 1:length(obj)-1
+                z = obj(i+1).Eta-obj(i).Eta;
+                A1 = obj(i).A;
+                A2 = obj(i+1).A;
+                if A1==A2
+                    etaCoMs(i) = obj(i).Eta + z/2;
+                    masses(i) = A1*z*obj(i).Mat.rho*norm(obj(i).EtaDir);
+                else
+                    z_p = sqrt(A1)*z/(sqrt(A1)-sqrt(A2));
+                    vol_p = z_p/3*A1;
+                    z_bar = z_p-z;
+                    vol_bar = z_bar/3*A2;
+                    vol = vol_p-vol_bar;
+                    etaCoMs(i) = (vol_p*z_p/4-vol_bar*(z+z_bar/4))/vol + obj(i).Eta;
+                    masses(i) = vol*obj(i).Mat.rho*norm(obj(i).EtaDir);
+                end
+            end
+            mass = sum(masses);
+            if mass == 0
+                EtaCoM = 0;
+            else
+                EtaCoM = sum(masses.*etaCoMs)/mass;
+            end
+        end
         function mass = GetEtaMass(obj)
             if length(obj)==1
                 mass = 0;
@@ -59,7 +90,7 @@ classdef Beam < baff.station.Base
                 A1 = obj(i).A;
                 A2 = obj(i+1).A;
                 vol = delta/3*(A1+A2+sqrt(A1*A2));
-                mass(i) = vol*obj(i).Mat.rho;
+                mass(i) = vol*obj(i).Mat.rho*norm(obj(i).EtaDir);
             end
         end
         function stations = interpolate(obj,etas)
