@@ -104,7 +104,10 @@ classdef Model < handle
             names = fieldnames(obj);
             for i = 1:length(names)
                 if isa(obj.(names{i}),'baff.Element') && ~strcmp(names{i},'Orphans')
-                    val = val + sum(obj.(names{i}).GetElementMass());
+                    tmp = obj.(names{i});
+                    for j = 1:length(tmp)
+                        val = val + tmp(j).GetElementMass();
+                    end
                 end
             end
         end
@@ -113,7 +116,10 @@ classdef Model < handle
             names = fieldnames(obj);
             for i = 1:length(names)
                 if isa(obj.(names{i}),'baff.Element') && ~strcmp(names{i},'Orphans')
-                    val = val + sum(obj.(names{i}).GetElementOEM());
+                    tmp = obj.(names{i});
+                    for j = 1:length(tmp)
+                        val = val + tmp(j).GetElementOEM();
+                    end
                 end
             end
         end
