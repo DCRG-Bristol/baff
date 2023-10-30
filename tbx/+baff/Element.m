@@ -58,8 +58,9 @@ classdef Element < matlab.mixin.Heterogeneous & handle
             if length(obj)>1
                 error('Currently only works on scalar calls')
             end
-            Xs = zeros(3,length(obj));
-            masses = obj.GetElementMass();
+%             Xs = zeros(3,length(obj));
+            [Xs,masses] = obj.GetElementCoM();
+%             masses = obj.GetElementMass();
             for i = 1:length(obj.Children)
                 tmpObj = obj.Children(i);
                 [tmpX,tmpM] = tmpObj.GetCoM();
@@ -73,6 +74,9 @@ classdef Element < matlab.mixin.Heterogeneous & handle
                 X = mean(Xs,2);
             else
                 X = sum(Xs.*repmat(masses,3,1),2)./mass;
+            end
+            if any(isnan(X))
+                error('NaN pos found')
             end
         end
         function val = ne(obj1,obj2)
