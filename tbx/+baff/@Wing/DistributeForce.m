@@ -4,7 +4,8 @@ function obj = DistributeForce(obj,Nele,opts)
         Nele
         opts.BeamOffset = 0;
         opts.tag = 'wing_force';
-        opts.Etas (1,2) double = [nan nan];
+        opts.EtaLimits (1,2) double = [nan nan];
+        opts.Etas (1,:) double = [];
         opts.IncludeTips = false;
         opts.Force = [0 0 1];
     end
@@ -12,19 +13,24 @@ function obj = DistributeForce(obj,Nele,opts)
     % point proportional to the chord at each point
     % if IncludeTips include masses at both ends, otherwise spread equally
     % across
-    if isnan(opts.Etas(1))
-        Etas = [obj.AeroStations([1,end]).Eta];
+    if ~isempty(opts.Etas)
+        etas = opts.Etas;
     else
-        Etas = opts.Etas;
+        if isnan(opts.EtaLimits(1))
+            Etas = [obj.AeroStations([1,end]).Eta];
+        else
+            Etas = opts.Etas;
+        end
+        if opts.IncludeTips
+            etas = linspace(Etas(1),Etas(2),Nele);
+        else
+            etas = linspace(Etas(1),Etas(2),(2*Nele)+1);
+            etas = etas(2:2:(end-1));
+        end
     end
-    if opts.IncludeTips
-        etas = linspace(Etas(1),Etas(2),Nele);
-    else
-        etas = linspace(Etas(1),Etas(2),(2*Nele)+1);
-        etas = etas(2:2:(end-1));
-    end
+    
     secs = obj.AeroStations.interpolate(etas);
-    for i = 1:Nele
+    for i = 1:length(etas)
         tmp_p = baff.Point("eta",etas(i),"Name",sprintf('%s_%.0f',opts.tag,i),"Force",opts.Force);
         if opts.BeamOffset ~= 0
             tmp_p.Offset = secs(i).StationDir./norm(secs(i).StationDir)*opts.BeamOffset*secs(i).Chord;
