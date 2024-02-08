@@ -28,7 +28,7 @@ classdef Element < matlab.mixin.Heterogeneous & handle
         function val = GetMass(obj,opts)
             arguments
                 obj
-                opts.IncludeChildren (1,1) logical = false;
+                opts.IncludeChildren (1,1) logical = true;
             end
             val = zeros(size(obj));
             for i = 1:length(obj)
@@ -38,7 +38,7 @@ classdef Element < matlab.mixin.Heterogeneous & handle
                     val(i) = val(i) + sum(obj(i).Children.GetMass(optsCell{:}));
                 end
             end
-        end
+        end        
     end
     methods
         function Area = WettedArea(obj)
@@ -53,6 +53,10 @@ classdef Element < matlab.mixin.Heterogeneous & handle
         function [Xs,masses] = GetElementCoM(obj)
             Xs = zeros(3,length(obj));
             masses = zeros(1,length(obj));
+        end
+        function [X,mass] = GetGlobalCoM(obj)
+            [X,mass] = obj.GetCoM();
+            X = obj.GetGlobalPos(0,X);
         end
         function [X,mass] = GetCoM(obj)
             if length(obj)>1
