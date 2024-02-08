@@ -3,6 +3,10 @@ classdef ControlSurface
         Name string = ""    % Name
         Etas (2,1) double = [0;1];       % start and end eta along the wing
         pChord (2,1) double = [0.1;0.1]; % Percentage of chord that is control surface at either end
+
+        % linked control surface (control surface the motion of this one is linked to)
+        LinkedSurface = baff.ControlSurface.empty;
+        LinkedCoefficent = 1; % gain of the linked surface
     end
     methods (Static)
         obj = FromBaff(filepath,loc);

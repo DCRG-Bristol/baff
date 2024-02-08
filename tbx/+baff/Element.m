@@ -28,7 +28,7 @@ classdef Element < matlab.mixin.Heterogeneous & handle
         function val = GetMass(obj,opts)
             arguments
                 obj
-                opts.IncludeChildren (1,1) logical = false;
+                opts.IncludeChildren (1,1) logical = true;
             end
             val = zeros(size(obj));
             for i = 1:length(obj)
@@ -38,7 +38,7 @@ classdef Element < matlab.mixin.Heterogeneous & handle
                     val(i) = val(i) + sum(obj(i).Children.GetMass(optsCell{:}));
                 end
             end
-        end
+        end        
     end
     methods
         function Area = WettedArea(obj)
@@ -54,12 +54,17 @@ classdef Element < matlab.mixin.Heterogeneous & handle
             Xs = zeros(3,length(obj));
             masses = zeros(1,length(obj));
         end
+        function [X,mass] = GetGlobalCoM(obj)
+            [X,mass] = obj.GetCoM();
+            X = obj.GetGlobalPos(0,X);
+        end
         function [X,mass] = GetCoM(obj)
             if length(obj)>1
                 error('Currently only works on scalar calls')
             end
-            Xs = zeros(3,length(obj));
-            masses = obj.GetElementMass();
+%             Xs = zeros(3,length(obj));
+            [Xs,masses] = obj.GetElementCoM();
+%             masses = obj.GetElementMass();
             for i = 1:length(obj.Children)
                 tmpObj = obj.Children(i);
                 [tmpX,tmpM] = tmpObj.GetCoM();
@@ -73,6 +78,9 @@ classdef Element < matlab.mixin.Heterogeneous & handle
                 X = mean(Xs,2);
             else
                 X = sum(Xs.*repmat(masses,3,1),2)./mass;
+            end
+            if any(isnan(X))
+                error('NaN pos found')
             end
         end
         function val = ne(obj1,obj2)

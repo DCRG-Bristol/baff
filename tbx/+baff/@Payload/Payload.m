@@ -53,9 +53,9 @@ classdef Payload < baff.Mass
         function [Xs,masses] = GetElementCoM(obj)
             masses = [obj.mass].*[obj.FillingLevel];
             Xs = zeros(3,length(obj));
-            for i = 1:length(obj)
-                Xs(:,i) = obj(i).GetGlobalPos(0,obj(i).Offset);
-            end
+            % for i = 1:length(obj)
+            %     Xs(:,i) = obj(i).GetGlobalPos(0,obj(i).Offset);
+            % end
         end
         function p = draw(obj,opts)
             arguments
