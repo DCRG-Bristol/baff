@@ -13,6 +13,8 @@ classdef Element < matlab.mixin.Heterogeneous & handle
         
         Name string = "";    % Name of the element       
         Index = 0;          % Unique index for each element (for use in HDF5 files to link parents and children)
+
+        Meta struct = struct; % Meta data for the element
     end
     methods
         function val = Type(obj)
@@ -172,6 +174,7 @@ classdef Element < matlab.mixin.Heterogeneous & handle
             Names = h5read(filepath,sprintf('%s/Name',loc));
             etaLengths = h5read(filepath,sprintf('%s/EtaLength',loc));
             Indexs = h5read(filepath,sprintf('%s/Index',loc));
+            Metas = h5read(filepath,sprintf('%s/Meta',loc));
             for i = 1:length(obj)
                 obj(i).Offset = offs(:,i);
                 obj(i).Eta = etas(i);
@@ -179,37 +182,7 @@ classdef Element < matlab.mixin.Heterogeneous & handle
                 obj(i).Name = Names(i);
                 obj(i).EtaLength = etaLengths(i);
                 obj(i).Index = Indexs(i);
-            end
-        end
-        function PropToBaff(obj,filepath,loc)
-            N = length(obj);
-            if N ~= 0
-                %fill easy data
-                h5write(filepath,sprintf('%s/Offset',loc),[obj.Offset],[1 1],[3 N]);
-                h5write(filepath,sprintf('%s/Eta',loc),[obj.Eta],[1 1],[1 N]);
-                h5write(filepath,sprintf('%s/A',loc),reshape([obj.A],9,[]),[1 1],[9 N]);
-                h5write(filepath,sprintf('%s/Name',loc),[obj.Name],[1 1],[1 N]);
-                h5write(filepath,sprintf('%s/EtaLength',loc),[obj.EtaLength],[1 1],[1 N]);
-                h5write(filepath,sprintf('%s/Index',loc),[obj.Index],[1 1],[1 N]);
-                pIdx = zeros(1,N);
-                for i = 1:N
-                    if ~isempty(obj(i).Parent)
-                        pIdx(i) = obj(i).Parent.Index;
-                    end
-                end
-                h5write(filepath,sprintf('%s/Parent',loc),pIdx,[1 1],[1 N]);
-                %deal with children
-                maxChildren = max(arrayfun(@(x)length(x.Children),obj));
-                if maxChildren == 0
-                    h5write(filepath,sprintf('%s/Children',loc),zeros(1,N),[1,1],[1 N]);
-                else
-                    child_idx = zeros(maxChildren,N);
-                    for i = 1:length(obj)
-                        nc = length(obj(i).Children);
-                        child_idx(1:nc,i) = arrayfun(@(x)x.Index,obj(i).Children);
-                    end
-                    h5write(filepath,sprintf('%s/Children',loc),child_idx,[1,1],[maxChildren N]);
-                end
+                obj(i).Meta = jsondecode(Metas(i));
             end
         end
         function ToBaff(obj,filepath,loc)
@@ -223,6 +196,7 @@ classdef Element < matlab.mixin.Heterogeneous & handle
                 h5write(filepath,sprintf('%s/Name',loc),[obj.Name],[1 1],[1 N]);
                 h5write(filepath,sprintf('%s/EtaLength',loc),[obj.EtaLength],[1 1],[1 N]);
                 h5write(filepath,sprintf('%s/Index',loc),[obj.Index],[1 1],[1 N]);
+                h5write(filepath,sprintf('%s/Meta',loc),arrayfun(@(x)string(jsonencode(x.Meta)),obj),[1 1],[1 N]);
                 pIdx = zeros(1,N);
                 for i = 1:N
                     if ~isempty(obj(i).Parent)
@@ -275,7 +249,7 @@ classdef Element < matlab.mixin.Heterogeneous & handle
             h5create(filepath,sprintf('%s/Index',loc),[1 inf],"Chunksize",[1,10]);
             h5create(filepath,sprintf('%s/Parent',loc),[1 inf],"Chunksize",[1,10],"Fillvalue",nan);
             h5create(filepath,sprintf('%s/Children',loc),[256 inf],"Chunksize",[256,10],"Fillvalue",nan);
-
+            h5create(filepath,sprintf('%s/Meta',loc),[1 inf],"Chunksize",[1,10],Datatype="string");
             h5writeatt(filepath,[loc,'/'],'Qty', 0);
         end
     end

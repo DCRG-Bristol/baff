@@ -5,7 +5,6 @@ classdef Wing < baff.Beam
         AeroStations (1,:) baff.station.Aero;
         ControlSurfaces (1,:) baff.ControlSurface;
     end
-    
 
     properties(Dependent)
         PlanformArea
