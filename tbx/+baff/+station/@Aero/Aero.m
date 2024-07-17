@@ -181,7 +181,7 @@ classdef Aero < baff.station.Base
                 cEtas (1,2) double = [0 1]
                 Etas (1,2) double = [nan nan]
             end
-            vol = sum(obj.GetNormVolumes(cEtas));
+            vol = sum(obj.GetNormVolumes(cEtas,Etas));
         end
         function vols = GetNormVolumes(obj,cEtas,Etas)
             arguments

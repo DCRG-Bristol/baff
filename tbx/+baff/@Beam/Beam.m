@@ -39,6 +39,9 @@ classdef Beam < baff.Element
             end
             obj.EtaLength = opts.EtaLength;
         end
+        function x = GetBeamLength(obj)
+            x = obj.Stations.GetLocus()*obj.EtaLength;
+        end
         function X = GetPos(obj,eta)
             X = obj.Stations.GetPos(eta)*obj.EtaLength;
         end
