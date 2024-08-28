@@ -98,7 +98,7 @@ classdef Aero < baff.station.Base
             points = repmat(stDir,1,length(pChord)).*+(beamLoc - pChord);
             X = baff.util.Rodrigues(perp,deg2rad(twist))*points.*chord;
         end
-        function p = draw(obj,opts)
+        function points = getDrawCoords(obj,opts)
             arguments
                 obj
                 opts.Origin (3,1) double = [0,0,0];
@@ -109,6 +109,14 @@ classdef Aero < baff.station.Base
             z = cross(obj.EtaDir./norm(obj.EtaDir),stDir);
             perp = cross(stDir,z);
             points = opts.Origin + opts.A*baff.util.Rodrigues(perp,deg2rad(obj.Twist))*le_te;
+        end
+        function p = draw(obj,opts)
+            arguments
+                obj
+                opts.Origin (3,1) double = [0,0,0];
+                opts.A (3,3) double = eye(3);
+            end
+            points = obj.getDrawCoords(Origin=opts.Origin,A=opts.A);
             p = plot3(points(1,:),points(2,:),points(3,:),'-o');
             p.Color = 'k';
             p.Tag = 'WingSection';
