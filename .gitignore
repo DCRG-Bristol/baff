@@ -3,3 +3,5 @@
 *.f04
 *.log
 *.m~
+.venv/*
+docs/build/*
