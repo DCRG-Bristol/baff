@@ -9,7 +9,7 @@ and this project adheres to [Explicit Versioning](https://github.com/exadra37-ve
 ### Added
 - [0.1.0.2] Method to get beam length
 - [0.1.0.4] Added way to extract Aero draw coords
-- [0.1.0.5] Added Sphinx documentation
+- [0.1.0.5] Added Sphinx documentation and deployment
 ### Changed
 ### Deprecated
 ### Removed
