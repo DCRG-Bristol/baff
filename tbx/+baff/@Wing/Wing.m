@@ -34,6 +34,27 @@ classdef Wing < baff.Beam
                 bs(i) = abs(obj(i).AeroStations(end).Eta-obj(i).AeroStations(1).Eta) * obj.EtaLength;
             end
         end
+        function p = GetGlobalWingPos(obj,etas,pChord)
+            arguments
+                obj baff.Wing
+                etas (1,:) double
+                pChord (1,:) double
+            end
+            if length(obj)~=1
+                error('Can only inspect one wing element at a time')
+            end
+            A_g = obj.GetGlobalA;
+            O_g = obj.GetGlobalPos(0);
+
+            p = zeros(3,length(etas)*length(pChord));
+            NC = length(pChord);
+            for i = 1:length(etas)
+                b = obj.Stations.GetPos(etas(i))*obj.EtaLength;
+                tmp = obj.AeroStations.GetPos(etas(i),pChord);
+                tmp = tmp+repmat(b,1,size(tmp,2));
+                p(:,((i-1)*(NC)+1):(i*NC)) = A_g*tmp + O_g;
+            end
+        end
         function [mac,X] = GetMGC(obj,pChord)
             arguments
                 obj
