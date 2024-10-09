@@ -1,0 +1,210 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Package Installer for Matlab (pim) &mdash; dcrg-baff 0.0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=7ab3649f" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=9e850157"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Bristol Aircraft File Format (baff)" href="baff.html" />
+    <link rel="prev" title="Introduction" href="intro.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            dcrg-baff
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Overview:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Packages:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Package Installer for Matlab (pim)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#quickstart">Quickstart</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#install-a-single-package">Install a single package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#environments-collections">Environments (“Collections”)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#what-it-does">What it does</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#requirements">Requirements</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="baff.html">Bristol Aircraft File Format (baff)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ads.html">ADS</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">dcrg-baff</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Package Installer for Matlab (pim)</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/pim.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="package-installer-for-matlab-pim">
+<h1>Package Installer for Matlab (pim)<a class="headerlink" href="#package-installer-for-matlab-pim" title="Link to this heading"></a></h1>
+<p>A simple package manager for Matlab (inspired by <a class="reference external" href="https://github.com/pypa/pip">pip</a>. Downloads packages from Matlab Central’s File Exchange, GitHub repositories, or any other url pointing to a .zip file.</p>
+<p>This has been slightly edited to suite the style used in the dcrg repositories.</p>
+<section id="quickstart">
+<h2>Quickstart<a class="headerlink" href="#quickstart" title="Link to this heading"></a></h2>
+<p>Download/clone this repo and add it to your Matlab path. To persevre this after install please add the following two line to you <a class="reference external" href="https://uk.mathworks.com/help/matlab/ref/startup.html">startup.m script</a>. Now try the following:</p>
+<ul class="simple">
+<li><p><cite>pim install [package-name]</cite>: install package by name</p></li>
+<li><p><cite>pim uninstall [package-name]</cite>: remove package, if installed</p></li>
+<li><p><cite>pim search [package-name]</cite>: search for package given name (checks Github and Matlab File Exchange)</p></li>
+<li><p><cite>pim freeze</cite>: lists all packages currently installed</p></li>
+<li><p><cite>pim init</cite>: adds all installed packages to path (run when Matlab starts up)</p></li>
+</ul>
+<section id="install-a-single-package">
+<h3>Install a single package<a class="headerlink" href="#install-a-single-package" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>Install (searches FileExchange and Github)::</dt><dd><p>pim install export_fig</p>
+</dd>
+</dl>
+<p>When installing, mpm checks for a file in the package called <cite>install.m</cite>, which it will run after confirming (or add <cite>–force</cite> to auto-confirm). It also checks for a file called <cite>pathlist.txt</cite> which tells it which paths (if any) to add.</p>
+<dl class="simple">
+<dt>Install a Github release (by tag, branch, or commit)::</dt><dd><p>pim install matlab2tikz -t 1.0.0
+pim install matlab2tikz -t develop
+pim install matlab2tikz -t ca56d9f</p>
+</dd>
+<dt>Uninstall::</dt><dd><p>pim uninstall matlab2tikz</p>
+</dd>
+</dl>
+<p>When uninstalling, pim checks for a file in the package called <cite>uninstall.m</cite>, which it will run after confirming (or add <cite>–force</cite> to auto-confirm).</p>
+<dl class="simple">
+<dt>Search without installing::</dt><dd><p>pim search export_fig</p>
+</dd>
+<dt>Install from a url::</dt><dd><p>pim install covidx -u <a class="reference external" href="https://www.mathworks.com/matlabcentral/fileexchange/76213-covidx">https://www.mathworks.com/matlabcentral/fileexchange/76213-covidx</a>
+pim install export_fig -u <a class="reference external" href="https://github.com/altmany/export_fig.git">https://github.com/altmany/export_fig.git</a></p>
+</dd>
+</dl>
+<p>(Note that when specifying Github repo urls you must add the ‘.git’ to the url.)</p>
+<dl class="simple">
+<dt>Install local package::</dt><dd><p>pim install my_package -u path/to/package –local</p>
+</dd>
+</dl>
+<p>The above will copy <cite>path/to/package</cite> into the default install directory. To skip the copy, add <cite>-e</cite> to the above command.</p>
+<dl class="simple">
+<dt>Overwrite existing packages::</dt><dd><p>pim install matlab2tikz –force</p>
+</dd>
+<dt>Install/uninstall packages in a specific directory::</dt><dd><p>pim install matlab2tikz -d /Users/mobeets/mypath</p>
+</dd>
+</dl>
+<p>Note that the default installation directory is <cite>pim-packages/</cite>.</p>
+</section>
+<section id="environments-collections">
+<h3>Environments (“Collections”)<a class="headerlink" href="#environments-collections" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>pim has rudimentary support for managing collections of packages. To specify which collection to act on, use <cite>-c [collection_name]</cite>. Default collection is “default”::</dt><dd><dl class="simple">
+<dt>pim install cbrewer -c test</dt><dd><p>Using collection “test”
+Collecting ‘cbrewer’…
+Found url: <a class="reference external" href="https://www.mathworks.com/matlabcentral/fileexchange/58350-cbrewer2?download=true">https://www.mathworks.com/matlabcentral/fileexchange/58350-cbrewer2?download=true</a>
+Downloading <a class="reference external" href="https://www.mathworks.com/matlabcentral/fileexchange/58350-cbrewer2?download=true">https://www.mathworks.com/matlabcentral/fileexchange/58350-cbrewer2?download=true</a>…</p>
+</dd>
+<dt>pim init -c test</dt><dd><p>Using collection “test”
+Adding to path: /Users/mobeets/code/pim/pim-packages/pim-collections/test/cbrewer
+Added paths for 1 package(s).</p>
+</dd>
+</dl>
+</dd>
+<dt>Installing multiple packages from file::</dt><dd><p>pim install -i /Users/mobeets/example/requirements.txt</p>
+</dd>
+</dl>
+<p>Specifying a requirements file lets you install or search for multiple packages at once. See ‘requirements-example.txt’ for an example. Make sure to provide an absolute path to the file!</p>
+<p>To automatically confirm installation without being prompted, set <cite>–approve</cite>. Note that this is only available when installing packages from file.</p>
+</section>
+</section>
+<section id="what-it-does">
+<h2>What it does<a class="headerlink" href="#what-it-does" title="Link to this heading"></a></h2>
+<p>By default, pim installs all Matlab packages to the directory <cite>pim-packages/</cite>. (You can edit <cite>pim_config.m</cite> to specify a custom default installation directory.)</p>
+<p>If you restart Matlab, you’ll want to run <cite>pim init</cite> to re-add all the folders in the installation directory to your Matlab path. Better yet, just run <cite>pim init</cite> from your Matlab [startup script](<a class="reference external" href="http://www.mathworks.com/help/matlab/ref/startup.html">http://www.mathworks.com/help/matlab/ref/startup.html</a>).</p>
+</section>
+<section id="troubleshooting">
+<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h2>
+<p>Because there’s no standard directory structure for a Matlab package, automatically adding paths can get a bit messy. When mpm downloads a package, it adds a single folder within that package to your Matlab path. If there are no <cite>*.m</cite> files in the package’s base directory, it looks in folders called ‘bin’, ‘src’, ‘lib’, or ‘code’ instead. You can specify the name of an internal directory by passing in an <cite>-n</cite> or <cite>internaldir</cite> argument. To install a package without modifying any s, set <cite>–nos</cite>. Or to add _all_ subfolders in a package to the , set <cite>–alls</cite>.</p>
+<p>pim keeps track of the packages it’s downloaded in a file called <cite>pim.mat</cite>, within each installation directory.</p>
+</section>
+<section id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Link to this heading"></a></h2>
+<p>pim should work cross-platform on versions Matlab 2014b and later. Also note that, starting with Matlab 2022, you may see a warning when using pim, as Matlab includes a built-in command of the same name (used for installing Matlab products). You may need to rename the file <cite>pim.m</cite> to something else, and then rename the function name on line 1 of this file to match, as well as the line containing “help pim”.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="intro.html" class="btn btn-neutral float-left" title="Introduction" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="baff.html" class="btn btn-neutral float-right" title="Bristol Aircraft File Format (baff)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Fintan Healy.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
