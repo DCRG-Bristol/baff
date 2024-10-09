@@ -15,7 +15,7 @@ Package Installer for Matlab (pim)
 https://github.com/DCRG-Bristol/pim
 
 A simple package manager for Matlab (inspired by pip). can install local pacakges or download packages from Matlab Central's File Exchange, GitHub repositories, or any other url pointing to a .zip file.
-This is a slightly adapted version of the original package installer developed by mobeets. The original version can be found here: `https://uk.mathworks.com/matlabcentral/fileexchange/54548-mobeets-mpm`
+This is a slightly adapted version of the original package installer developed by mobeets. The original version can be found `here <https://uk.mathworks.com/matlabcentral/fileexchange/54548-mobeets-mpm>`_.
 All the packages listed here can be installed with this package manager.
 
 Matlab Utilities
