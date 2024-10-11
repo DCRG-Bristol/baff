@@ -14,6 +14,9 @@ classdef Material
         function val = ne(obj1,obj2)
             val = ~(obj1.eq(obj2));
         end
+        function obj = ZeroDensity(obj)
+            obj.rho = 0;
+        end
         function val = eq(obj1,obj2)
             if length(obj1)~= length(obj2) || ~isa(obj2,'baff.Material')
                 val = false;
@@ -61,6 +64,10 @@ classdef Material
         function obj = Stiff()
             obj = baff.Material(inf,0,0);
             obj.Name = "Stiff";
+        end
+        function obj = Unity()
+            obj = baff.Material(1,-0.5,1);
+            obj.Name = "Unity";
         end
     end
 end

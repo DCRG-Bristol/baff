@@ -11,6 +11,7 @@ and this project adheres to [Explicit Versioning](https://github.com/exadra37-ve
 - [0.1.0.4] Added way to extract Aero draw coords
 - [0.1.0.5] Added method to extrtacty global wing positions
 - [0.1.0.5] Added Sphinx documentation and deployment to github page
+- [0.1.0.6] Added spanwise mass properties to aero stations
 ### Changed
 ### Deprecated
 ### Removed

@@ -10,6 +10,12 @@ classdef Aero < baff.station.Base
         ThicknessRatio double = 1;
         LiftCurveSlope double = 2*pi;
     end
+    %inertial properties
+    properties
+        LinearDensity double = 0;               % wings linear density
+        LinearInertia (3,3) double = zeros(3);  % spanwise moment of inertia matrix
+        MassLoc double = 0.5;                   %location of mass as percentage of chord
+    end
     methods (Static)
         obj = FromBaff(filepath,loc);
         TemplateHdf5(filepath,loc);
@@ -27,6 +33,9 @@ classdef Aero < baff.station.Base
                 val = val && obj1(i).BeamLoc == obj2(i).BeamLoc;
             end
         end
+        function val = HasMass(obj)
+            val = arrayfun(@(x)x.LinearDensity>0||nnz(x.LinearInertia)>0,obj);
+        end
         function obj = Aero(eta,chord,beamLoc,opts)
             arguments
                 eta
@@ -38,6 +47,9 @@ classdef Aero < baff.station.Base
                 opts.Airfoil = baff.Airfoil.NACA_sym;
                 opts.ThicknessRatio = 1;
                 opts.LiftCurveSlope = 2*pi;
+                opts.LinearDensity = 0;
+                opts.MassLoc = 0.5;
+                opts.LinearInertia = zeros(3);
             end
             obj.Eta = eta;
             obj.Chord = chord;
@@ -48,6 +60,9 @@ classdef Aero < baff.station.Base
             obj.Airfoil = opts.Airfoil;
             obj.ThicknessRatio = opts.ThicknessRatio;
             obj.LiftCurveSlope = opts.LiftCurveSlope;
+            obj.LinearInertia = opts.LinearInertia;
+            obj.MassLoc = opts.MassLoc;
+            obj.LinearDensity = opts.LinearDensity;
         end
         function stations = interpolate(obj,etas)
             old_eta = [obj.Eta];
