@@ -11,6 +11,7 @@ DCRG Aeroelastic Development Tools Documentation
    :caption: Overview:
    
    intro
+   FAQ
 
 .. toctree::
    :maxdepth: 1
@@ -19,3 +20,9 @@ DCRG Aeroelastic Development Tools Documentation
    pim
    baff
    ads
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Examples:
+
+   GolandWing

@@ -51,6 +51,11 @@ https://github.com/DCRG-Bristol/flexcast
 
 A conceptual aircraft sizing tool that can be used to size flexible aircraft. The tool is based on the BAFF and ADS packages and can be used to generate a Nastran model of a flexible aircraft, run aeroelastic analysis and size the aircrafts wing structure.
 
+LACA Framework
+**************
+https://github.com/DCRG-Bristol/LACA
+
+A unpolished collection of function to generate VLM models for aeroealstic anaylsis.
 
 Installation
 ------------
@@ -70,6 +75,7 @@ To install the latest verison of all the packages run the following commands in 
    pim install dcrg-bristol/baff
    pim install dcrg-bristol/ads
    pim install dcrg-bristol/flexcast
+   pim install dcrg-bristol/laca
 
 At this point all the latest toolboxes are installed. If you write the MATLAB command “pim freeze” it should show the installed toolboxes. This may seem like a lot of faff just to some examples, but the point here is that these codes are modular, and by being able to track which versions are installed on your machine it will be easier for you / other people to update the codebases on their machines and ... dare I say it … collaborate...
 
