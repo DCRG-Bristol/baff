@@ -12,6 +12,7 @@ and this project adheres to [Explicit Versioning](https://github.com/exadra37-ve
 - [0.1.0.5] Added method to extrtacty global wing positions
 - [0.1.0.5] Added Sphinx documentation and deployment to github page
 - [0.1.0.6] Added spanwise mass properties to aero stations
+- [0.1.0.7] Added Goland Wing Example
 ### Changed
 ### Deprecated
 ### Removed
