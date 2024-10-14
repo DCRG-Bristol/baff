@@ -52,7 +52,7 @@ classdef Wing < baff.Beam
                 b = obj.Stations.GetPos(etas(i))*obj.EtaLength;
                 tmp = obj.AeroStations.GetPos(etas(i),pChord);
                 tmp = tmp+repmat(b,1,size(tmp,2));
-                p(:,((i-1)*(NC)+1):(i*NC)) = A_g*tmp + O_g;
+                p(:,((i-1)*(NC)+1):(i*NC)) =A_g'*tmp + O_g;
             end
         end
         function [mac,X] = GetMGC(obj,pChord)
