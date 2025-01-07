@@ -196,7 +196,7 @@ classdef Element < matlab.mixin.Heterogeneous & handle
                 h5write(filepath,sprintf('%s/Name',loc),[obj.Name],[1 1],[1 N]);
                 h5write(filepath,sprintf('%s/EtaLength',loc),[obj.EtaLength],[1 1],[1 N]);
                 h5write(filepath,sprintf('%s/Index',loc),[obj.Index],[1 1],[1 N]);
-                h5write(filepath,sprintf('%s/Meta',loc),arrayfun(@(x)string(jsonencode(x.Meta)),obj),[1 1],[1 N]);
+                h5write(filepath,sprintf('%s/Meta',loc),arrayfun(@(x)string(jsonencode(x.Meta)),obj).',[1 1],[1 N]);
                 pIdx = zeros(1,N);
                 for i = 1:N
                     if ~isempty(obj(i).Parent)
