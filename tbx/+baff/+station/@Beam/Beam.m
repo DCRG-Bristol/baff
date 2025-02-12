@@ -59,7 +59,7 @@ classdef Beam < baff.station.Base
                 z = obj(i+1).Eta-obj(i).Eta;
                 A1 = obj(i).A;
                 A2 = obj(i+1).A;
-                if A1==A2
+                if abs(A1-A2)<1e-10
                     etaCoMs(i) = obj(i).Eta + z/2;
                     masses(i) = A1*z*obj(i).Mat.rho*norm(obj(i).EtaDir);
                 else
