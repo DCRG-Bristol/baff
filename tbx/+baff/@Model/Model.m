@@ -51,23 +51,26 @@ classdef Model < handle
                 fig_handle = figure;
             end
             hold on
-            UserData.obj = obj;
-            fig_handle.UserData = UserData;
+            
             xlabel('X');
             ylabel('Y');
             zlabel('Z');
-            set(fig_handle, 'WindowButtonDownFcn',    @baff.util.plotting.BtnDwnCallback, ...
-                      'WindowScrollWheelFcn',   @baff.util.plotting.ScrollWheelCallback, ...
-                      'KeyPressFcn',            @baff.util.plotting.KeyPressCallback, ...
-                      'WindowButtonUpFcn',      @baff.util.plotting.BtnUpCallback)
             %draw the elements
             plt_obj = [];
             for i = 1:length(obj.Orphans)
                 p = obj.Orphans(i).draw();
                 plt_obj = [plt_obj,p];
             end
-            [names,idx] = unique(arrayfun(@(x)string(x.Tag),plt_obj));
-            lg = legend(plt_obj(idx),names,'ItemHitFcn', @baff.util.plotting.cbToggleVisible);
+            if isa(fig_handle,'matlab.ui.Figure')
+                UserData.obj = obj;
+                fig_handle.UserData = UserData;
+                set(fig_handle, 'WindowButtonDownFcn',    @baff.util.plotting.BtnDwnCallback, ...
+                      'WindowScrollWheelFcn',   @baff.util.plotting.ScrollWheelCallback, ...
+                      'KeyPressFcn',            @baff.util.plotting.KeyPressCallback, ...
+                      'WindowButtonUpFcn',      @baff.util.plotting.BtnUpCallback)
+                [names,idx] = unique(arrayfun(@(x)string(x.Tag),plt_obj));
+                lg = legend(plt_obj(idx),names,'ItemHitFcn', @baff.util.plotting.cbToggleVisible);
+            end
         end
 
         function UpdateIdx(obj)
