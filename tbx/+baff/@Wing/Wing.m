@@ -106,6 +106,9 @@ classdef Wing < baff.Beam
             obj.AeroStations = aeroStations;
             obj.EtaLength = opts.EtaLength;
         end
+        function X = GetWingPos(obj,eta,pChord)
+            X = obj.GetPos(eta) + obj.AeroStations.GetPos(eta,pChord);
+        end
         function X = GetPos(obj,eta)
             X = obj.Stations.GetPos(eta)*obj.EtaLength;
         end
