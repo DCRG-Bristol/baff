@@ -47,7 +47,7 @@ classdef Mass < baff.Point
                 opts.Ixz = 0;
                 opts.Iyz = 0;
 
-                CompOpts.eta = 0
+                CompOpts.Eta = 0
                 CompOpts.Offset
                 CompOpts.Name = "Point Mass" 
                 CompOpts.Force = nan(3,1);
