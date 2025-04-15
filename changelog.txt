@@ -21,3 +21,4 @@ and this project adheres to [Explicit Versioning](https://github.com/exadra37-ve
 - [0.1.0.5] Modulus of Elasticity of Aluminium corrected from 97GPa to 71.7 GPa (7075 series)
 - [0.1.0.8] Fixed h5write meta data in Element
 - [0.1.0.9] Fixed plotting issue
+- [0.1.0.10] Torsion constant didnt give the correct value for high slenderness ratios

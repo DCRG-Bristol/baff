@@ -147,7 +147,7 @@ classdef Beam < baff.station.Base
                 a = width;
                 b = height;
             end
-            J = a*b^3*(1/3-0.2085*(b/a)*(1-(b^4)/(12*a^4)));
+            J = (1/3-3.36/16*(b/a)*(1-(b^4)/(12*a^4))); % Roark's Formulas for stress & Strain
             I = diag([Ixx,Iyy,Izz]);
             obj = baff.station.Beam(eta, I=I, A=height*width, J=J, Mat=opts.Mat);
         end
