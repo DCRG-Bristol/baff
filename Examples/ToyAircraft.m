@@ -97,27 +97,27 @@ tic;
 model = baff.Model;
 model.AddElement(fuselage);
 model.UpdateIdx();
-% model.ToBaff('test.h5');
-% toc;
-% 
-% f = figure(1);
-% clf;
-% hold on
-% model.draw(f)
-% ax = gca;
-% ax.Clipping = false;
-% % ax.ZAxis.Direction = "reverse";
-% axis equal
-% 
-% %% read file and plot again
-% tic;
-% model2 = baff.Model.FromBaff('test.h5');
-% toc;
-% f = figure(2);
-% clf;
-% hold on
-% model2.draw(f);
-% ax = gca;
-% ax.Clipping = false;
+model.ToBaff('test.h5');
+toc;
+
+f = figure(1);
+clf;
+hold on
+model.draw(f)
+ax = gca;
+ax.Clipping = false;
 % ax.ZAxis.Direction = "reverse";
-% axis equal
+axis equal
+
+%% read file and plot again
+tic;
+model2 = baff.Model.FromBaff('test.h5');
+toc;
+f = figure(2);
+clf;
+hold on
+model2.draw(f);
+ax = gca;
+ax.Clipping = false;
+ax.ZAxis.Direction = "reverse";
+axis equal

@@ -30,24 +30,18 @@ classdef Material
                 val = val && obj1(i).nu == obj2(i).nu;
             end
         end
-        function obj = Material(E,nu,rho,Name,opts)
+        function obj = Material(E,nu,rho,Name)
             arguments
                 E
                 nu
                 rho
                 Name = "";
-                opts.G = nan; % if not nan, overrides setting of G and nu.
             end
             obj.E = E;
+            obj.nu = nu;
             obj.rho = rho;
+            obj.G  = E / (2 * (1 + nu));
             obj.Name = Name;
-            if isnan(opts.G)
-                obj.nu = nu;
-                obj.G  = E / (2 * (1 + nu));
-            else
-                obj.G  = opts.G;
-                obj.nu = E/(2*G)-1;
-            end            
         end
     end
     methods(Static)

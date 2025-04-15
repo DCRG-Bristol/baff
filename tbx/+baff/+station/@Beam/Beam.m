@@ -59,7 +59,7 @@ classdef Beam < baff.station.Base
                 z = obj(i+1).Eta-obj(i).Eta;
                 A1 = obj(i).A;
                 A2 = obj(i+1).A;
-                if abs(A1-A2)<1e-10
+                if A1==A2
                     etaCoMs(i) = obj(i).Eta + z/2;
                     masses(i) = A1*z*obj(i).Mat.rho*norm(obj(i).EtaDir);
                 else
@@ -147,7 +147,7 @@ classdef Beam < baff.station.Base
                 a = width;
                 b = height;
             end
-            J = (1/3-3.36/16*(b/a)*(1-(b^4)/(12*a^4))); % Roark's Formulas for stress & Strain
+            J = a*b^3*(1/3-0.2085*(b/a)*(1-(b^4)/(12*a^4)));
             I = diag([Ixx,Iyy,Izz]);
             obj = baff.station.Beam(eta, I=I, A=height*width, J=J, Mat=opts.Mat);
         end
