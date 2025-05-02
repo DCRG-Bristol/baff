@@ -64,8 +64,53 @@ classdef Aero < baff.station.Base
             obj.MassLoc = opts.MassLoc;
             obj.LinearDensity = opts.LinearDensity;
         end
-        function stations = interpolate(obj,etas)
+        function stations = interpolate(obj,N,method,PreserveOld)
+            arguments
+                obj
+                N
+                method string {mustBeMember(method,["eta","linear","cosine"])} = "eta";
+                PreserveOld logical = false;
+            end
             old_eta = [obj.Eta];
+            switch method
+                case "eta"
+                    if max(N)>old_eta(end) || min(N)<old_eta(1)
+                        error("N must be between old_eta(1) and old_eta(end)")
+                    end
+                    etas = N;
+                    N = length(etas);
+                case "linear"
+                    if N <= 2
+                        error("if N is scalar it must be greater than 1.")
+                    end
+                    etas = linspace(old_eta(1),old_eta(end),N);
+                case "cosine"
+                    if N <= 2
+                        error("if N is scalar it must be greater than 1.")
+                    end
+                    etas = old_eta(1) + (old_eta(end) - old_eta(1)) * sin(linspace(0,pi/2,N));
+            end
+            if PreserveOld 
+                if N < length(old_eta)
+                    error("Can't preserve old etas if new points number less than previous number of stations")
+                elseif N == length(old_eta)
+                    etas = old_eta;
+                else
+                    idx = nan(1,length(old_eta));
+                    idx(1) = 1;
+                    for i = 2:length(old_eta)-1
+                        [~,ii] = min(abs(etas(2:end-1)-old_eta(i)));
+                        ii = ii+1;
+                        if ismember(ii,idx)
+                            error("can't preserve old etas as 1 of the new etas is closest to 2 of the new etas")
+                        end
+                        idx(i) = ii;
+                    end
+                    idx(end) = length(etas);
+                    etas(idx) = old_eta;
+                end
+            end
+            
             Chords = interp1(old_eta,[obj.Chord],etas,"linear");
             EtaDirs = interp1(old_eta,[obj.EtaDir]',etas,"previous")';
             StationDirs = interp1(old_eta,[obj.StationDir]',etas,"previous")';
@@ -74,6 +119,10 @@ classdef Aero < baff.station.Base
             Airfoils = interp1(old_eta,1:length(old_eta),etas,"previous");
             ThicknessRatios = interp1(old_eta,[obj.ThicknessRatio],etas,"linear");
             LiftCurveSlopes = interp1(old_eta,[obj.LiftCurveSlope],etas,"linear");
+            LinearDensities = interp1(old_eta,[obj.LinearDensity],etas,"linear");
+            LinearInertias = interp1(old_eta,reshape([obj.LinearInertia],9,[])',etas,"linear")';
+            MassLocs = interp1(old_eta,[obj.MassLoc],etas,"linear");
+
             stations = baff.station.Aero.empty;
             for i = 1:length(etas)
                 stations(i) = baff.station.Aero(etas(i),Chords(i),BeamLocs(i),"Twist",Twists(i));
@@ -82,27 +131,34 @@ classdef Aero < baff.station.Base
                 stations(i).Airfoil = obj(Airfoils(i)).Airfoil;
                 stations(i).ThicknessRatio = ThicknessRatios(i);
                 stations(i).LiftCurveSlope = LiftCurveSlopes(i);
+                stations(i).LinearDensity = LinearDensities(i);
+                stations(i).LinearInertia = reshape(LinearInertias(:,i),3,3);
+                stations(i).MassLoc = MassLocs(i);
             end
         end
         function X = GetPos(obj,eta,pChord)
             arguments
                 obj baff.station.Aero
-                eta (1,1) double
+                eta (1,:) double
                 pChord (1,:) double
             end
+            if ~isscalar(eta) && ~isscalar(pChord)
+                error("Either pChord or Eta must be Scalar, Otherwise output order would be unknown")
+            end
             etas = [obj.Eta];
-            stDir = [obj.StationDir]./vecnorm([obj.StationDir]);
             if length(obj) == 1
-                stDir = stDir(:,1);
+                stDir = obj.StationDir;
+                stDir = stDir./vecnorm(stDir);
                 chord =   [obj.Chord];
                 beamLoc = [obj.BeamLoc];
                 twist =   [obj.Twist];
                 etaDir = obj.EtaDir;
             else
-                if abs(sum(stDir-repmat(stDir(:,1),1,size(stDir,2)),"all"))>1e-6
-                    warning('This method currently assumes all aerodynamic stations are parrallel')
-                end
-                stDir = stDir(:,1);
+                % if abs(sum(stDir-repmat(stDir(:,1),1,size(stDir,2)),"all"))>1e-6
+                %     warning('This method currently assumes all aerodynamic stations are parrallel')
+                % end
+                stDir = interp1(etas,[obj.StationDir]',eta,"previous")';
+                stDir = stDir./vecnorm(stDir);
                 chord = interp1(etas,[obj.Chord],eta,"linear");
                 beamLoc = interp1(etas,[obj.BeamLoc],eta,"linear");
                 twist = interp1(etas,[obj.Twist],eta,"linear");
@@ -110,8 +166,14 @@ classdef Aero < baff.station.Base
             end
             z = cross(etaDir./norm(etaDir),stDir);
             perp = cross(stDir,z);
-            points = repmat(stDir,1,length(pChord)).*+(beamLoc - pChord);
-            X = baff.util.Rodrigues(perp,deg2rad(twist))*points.*chord;
+            if isscalar(eta)
+                points = repmat(stDir,1,length(pChord)).*+(beamLoc - pChord);
+                X = baff.util.Rodrigues(perp,deg2rad(twist))*points.*chord;
+            else
+                points = stDir.*(beamLoc - pChord).*chord;
+                X = pagemtimes(baff.util.Rodrigues(reshape(perp,3,1,[]),reshape(deg2rad(twist),1,1,[])),reshape(points,3,1,[]));
+                X = reshape(X,3,[]);
+            end
         end
         function points = getDrawCoords(obj,opts)
             arguments
