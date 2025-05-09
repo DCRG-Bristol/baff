@@ -79,17 +79,42 @@ classdef (Abstract) Base < matlab.mixin.Heterogeneous
             if ~issorted(etas)
                 error('array of stations must be sorted in assending order (of eta)')
             end
-            %deal with single length or a neagtive eta
-            if length(etas)==1 || eta<=etas(1)
-                X = obj(1).EtaDir*(eta-etas(1));
+            %deal with single length obj
+            if isscalar(etas)
+                X = obj(1).EtaDir.*(eta-etas(1));
                 return
             end
-            %deal with all other cases
-            idx = etas<eta;
-            dirs = [obj(idx).EtaDir];
-            etas = [etas(idx),eta];
-            delta = repmat(etas(2:end)-etas(1:end-1),3,1).*dirs;
-            X = sum(delta,2);
+            EtaDirs = [obj.EtaDir];
+            delta = [[0;0;0],repmat(etas(2:end)-etas(1:end-1),3,1).*EtaDirs(:,1:end-1)];
+            pos = cumsum(delta,2);
+            % adjust to be zero at zero eta;
+            if etas(1)~=0
+                pos = pos-repmat(interp1(etas,pos',0)',1,numel(etas));
+            end
+            if isscalar(eta)
+                idx = find(etas==eta,1);
+                if ~isempty(idx)
+                    X = pos(:,idx);
+                else
+                    ii = find(etas>eta,1);
+                    delta = (eta-etas(ii-1))/(etas(ii)-etas(ii-1));
+                    X = pos(:,ii-1) + (pos(:,ii)-pos(:,ii-1))*delta;
+                end
+            else
+                X = interp1(etas',pos',eta)';
+            end
+            % deal with extrapolated etas
+            idx = eta<etas(1);
+            if nnz(idx)>0
+                X(:,idx) = obj(1).EtaDir.*(eta(idx)-etas(1)) + repmat(pos(:,1),1,nnz(idx));
+            end
+            idx = eta>etas(end);
+            if nnz(idx)>0
+                X(:,idx) = obj(end).EtaDir.*(eta(idx)-etas(end)) + repmat(pos(:,end),1,nnz(idx));
+            end
+            if any(isnan(X))
+                error("unexpected NaN in interpolation of station positions")
+            end
         end
         function [lenLocus,kappa] = GetLocus(obj)
             % gets the length of the locus formed by the stations and returns the 
