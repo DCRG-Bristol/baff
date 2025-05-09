@@ -91,7 +91,18 @@ classdef (Abstract) Base < matlab.mixin.Heterogeneous
             if etas(1)~=0
                 pos = pos-repmat(interp1(etas,pos',0)',1,numel(etas));
             end
-            X = interp1(etas',pos',eta)';
+            if isscalar(eta)
+                idx = find(etas==eta,1);
+                if ~isempty(idx)
+                    X = pos(:,idx);
+                else
+                    ii = find(etas>eta,1);
+                    delta = (eta-etas(ii-1))/(etas(ii)-etas(ii-1));
+                    X = pos(:,ii-1) + (pos(:,ii)-pos(:,ii-1))*delta;
+                end
+            else
+                X = interp1(etas',pos',eta)';
+            end
             % deal with extrapolated etas
             idx = eta<etas(1);
             if nnz(idx)>0
