@@ -9,6 +9,11 @@ classdef Material
         nu = 0;
         Name = "";
     end
+
+    properties
+        yield = nan;    % Yield stress
+        uts = nan;      % Ultimate Tensile Strength
+    end
     
     methods
         function val = ne(obj1,obj2)
@@ -37,23 +42,51 @@ classdef Material
                 rho
                 Name = "";
                 opts.G = nan; % if not nan, overrides setting of G and nu.
+                opts.yield = nan;
+                opts.uts = nan;
             end
             obj.E = E;
             obj.rho = rho;
             obj.Name = Name;
+            obj.nu = nu;
             if isnan(opts.G)
-                obj.nu = nu;
                 obj.G  = E / (2 * (1 + nu));
             else
                 obj.G  = opts.G;
-                obj.nu = E/(2*G)-1;
-            end            
+            end  
+            % get yield and UTS ( if only one specified set both as same
+            % value
+            if ~isnan(opts.yield)
+                obj.yield = opts.yield;
+                if isnan(opts.uts)
+                    obj.uts = obj.yield;
+                else
+                    obj.uts = opts.uts;
+                end
+            elseif ~isnan(opts.uts)
+                obj.uts = opts.uts;
+                obj.yield = opts.uts;
+            end
         end
     end
     methods(Static)
         function obj = Aluminium()
-            obj = baff.Material(71.7e9,0.33,2810);
+            obj = baff.Material(71.7e9,0.33,2810,yield=5e8);
             obj.Name = "Aluminium7075";
+        end
+        function obj = IsoCarbonFibre()
+            % Quasi-Isotropic Carbon fibre
+            obj = baff.Material(60e9,0.3,1600,uts=6e8,G=5e9);
+            obj.Name = "IsoCarbonFibre";
+        end
+        function obj = BlackMetal(factor)
+            arguments
+                factor = 0;
+            end
+            % Quasi-Isotropic Carbon fibre
+            eta = 1-factor;
+            obj = baff.Material(69e9*eta,0.29,1580,uts=6e8*eta,G=8e9*eta);
+            obj.Name = "IsoCarbonFibre";
         end
         function obj = Stainless304()
             obj = baff.Material(193e9,0.29,7930);
