@@ -125,8 +125,11 @@ classdef Element < matlab.mixin.Heterogeneous & handle
                 obj
                 childObj baff.Element
             end
-            childObj.Parent = obj;
-            obj.Children(end+1) = childObj;
+            
+            for i = 1:length(childObj)
+                childObj(i).Parent = obj;
+                obj.Children(end+1) = childObj(i);
+            end
         end
         function X = GetPos(obj,eta)
             X = [0;0;0];
