@@ -247,7 +247,7 @@ classdef Aero < baff.station.Base
                 ci = [chords(etas<x),chord_i];
                 a = trapz(ei,ci); 
             end
-            eta_mgc = fminsearch(@(x)(half_area(x)/area-target)^2,target);
+            eta_mgc = fminsearch(@(x)(half_area(max(x,0.01))/area-target)^2,target);
             mgc = obj.interpolate(eta_mgc).Chord;
         end
         
