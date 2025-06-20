@@ -143,6 +143,7 @@ classdef Wing < baff.Beam
                 BeamLoc
                 opts.NAeroStations = 2
                 opts.NStations = 2
+                opts.etaAeroMin = 0
                 opts.etaAeroMax = 1
                 opts.etaBeamMax = 1
                 opts.LiftCurveSlope = 2*pi;
@@ -151,7 +152,7 @@ classdef Wing < baff.Beam
             station = baff.station.Beam.Bar(0,barHeight,barWidth,Mat=Material);
             aeroStation = baff.station.Aero(0,Chord,BeamLoc,LiftCurveSlope=opts.LiftCurveSlope);
             %create end aero station
-            aeroStations = aeroStation + linspace(0,opts.etaAeroMax,opts.NAeroStations);
+            aeroStations = aeroStation + linspace(opts.etaAeroMin,opts.etaAeroMax,opts.NAeroStations);
             %gen wing
             obj = baff.Wing(aeroStations);
             obj.EtaLength = length;
