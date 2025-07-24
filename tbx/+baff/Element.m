@@ -114,11 +114,13 @@ classdef Element < matlab.mixin.Heterogeneous & handle
                 opts.eta = 0;
                 opts.Name = 'Default Component'
                 opts.A = eye(3);
+                opts.EtaLength = 1;
             end
             obj.Eta = opts.eta;
             obj.Offset = opts.Offset;
             obj.A = opts.A;
             obj.Name = opts.Name;
+            obj.EtaLength = opts.EtaLength;
         end
         function obj = add(obj,childObj)
             arguments

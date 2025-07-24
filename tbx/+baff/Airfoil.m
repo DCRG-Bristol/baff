@@ -55,14 +55,14 @@ methods
         h5write(filepath,sprintf('%s/Airfoils/NormArea',loc),[obj.NormArea],[1 1],[1 N]);
         h5write(filepath,sprintf('%s/Airfoils/Cl_max',loc),[obj.Cl_max],[1 1],[1 N]);
         h5write(filepath,sprintf('%s/Airfoils/NormPerimeter',loc),[obj.NormPerimeter],[1 1],[1 N]);
-        Etas = zeros(max([obj.NEta]),N)*nan;
-        Ys = zeros(max([obj.NEta]),N*2)*nan;
+        ac_Etas = zeros(max([obj.NEta]),N)*nan;
+        ac_Ys = zeros(max([obj.NEta]),N*2)*nan;
         for i = 1:N
-            Etas(1:obj(i).NEta,i) = obj(i).Etas;
-            Ys(1:obj(i).NEta,(i*2-1):(i*2)) = obj(i).Ys;
+            ac_Etas(1:obj(i).NEta,i) = obj(i).Etas;
+            ac_Ys(1:obj(i).NEta,(i*2-1):(i*2)) = obj(i).Ys;
         end
-        h5write(filepath,sprintf('%s/Airfoils/Etas',loc),Etas,[1 1],[size(Etas,1) N]);
-        h5write(filepath,sprintf('%s/Airfoils/Ys',loc),Ys,[1 1],[size(Etas,1) N*2]);    
+        h5write(filepath,sprintf('%s/Airfoils/Etas',loc),ac_Etas,[1 1],[size(ac_Etas,1) N]);
+        h5write(filepath,sprintf('%s/Airfoils/Ys',loc),ac_Ys,[1 1],[size(ac_Etas,1) N*2]);    
         h5writeatt(filepath,[loc,'/Airfoils/'],'Qty', N);
     end
     
