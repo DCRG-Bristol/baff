@@ -2,28 +2,23 @@ function obj = FromBaff(filepath,loc)
 %FROMBAFF Summary of this function goes here
 %   Detailed explanation goes here
 Qty = h5readatt(filepath,[loc,'/BeamStations/'],'Qty');
-obj = baff.station.Beam.empty;
-if Qty == 0    
+
+if Qty == 0
+    obj = baff.station.Beam.Blank(0);
     return;
 end
+obj = baff.station.Beam.Blank(Qty);
+%% create Mats
+aIdx = h5readatt(filepath,[loc,'/'],'MatsIdx');
+Mats = baff.Mats.FromBaff(filepath,loc);
+obj.Mat = Mats(aIdx);
 %% create aerostations
-etas = h5read(filepath,sprintf('%s/BeamStations/Eta',loc));
-etaDirs = h5read(filepath,sprintf('%s/BeamStations/EtaDir',loc));
-stationDirs = h5read(filepath,sprintf('%s/BeamStations/StationDir',loc));
-As = h5read(filepath,sprintf('%s/BeamStations/A',loc));
-Is = h5read(filepath,sprintf('%s/BeamStations/I',loc));
-Js = h5read(filepath,sprintf('%s/BeamStations/J',loc));
-taus = h5read(filepath,sprintf('%s/BeamStations/Tau',loc));
-Es = h5read(filepath,sprintf('%s/BeamStations/E',loc));
-rhos = h5read(filepath,sprintf('%s/BeamStations/rho',loc));
-nus = h5read(filepath,sprintf('%s/BeamStations/nu',loc));
-for i = 1:Qty
-    mat = baff.Material(Es(i),nus(i),rhos(i));
-    obj(i) = baff.station.Beam(etas(i),"EtaDir",etaDirs(:,i),...
-    "StationDir",stationDirs(:,i),"Mat",mat,"J",Js(i));
-    obj(i).A = As(i);
-    obj(i).I = reshape(Is(:,i),3,3);
-    obj(i).tau = reshape(taus(:,i),3,3);
-end
+obj.Eta = h5read(filepath,sprintf('%s/AeroStations/Eta',loc));
+obj.EtaDir = h5read(filepath,sprintf('%s/AeroStations/EtaDir',loc));
+obj.StationDir = h5read(filepath,sprintf('%s/AeroStations/StationDir',loc));
+obj.A = h5read(filepath,sprintf('%s/AeroStations/A',loc));
+obj.I = reshape(h5read(filepath,sprintf('%s/AeroStations/I',loc)),3,3,[]);
+obj.J = h5read(filepath,sprintf('%s/AeroStations/J',loc));
+obj.tau = reshape(h5read(filepath,sprintf('%s/AeroStations/Tau',loc)),3,3,[]);
 end
 

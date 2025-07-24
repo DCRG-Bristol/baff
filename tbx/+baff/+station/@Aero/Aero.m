@@ -3,44 +3,78 @@ classdef Aero < baff.station.Base
     %   Detailed explanation goes here
 
     properties
-        Chord double = 1;
-        Twist double = 0;
-        BeamLoc double = 0.25;
-        Airfoil baff.Airfoil = baff.Airfoil.NACA_sym;
-        ThicknessRatio double = 1;
-        LiftCurveSlope double = 2*pi;
+        Chord (1,:) double = 1;
+        Twist (1,:) double = 0;
+        BeamLoc (1,:) double = 0.25;
+        Airfoil (1,:) baff.Airfoil = baff.Airfoil.NACA_sym;
+        ThicknessRatio (1,:) double = 1;
+        LiftCurveSlope (1,:) double = 2*pi;
+
+        %inertial properties
+        LinearDensity (1,:) double = 0;               % wings linear density
+        LinearInertia (3,3,:) double = zeros(3);  % spanwise moment of inertia matrix
+        MassLoc (1,:) double = 0.5;                   %location of mass as percentage of chord
     end
-    %inertial properties
-    properties
-        LinearDensity double = 0;               % wings linear density
-        LinearInertia (3,3) double = zeros(3);  % spanwise moment of inertia matrix
-        MassLoc double = 0.5;                   %location of mass as percentage of chord
+    methods
+        function set.Chord(obj,val)
+            if size(val,2)~= obj.N
+                error('Columns of Chord must be equal to one of the number of stations')
+            end
+            obj.Chord = val;
+        end
+        function set.Twist(obj,val)
+            if size(val,2)~= obj.N
+                error('Columns of Twist must be equal to one of the number of stations')
+            end
+            obj.Twist = val;
+        end
+        function set.BeamLoc(obj,val)
+            if size(val,2)~= obj.N
+                error('Columns of BeamLoc must be equal to one of the number of stations')
+            end
+            obj.BeamLoc = val;
+        end
+        function set.Airfoil(obj,val)
+            switch size(val,2)
+                case obj.N
+                    obj.Airfoil = val;
+                case 1
+                    obj.Airfoil = repmat(val,1,obj.N);
+                otherwise
+                    error('Columns of Airfoil must be equal to one of the number of stations')
+            end
+        end
+        function set.LinearDensity(obj,val)
+            if size(val,2)~= obj.N
+                error('Columns of LinearDensity must be equal to one of the number of stations')
+            end
+            obj.LinearDensity = val;
+        end
+        function set.LinearInertia(obj,val)
+            if size(val,3)~= obj.N
+                error('pages of LinearInertia must be equal to one of the number of stations')
+            end
+            obj.LinearInertia = val;
+        end
+        function set.MassLoc(obj,val)
+            if size(val,2)~= obj.N
+                error('Columns of MassLoc must be equal to one of the number of stations')
+            end
+            obj.MassLoc = val;
+        end
     end
+    
     methods (Static)
         obj = FromBaff(filepath,loc);
         TemplateHdf5(filepath,loc);
     end
     methods
-        function val = eq(obj1,obj2)
-            if length(obj1)~= length(obj2) || ~isa(obj2,'baff.station.Aero')
-                val = false;
-                return
-            end
-            val = eq@baff.station.Base(obj1,obj2);
-            for i = 1:length(obj1)
-                val = val && obj1(i).Chord == obj2(i).Chord;
-                val = val && obj1(i).Twist == obj2(i).Twist;
-                val = val && obj1(i).BeamLoc == obj2(i).BeamLoc;
-            end
-        end
-        function val = HasMass(obj)
-            val = arrayfun(@(x)x.LinearDensity>0||nnz(x.LinearInertia)>0,obj);
-        end
         function obj = Aero(eta,chord,beamLoc,opts)
+            %AERO - constructor for an Aero wing Station
             arguments
                 eta
-                chord
-                beamLoc
+                chord = 1;
+                beamLoc = 0.25;
                 opts.Twist = 0;
                 opts.EtaDir = [1;0;0];
                 opts.StationDir = [0;1;0];
@@ -51,92 +85,150 @@ classdef Aero < baff.station.Base
                 opts.MassLoc = 0.5;
                 opts.LinearInertia = zeros(3);
             end
-            obj.Eta = eta;
-            obj.Chord = chord;
-            obj.BeamLoc = beamLoc;
-            obj.Twist = opts.Twist;
-            obj.EtaDir = opts.EtaDir;
-            obj.StationDir = opts.StationDir;
-            obj.Airfoil = opts.Airfoil;
-            obj.ThicknessRatio = opts.ThicknessRatio;
-            obj.LiftCurveSlope = opts.LiftCurveSlope;
-            obj.LinearInertia = opts.LinearInertia;
-            obj.MassLoc = opts.MassLoc;
-            obj.LinearDensity = opts.LinearDensity;
+            obj = obj@baff.station.Base(eta);
+            N = obj.N;
+            obj.Chord = SetStationProp(chord,N);
+            obj.BeamLoc = SetStationProp(beamLoc,N);
+            obj.Twist = SetStationProp(opts.Twist,N);
+            obj.EtaDir = SetStationProp(opts.EtaDir,N);
+            obj.StationDir = SetStationProp(opts.StationDir,N);
+            obj.Airfoil = SetStationProp(opts.Airfoil,N);
+            obj.ThicknessRatio = SetStationProp(opts.ThicknessRatio,N);
+            obj.LiftCurveSlope = SetStationProp(opts.LiftCurveSlope,N);
+            obj.LinearInertia = SetStationMatrixProp(opts.LinearInertia,N);
+            obj.MassLoc = SetStationProp(opts.MassLoc,N);
+            obj.LinearDensity = SetStationProp(opts.LinearDensity,N);
         end
-        function stations = interpolate(obj,N,method,PreserveOld)
+    end
+    methods(Static)
+        function obj = Blank(N)
+            %BLANK Create default station Array of N stations
+            obj = baff.station.Aero(zeros(1,N));
+        end
+    end
+    % operator overloading
+    methods
+        function obj = horzcat(varargin)
+            Ni = 0;
+            for i = 1:numel(varargin)
+                Ni = Ni + varargin{i}.N;
+            end
+            obj = baff.station.Aero.Blank(Ni);
+            idx = 1;
+            for i = 1:numel(varargin)
+                ii = idx:(idx+varargin{i}.N-1);
+                idx = ii(end)+1;
+                obj.Eta(ii) = varargin{i}.Eta;
+                obj.EtaDir(:,ii) = varargin{i}.EtaDir;
+                obj.StationDir(:,ii) = varargin{i}.StationDir;
+                obj.Chord(ii) = varargin{i}.Chord;
+                obj.Twist(ii) = varargin{i}.Twist;
+                obj.BeamLoc(ii) = varargin{i}.BeamLoc;
+                obj.Airfoil(ii) = varargin{i}.Airfoil;
+                obj.ThicknessRatio(ii) = varargin{i}.ThicknessRatio;
+                obj.LiftCurveSlope(ii) = varargin{i}.LiftCurveSlope;
+                obj.LinearDensity(ii) = varargin{i}.LinearDensity;
+                obj.LinearInertia(:,:,ii) = varargin{i}.LinearInertia;
+                obj.MassLoc(ii) = varargin{i}.MassLoc;
+            end
+        end
+        function val = eq(obj1,obj2)
+            val = isa(obj2,'baff.station.Aero') && obj1.N == obj2.N && ...
+                all(obj1.Eta == obj2.Eta) && all(obj1.EtaDir == obj2.EtaDir,"all") ...
+                && all(obj1.Chord == obj2.Chord) && all(obj1.Twist == obj2.Twist) ...
+                && all(obj1.BeamLoc == obj2.BeamLoc) && all(obj1.Airfoil == obj2.Airfoil) ...
+                && all(obj1.ThicknessRatio == obj2.ThicknessRatio) && all(obj1.LiftCurveSlope == obj2.LiftCurveSlope) ...
+                && all(obj1.LinearDensity == obj2.LinearDensity) && all(obj1.LinearInertia == obj2.LinearInertia,"all") ...
+                && all(obj1.MassLoc == obj2.MassLoc) && all(obj1.StationDir == obj2.StationDir,"all");
+        end 
+        function out = GetIndex(obj,i)
+            if i>obj.N || i<1
+                error('Index must be valid')
+            end
+            out = baff.station.Aero(obj.Eta(i));
+            out.EtaDir = obj.EtaDir(:,i);
+            out.StationDir = obj.StationDir(:,i);
+
+            out.Chord = obj.Chord(i);
+            out.BeamLoc = obj.BeamLoc(i);
+            out.Twist = obj.Twist(i);
+            out.Airfoil = obj.Airfoil(i);
+            out.ThicknessRatio = obj.ThicknessRatio(i);
+            out.LiftCurveSlope = obj.LiftCurveSlope(i);
+            out.LinearDensity = obj.LinearDensity(i);
+            out.LinearInertia = obj.LinearInertia(:,:,i);
+            out.MassLoc = obj.MassLoc(i);
+        end
+        function obj = SetIndex(obj,i,val)
+            if i>obj.N || i<1
+                error('Index must be valid')
+            end
+            obj.Eta(i) = val.Eta;
+            obj.EtaDir(:,i) = val.EtaDir;
+            obj.StationDir(:,i) = val.StationDir;
+            
+            obj.Chord(i) = val.Chord;
+            obj.BeamLoc(i) = val.BeamLoc;
+            obj.Twist(i) = val.Twist;         
+            obj.Airfoil(i) = val.Airfoil;
+            obj.ThicknessRatio(i) = val.ThicknessRatio;
+            obj.LiftCurveSlope(i) = val.LiftCurveSlope;
+            obj.LinearDensity(i) = val.LinearDensity;
+            obj.LinearInertia(:,:,i) = val.LinearInertia;
+            obj.MassLoc(i) = val.MassLoc;
+        end
+    end
+    methods
+        function obj = Duplicate(obj,EtaArray)
+            %DUPLICATE make copies of a scaler Station
+            if obj.N~=1
+                error('Length of station obj must be 1')
+            end
+            obj = baff.station.Aero(EtaArray,obj.Chord,obj.BeamLoc,Twist=obj.Twist,...
+                EtaDir=obj.EtaDir,StationDir=obj.StationDir,Airfoil=obj.Airfoil,...
+                ThicknessRatio=obj.ThicknessRatio,LiftCurveSlope=obj.LiftCurveSlope,...
+                LinearDensity=obj.LinearDensity,LinearInertia=obj.LinearInertia,MassLoc=obj.MassLoc);
+        end
+        function val = HasMass(obj)
+            %HASMASS - returns boolean value dependent on if stations have mass
+            val = any(obj.LinearDensity > 0) || any(obj.LinearInertia > 0);
+        end
+        function out = interpolate(obj,N,method,PreserveOld)
+            %INTERPOLATE interpolate stations at different etas
+            % INTERPOLATE - interpolates in one of three methods depending
+            % on "method":
+            % "eta": N is an array of etas to interpolate at
+            % "linear": N is a scalar of the number of linear distributed
+            % points to interpolate at
+            % "cosine": same as linear but with cosine distribution
+            %
+            % the argument PereserveOld will ensure the original Etas are
+            % in the output if set to true (default false)
             arguments
                 obj
                 N
                 method string {mustBeMember(method,["eta","linear","cosine"])} = "eta";
                 PreserveOld logical = false;
             end
-            old_eta = [obj.Eta];
-            switch method
-                case "eta"
-                    if max(N)>old_eta(end) || min(N)<old_eta(1)
-                        error("N must be between old_eta(1) and old_eta(end)")
-                    end
-                    etas = N;
-                    N = length(etas);
-                case "linear"
-                    if N <= 2
-                        error("if N is scalar it must be greater than 1.")
-                    end
-                    etas = linspace(old_eta(1),old_eta(end),N);
-                case "cosine"
-                    if N <= 2
-                        error("if N is scalar it must be greater than 1.")
-                    end
-                    etas = old_eta(1) + (old_eta(end) - old_eta(1)) * sin(linspace(0,pi/2,N));
-            end
-            if PreserveOld 
-                if N < length(old_eta)
-                    error("Can't preserve old etas if new points number less than previous number of stations")
-                elseif N == length(old_eta)
-                    etas = old_eta;
-                else
-                    idx = nan(1,length(old_eta));
-                    idx(1) = 1;
-                    for i = 2:length(old_eta)-1
-                        [~,ii] = min(abs(etas(2:end-1)-old_eta(i)));
-                        ii = ii+1;
-                        if ismember(ii,idx)
-                            error("can't preserve old etas as 1 of the new etas is closest to 2 of the new etas")
-                        end
-                        idx(i) = ii;
-                    end
-                    idx(end) = length(etas);
-                    etas(idx) = old_eta;
-                end
-            end
-            
-            Chords = interp1(old_eta,[obj.Chord],etas,"linear");
-            EtaDirs = interp1(old_eta,[obj.EtaDir]',etas,"previous")';
-            StationDirs = interp1(old_eta,[obj.StationDir]',etas,"previous")';
-            BeamLocs = interp1(old_eta,[obj.BeamLoc],etas,"linear");
-            Twists = interp1(old_eta,[obj.Twist],etas,"linear");
-            Airfoils = interp1(old_eta,1:length(old_eta),etas,"previous");
-            ThicknessRatios = interp1(old_eta,[obj.ThicknessRatio],etas,"linear");
-            LiftCurveSlopes = interp1(old_eta,[obj.LiftCurveSlope],etas,"linear");
-            LinearDensities = interp1(old_eta,[obj.LinearDensity],etas,"linear");
-            LinearInertias = interp1(old_eta,reshape([obj.LinearInertia],9,[])',etas,"linear")';
-            MassLocs = interp1(old_eta,[obj.MassLoc],etas,"linear");
+            % calc list of etas
+            [etas,idx_low,idx_high,alpha] = obj.InterpolateEtas(N,method,PreserveOld);
 
-            stations = baff.station.Aero.empty;
-            for i = 1:length(etas)
-                stations(i) = baff.station.Aero(etas(i),Chords(i),BeamLocs(i),"Twist",Twists(i));
-                stations(i).EtaDir = EtaDirs(:,i);
-                stations(i).StationDir = StationDirs(:,i);
-                stations(i).Airfoil = obj(Airfoils(i)).Airfoil;
-                stations(i).ThicknessRatio = ThicknessRatios(i);
-                stations(i).LiftCurveSlope = LiftCurveSlopes(i);
-                stations(i).LinearDensity = LinearDensities(i);
-                stations(i).LinearInertia = reshape(LinearInertias(:,i),3,3);
-                stations(i).MassLoc = MassLocs(i);
-            end
+            out = baff.station.Aero(etas);
+            beta = 1-alpha;
+            out.Chord = obj.Chord(idx_low) .* beta + obj.Chord(idx_high) .* alpha;
+            out.BeamLoc = obj.BeamLoc(idx_low) .* beta + obj.BeamLoc(idx_high) .* alpha;
+            out.Twist = obj.Twist(idx_low) .* beta + obj.Twist(idx_high) .* alpha;
+            out.EtaDir = obj.EtaDir(:,idx_low) .* beta + obj.EtaDir(:,idx_high) .* alpha;
+            out.StationDir = obj.StationDir(:,idx_low) .* beta + obj.StationDir(:,idx_high) .* alpha;
+            out.Airfoil = obj.Airfoil(idx_low);
+            out.ThicknessRatio = obj.ThicknessRatio(idx_low) .* beta + obj.ThicknessRatio(idx_high) .* alpha;
+            out.LiftCurveSlope = obj.LiftCurveSlope(idx_low) .* beta + obj.LiftCurveSlope(idx_high) .* alpha;
+            out.LinearDensity = obj.LinearDensity(idx_low) .* beta + obj.LinearDensity(idx_high) .* alpha;
+            out.LinearInertia = obj.LinearInertia(:,:,idx_low) .* permute(beta,[1,3,2]) + obj.LinearInertia(:,:,idx_high) .* permute(alpha,[1,3,2]);
+            out.MassLoc = obj.MassLoc(idx_low) .* beta + obj.MassLoc(idx_high) .* alpha;
         end
         function X = GetPos(obj,eta,pChord)
+            %GETPOS - gets Norm. X pos of a point and eta and pChord % Chord
             arguments
                 obj baff.station.Aero
                 eta (1,:) double
@@ -145,24 +237,24 @@ classdef Aero < baff.station.Base
             if ~isscalar(eta) && ~isscalar(pChord)
                 error("Either pChord or Eta must be Scalar, Otherwise output order would be unknown")
             end
-            etas = [obj.Eta];
-            if length(obj) == 1
+            etas = obj.Eta;
+            if obj.N == 1
                 stDir = obj.StationDir;
                 stDir = stDir./vecnorm(stDir);
-                chord =   [obj.Chord];
-                beamLoc = [obj.BeamLoc];
-                twist =   [obj.Twist];
+                chord =   obj.Chord;
+                beamLoc = obj.BeamLoc;
+                twist =   obj.Twist;
                 etaDir = obj.EtaDir;
             else
                 % if abs(sum(stDir-repmat(stDir(:,1),1,size(stDir,2)),"all"))>1e-6
                 %     warning('This method currently assumes all aerodynamic stations are parrallel')
                 % end
-                stDir = interp1(etas,[obj.StationDir]',eta,"previous")';
+                stDir = interp1(etas,obj.StationDir',eta,"previous")';
                 stDir = stDir./vecnorm(stDir);
-                chord = interp1(etas,[obj.Chord],eta,"linear");
-                beamLoc = interp1(etas,[obj.BeamLoc],eta,"linear");
-                twist = interp1(etas,[obj.Twist],eta,"linear");
-                etaDir = interp1(etas,[obj.EtaDir]',eta,"previous")';
+                chord = interp1(etas,obj.Chord,eta,"linear");
+                beamLoc = interp1(etas,obj.BeamLoc,eta,"linear");
+                twist = interp1(etas,obj.Twist,eta,"linear");
+                etaDir = interp1(etas,obj.EtaDir',eta,"previous")';
             end
             z = cross(etaDir./norm(etaDir),stDir);
             perp = cross(stDir,z);
@@ -175,72 +267,54 @@ classdef Aero < baff.station.Base
                 X = reshape(X,3,[]);
             end
         end
-        function points = getDrawCoords(obj,opts)
-            arguments
-                obj
-                opts.Origin (3,1) double = [0,0,0];
-                opts.A (3,3) double = eye(3);
-            end
-            stDir = obj.StationDir./vecnorm(obj.StationDir);
-            le_te = [stDir*obj.BeamLoc,stDir*(obj.BeamLoc-1)].*obj.Chord;
-            z = cross(obj.EtaDir./norm(obj.EtaDir),stDir);
-            perp = cross(stDir,z);
-            points = opts.Origin + opts.A*baff.util.Rodrigues(perp,deg2rad(obj.Twist))*le_te;
-        end
-        function p = draw(obj,opts)
-            arguments
-                obj
-                opts.Origin (3,1) double = [0,0,0];
-                opts.A (3,3) double = eye(3);
-            end
-            points = obj.getDrawCoords(Origin=opts.Origin,A=opts.A);
-            p = plot3(points(1,:),points(2,:),points(3,:),'-o');
-            p.Color = 'k';
-            p.Tag = 'WingSection';
-        end
         function area = GetNormArea(obj)
+            %GETNORMAREA - Gets span normalised planfrom area
             area = sum(obj.GetNormAreas);
         end
         function areas = GetNormAreas(obj)
-            if length(obj)<2
+            %GETNORMAREAs - Gets span normalised planfrom areas between each station
+            if obj.N<2
                 areas = 0;
                 return
             end
-            areas = zeros(1,length(obj)-1);
-            for i = 1:length(obj)-1
-                span = (obj(i+1).Eta - obj(i).Eta);
-                areas(i) = 0.5*(obj(i).Chord+obj(i+1).Chord)*span;
-            end
+            spans = obj.Eta(2:end)-obj.Eta(1:end-1);
+            mChord = (obj.Chord(2:end)+obj.Chord(1:end-1))/2;
+            areas = mChord.*spans;
         end
+
         function areas = GetNormWettedAreas(obj)
+            %GetNormWettedAreas - gets span normailsed surface area of wing sections
             if length(obj)<2
                 areas = 0;
                 return
             end
-            perimeters = arrayfun(@(x)x.NormPerimeter,[obj.Airfoil]).*[obj.Chord];
-            deltaEta = [obj(2:end).Eta]-[obj(1:end-1).Eta];
+            perimeters = [sts_i.Airfoil.NormPerimeter].* obj.Chord;
+            deltaEta = obj.Eta(2:end)-obj.Eta(1:end-1);
             areas = 0.5*(perimeters(1:end-1)+perimeters(2:end)).*deltaEta;
         end
         function area = GetNormWettedArea(obj)
+            %GetNormWettedArea - gets span normailsed surface area of wing
             area = sum(obj.GetNormWettedAreas);
         end
         function area = getSubNormArea(obj,x)
-            Etas = [obj.Eta];
+            %getSubNormArea - gets span normalised planform area upto an eta of x
+            Etas = obj.Eta;
             area = obj.interpolate([Etas(Etas<x),x]).GetNormArea();
         end
         function c_bar = GetMeanChord(obj)
-            c = 0;
-            areas = GetNormAreas(obj);
-            c_bar = sum(areas)./(obj(end).Eta - obj(1).Eta);
+            %GetMeanChord - Wing mean chord
+            c_bar = GetNormArea(obj)./(obj.Eta(end) - obj.Eta(1));
         end
         function [mgc,eta_mgc] = GetMGC(obj,target)
+            %GETMGCS - get wing mean geometric chord
+            % MGC is the chord at half wing section area.
             arguments
                 obj
                 target = 0.5
             end
             area = obj.GetNormArea();
-            etas = [obj.Eta];
-            chords = [obj.Chord];
+            etas = obj.Eta;
+            chords = obj.Chord;
             function a = half_area(x)
                 chord_i = interp1(etas,chords,x);
                 ei = [etas(etas<x),x];
@@ -252,15 +326,18 @@ classdef Aero < baff.station.Base
         end
         
         function [mgcs,thicknessRatios] = GetMGCs(obj)
-            mgcs = zeros(1,length(obj)-1);
-            thicknessRatios = zeros(1,length(obj)-1);
-            for i = 1:length(obj)-1
-                tr = obj(i+1).Chord/obj(i).Chord;
-                mgcs(i) = 2/3*obj(i).Chord*(1+tr+tr^2)/(1+tr);
-                thicknessRatios(i) = (obj(i).ThicknessRatio + obj(i+1).ThicknessRatio)/2;
-            end
+            %GETMGCS - get wing mean geometric chord between each station
+            % MGC is the chord at half wing section area.
+            tr = obj.Chord(2:end)./obj.Chord(1:end-1);
+            mgcs = 2/3*obj.Chord.*(1+tr+tr.^2)./(1+tr);
+            thicknessRatios = (obj(1:end-1).ThicknessRatio + obj(2:end).ThicknessRatio)/2;
         end
         function vol = GetNormVolume(obj,cEtas,Etas)
+            %GETNORMVOLUME get wing normalised volume
+            % get wing norm. volume with arguments
+            % - cEtas (Default = [0 1]): chordwise pos to integrate between
+            % - Etas (Default [nan nan]): spanwise pos to integrate. nan
+            % mean take min / max value of stations.
             arguments
                 obj
                 cEtas (1,2) double = [0 1]
@@ -269,29 +346,29 @@ classdef Aero < baff.station.Base
             vol = sum(obj.GetNormVolumes(cEtas,Etas));
         end
         function vols = GetNormVolumes(obj,cEtas,Etas)
+            %GETNORMVOLUME get wing normalised volumes
+            % get wing norm. volumes with arguments
+            % - cEtas (Default = [0 1]): chordwise pos to integrate between
+            % - Etas (Default [nan nan]): spanwise pos to integrate. nan
+            % mean take min / max value of stations.
             arguments
                 obj
                 cEtas (1,2) double = [0 1]
                 Etas (1,2) double = [nan nan]
             end
-            if length(obj)<2
+            if obj.N<2
                 vols = 0;
                 return
             end
             if ~isnan(Etas(1))
-                idx = [obj.Eta]>Etas(1) & [obj.Eta]<Etas(2);
-                obj = obj.interpolate([Etas(1),[obj(idx).Eta],Etas(2)]);
+                idx = obj.Eta>Etas(1) & obj.Eta<Etas(2);
+                obj = obj.interpolate([Etas(1),obj.Eta(idx),Etas(2)]);
             end
-            vols = zeros(1,length(obj)-1);
-            A = [obj.Chord].^2.*[obj.ThicknessRatio];
-            A = A.*arrayfun(@(x)x.GetNormArea(cEtas),[obj.Airfoil]);
-            for i = 1:length(obj)-1
-                span = (obj(i+1).Eta - obj(i).Eta);
-                vols(i) = span/3*(A(i)+A(i+1)+sqrt(A(i)*A(i+1))); 
-            end
+            A = obj.Chord.^2.*obj.ThicknessRatio;
+            A = A.*[obj.Airfoil.GetNormArea(cEtas)];
+            spans = obj.Eta(2:end)-obj.Eta(1:end-1);
+            vols = spans./3.*(A(1:end-1)+A(2:end)+sqrt(A(1:end-1).*A(2:end))); 
         end
-    end
-    methods(Static)
     end
 end
 

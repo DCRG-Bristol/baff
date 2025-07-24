@@ -2,7 +2,7 @@ classdef Beam < baff.Element
     %BEAM Summary of this class goes here
     %   Detailed explanation goes here
     properties
-        Stations (1,:) baff.station.Beam = [baff.station.Beam(0),baff.station.Beam(1)];
+        Stations (1,1) baff.station.Beam = [baff.station.Beam(0),baff.station.Beam(1)];
     end
     methods(Static)
         obj = FromBaff(filepath,loc);
@@ -67,7 +67,7 @@ classdef Beam < baff.Element
             obj = baff.Beam();
             obj.EtaLength = length;
             station = baff.BeamStation.Bar(0,height,width,Mat=Material);
-            obj.Stations = [station,station+1];
+            obj.Stations = station.Duplicate([0 1]);
         end
     end
 end

@@ -7,9 +7,7 @@ function TemplateHdf5(filepath,loc)
     h5create(filepath,sprintf('%s/BeamStations/I',loc),[9 inf],"Chunksize",[9,10]);
     h5create(filepath,sprintf('%s/BeamStations/J',loc),[1 inf],"Chunksize",[1,10]);
     h5create(filepath,sprintf('%s/BeamStations/Tau',loc),[9 inf],"Chunksize",[9,10]);
-    h5create(filepath,sprintf('%s/BeamStations/E',loc),[1 inf],"Chunksize",[1,10]);
-    h5create(filepath,sprintf('%s/BeamStations/G',loc),[1 inf],"Chunksize",[1,10]);
-    h5create(filepath,sprintf('%s/BeamStations/rho',loc),[1 inf],"Chunksize",[1,10]);
-    h5create(filepath,sprintf('%s/BeamStations/nu',loc),[1 inf],"Chunksize",[1,10]);
+    %create placeholders for materials
+    baff.Material.TemplateHdf5(filepath,loc);
 end
 

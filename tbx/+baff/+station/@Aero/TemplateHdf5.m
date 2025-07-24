@@ -8,6 +8,9 @@ function TemplateHdf5(filepath,loc)
     h5create(filepath,sprintf('%s/AeroStations/BeamLoc',loc),[1 inf],"Chunksize",[1,10]);
     h5create(filepath,sprintf('%s/AeroStations/ThicknessRatio',loc),[1 inf],"Chunksize",[1,10]);
     h5create(filepath,sprintf('%s/AeroStations/LiftCurveSlope',loc),[1 inf],"Chunksize",[1,10]);
+    h5create(filepath,sprintf('%s/AeroStations/LinearDensity',loc),[1 inf],"Chunksize",[1,10]);
+    h5create(filepath,sprintf('%s/AeroStations/LinearInertia',loc),[9 inf],"Chunksize",[9,10]);
+    h5create(filepath,sprintf('%s/AeroStations/MassLoc',loc),[1 inf],"Chunksize",[1,10]);
     %create placeholders for airfoils
     baff.Airfoil.TemplateHdf5(filepath,loc);
 end
