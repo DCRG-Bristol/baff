@@ -1,6 +1,6 @@
 classdef Airfoil
 properties
-    Name string
+    Name
     NormArea
     NormPerimeter
     Cl_max
@@ -131,11 +131,15 @@ methods(Static)
         obj = baff.Airfoil(name,Area,perimeter,1.5,etas',ys');
     end
     function obj = NACA_sym()
-        etas = 0:0.02:1;
-        t = 1;
-        yt = 5*t*(0.2969*sqrt(etas)-0.126*etas-0.3516*etas.^2+0.2843*etas.^3-0.1015*etas.^4);
-        ys = [yt;-yt];
-        obj = baff.Airfoil('NACA',0.6833,3.04,1.5,etas',ys');
+        persistent defaultAirfoil
+        if isempty(defaultAirfoil)
+            etas = 0:0.02:1;
+            t = 1;
+            yt = 5*t*(0.2969*sqrt(etas)-0.126*etas-0.3516*etas.^2+0.2843*etas.^3-0.1015*etas.^4);
+            ys = [yt;-yt];
+            defaultAirfoil = baff.Airfoil('NACA',0.6833,3.04,1.5,etas',ys');
+        end
+        obj = defaultAirfoil;
     end
     function obj = SC2_0614()
         % http://airfoiltools.com/airfoil/details?airfoil=sc20614-il

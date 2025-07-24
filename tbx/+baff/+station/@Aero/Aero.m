@@ -3,17 +3,17 @@ classdef Aero < baff.station.Base
     %   Detailed explanation goes here
 
     properties
-        Chord (1,:) double = 1;
-        Twist (1,:) double = 0;
-        BeamLoc (1,:) double = 0.25;
-        Airfoil (1,:) baff.Airfoil = baff.Airfoil.NACA_sym;
-        ThicknessRatio (1,:) double = 1;
-        LiftCurveSlope (1,:) double = 2*pi;
+        Chord = 1;
+        Twist = 0;
+        BeamLoc = 0.25;
+        Airfoil = baff.Airfoil.NACA_sym;
+        ThicknessRatio = 1;
+        LiftCurveSlope = 2*pi;
 
         %inertial properties
-        LinearDensity (1,:) double = 0;               % wings linear density
+        LinearDensity  = 0;               % wings linear density
         LinearInertia (3,3,:) double = zeros(3);  % spanwise moment of inertia matrix
-        MassLoc (1,:) double = 0.5;                   %location of mass as percentage of chord
+        MassLoc = 0.5;                   %location of mass as percentage of chord
     end
     methods
         function set.Chord(obj,val)

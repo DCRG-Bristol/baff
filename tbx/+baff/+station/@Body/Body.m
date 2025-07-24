@@ -3,7 +3,7 @@ classdef Body < baff.station.Beam
     %   Detailed explanation goes here
 
     properties
-        Radius (1,:) double = 1;
+        Radius = 1;
     end
     methods
         function set.Radius(obj,val)

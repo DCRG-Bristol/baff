@@ -2,7 +2,7 @@ classdef BluffBody < baff.Element
     %BEAM Summary of this class goes here
     %   Detailed explanation goes here
     properties
-        Stations (1,:) baff.station.Body = [baff.station.Body(0),baff.station.Body(1)];
+        Stations = [baff.station.Body(0),baff.station.Body(1)];
     end
     methods(Static)
         obj = FromBaff(filepath,loc);

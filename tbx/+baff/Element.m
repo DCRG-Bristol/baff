@@ -2,16 +2,16 @@ classdef Element < matlab.mixin.Heterogeneous & handle
     %COMPONENT Summary of this class goes here
     %   Detailed explanation goes here
     properties
-        A (3,3) double = eye(3); % Rotation Matrix
-        Offset (3,1) double = [0;0;0]; % Offset of the element in the parent element's coordinate system
+        A = eye(3); % Rotation Matrix
+        Offset = [0;0;0]; % Offset of the element in the parent element's coordinate system
         isAbsolute = false; %if true, the element is referenced to the global coordinate system, otherwise it is referenced to the parent element
-        Eta (1,1) double = 0; %eta coordinate of the element in the parent element's coordinate system
+        Eta = 0; %eta coordinate of the element in the parent element's coordinate system
         EtaLength = 0;      % Length of the element in the eta direction
         
-        Parent baff.Element = baff.Element.empty; % Parent element
-        Children (:,1) baff.Element = baff.Element.empty; % Children elements
+        Parent = baff.Element.empty; % Parent element
+        Children = baff.Element.empty; % Children elements
         
-        Name string = "";    % Name of the element       
+        Name = "Default Component";    % Name of the element       
         Index = 0;          % Unique index for each element (for use in HDF5 files to link parents and children)
 
         Meta struct = struct; % Meta data for the element
@@ -30,7 +30,7 @@ classdef Element < matlab.mixin.Heterogeneous & handle
         function val = GetMass(obj,opts)
             arguments
                 obj
-                opts.IncludeChildren (1,1) logical = true;
+                opts.IncludeChildren = true;
             end
             val = zeros(size(obj));
             for i = 1:length(obj)
@@ -65,21 +65,27 @@ classdef Element < matlab.mixin.Heterogeneous & handle
                 error('Currently only works on scalar calls')
             end
 %             Xs = zeros(3,length(obj));
-            [Xs,masses] = obj.GetElementCoM();
-%             masses = obj.GetElementMass();
-            for i = 1:length(obj.Children)
-                tmpObj = obj.Children(i);
-                [tmpX,tmpM] = tmpObj.GetCoM();
-                tmpX = tmpObj.A' * tmpX;
-                tmpX = tmpX + repmat(obj.GetPos(tmpObj.Eta)+tmpObj.Offset,1,length(tmpM));
-                Xs = [Xs,tmpX];
-                masses = [masses,tmpM];
-            end
-            mass = sum(masses);
-            if mass == 0
-                X = mean(Xs,2);
-            else
-                X = sum(Xs.*repmat(masses,3,1),2)./mass;
+            [X,mass] = obj.GetElementCoM();
+            if ~isempty(obj.Children)
+                CoM = X.*mass;
+                childEtas = [obj.Children.Eta];
+                childPos = obj.GetPos(childEtas) + [obj.Children.Offset];
+                for i = 1:length(obj.Children)
+                    tmpObj = obj.Children(i);
+                    [tmpX,tmpM] = tmpObj.GetCoM();
+                    tmpX = tmpObj.A' * tmpX;
+                    tmpX = tmpX + repmat(childPos(:,i),1,length(tmpM));
+                    mass = mass + sum(tmpM);
+                    CoM = CoM + sum(tmpX.*repmat(tmpM,3,1),2);
+                    % Xs = [Xs,tmpX];
+                    % masses = [masses,tmpM];
+                end
+                % mass = sum(masses);
+                if mass ~= 0
+                    % X = mean(Xs,2);
+                % else
+                    X = CoM./mass;
+                end
             end
             if any(isnan(X))
                 error('NaN pos found')
@@ -112,26 +118,25 @@ classdef Element < matlab.mixin.Heterogeneous & handle
             arguments
                 opts.Offset = [0;0;0];
                 opts.eta = 0;
-                opts.Name = 'Default Component'
+                opts.Name = ''
                 opts.A = eye(3);
                 opts.EtaLength = 1;
             end
             obj.Eta = opts.eta;
             obj.Offset = opts.Offset;
             obj.A = opts.A;
-            obj.Name = opts.Name;
+            if ~isempty(opts.Name)
+                obj.Name = opts.Name;
+            end
             obj.EtaLength = opts.EtaLength;
         end
         function obj = add(obj,childObj)
             arguments
                 obj
-                childObj baff.Element
+                childObj
             end
-            
-            for i = 1:length(childObj)
-                childObj(i).Parent = obj;
-                obj.Children(end+1) = childObj(i);
-            end
+            [childObj.Parent] = deal(obj);
+            obj.Children = [obj.Children;childObj];
         end
         function X = GetPos(obj,eta)
             X = [0;0;0];

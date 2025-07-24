@@ -7,7 +7,7 @@ classdef Beam < baff.station.Base
         I (3,3,:) double = eye(3);   % 2nd Moment of Area tensor
         J (1,:) double = 1         % Torsional Constant
         tau (3,3,:) double = eye(3); % elongation tensor
-        Mat (1,:) baff.Material = baff.Material.Stiff;
+        Mat = baff.Material.Stiff;
     end
     methods
         function set.A(obj,val)

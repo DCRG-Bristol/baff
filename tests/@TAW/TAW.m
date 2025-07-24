@@ -157,7 +157,7 @@ classdef TAW < handle
             [model.Payload.FillingLevel] = deal(0);
             [model.Fuel.FillingLevel] = deal(0);
             % get overall CoM (OEM)
-            [COM,oem] = model.GetCoM;
+            [COM_oem,oem] = model.GetCoM;
             p_max = sum([model.Payload.Capacity]);
             f_max = sum([model.Fuel.Capacity]);
             mtom = obj.MTOM;
@@ -165,16 +165,18 @@ classdef TAW < handle
             if oem>mtom
                 %oem too large so return
                 m = oem;
-                x = COM(1);
+                x = COM_oem(1);
                 vals = [0;0];
                 return
             end
             p_asym = max(0,(mtom-oem-f_max));
             f_asym = max(0,(mtom-oem-p_max));
-            vals = [  0 1 1 p_asym/p_max 0;...   % OEM, max payload zero fuel, max payload MTOM. max fuel MTOM. max fuel
+            vals = [0 1 1 p_asym/p_max 0;...   % OEM, max payload zero fuel, max payload MTOM. max fuel MTOM. max fuel
                         0 0 f_asym/f_max 1 1]; 
-            [x,m] = deal(zeros(1,size(vals,2)));
-            for i = 1:size(vals,2)
+            [x,m] = deal(zeros(1,5));
+            x(1) = COM_oem(1);
+            m(1) = oem;
+            for i = 2:size(vals,2)
                 [model.Payload.FillingLevel] = deal(vals(1,i));
                 [model.Fuel.FillingLevel] = deal(vals(2,i));
                 % get overall CoM (OEM)
@@ -183,7 +185,7 @@ classdef TAW < handle
             end
         end
 
-        function AdjustCoM(obj,p)
+        function eta = AdjustCoM(obj,p)
             % AdjustCoM adjust wing pos to get CoM at OEM at p % of MAC
             model = obj.Baff;
             % get CoM range
@@ -227,7 +229,7 @@ classdef TAW < handle
             % update wings
             obj.MainWingRHS(1).Eta = eta;
             obj.MainWingLHS(1).Eta = eta;
-            obj.Baff = model;
+            % obj.Baff = model;
         end
 
 

@@ -4,12 +4,13 @@ classdef (Abstract) Base < handle & matlab.mixin.Copyable
         N = 1;
     end
     properties(SetAccess=protected)
-        Eta (1,:) double = 0;
+        Eta (1,:) = 0;
     end
     properties
-        EtaDir (3,:) double = [1;0;0];
-        StationDir (3,:) double = [0;1;0];
+        EtaDir = [1;0;0];
+        StationDir = [0;1;0];
     end
+
 
     methods
         function set.EtaDir(obj,val)
@@ -67,7 +68,7 @@ classdef (Abstract) Base < handle & matlab.mixin.Copyable
             if ~isscalar(val) || ~isnumeric(val)
                 error('can only minus scalar numeric number to Etas')
             end
-            obj.Eta = obj.Eta + val;
+            obj.Eta = obj.Eta - val;
         end
         function obj = rdivide(obj,val)
             if ~isscalar(val) || ~isnumeric(val)
@@ -105,8 +106,9 @@ classdef (Abstract) Base < handle & matlab.mixin.Copyable
                 return
             end
             
-            delta = [[0;0;0],repmat(etas(2:end)-etas(1:end-1),3,1).*EtaDirs(:,1:end-1)];
+            delta = [[0;0;0],repmat(etas(2:end)-etas(1:end-1),3,1).*obj.EtaDir(:,1:end-1)];
             pos = cumsum(delta,2);
+
             % adjust to be zero at zero eta;
             if etas(1)~=0
                 pos = pos-repmat(interp1(etas,pos',0)',1,numel(etas));
@@ -121,16 +123,26 @@ classdef (Abstract) Base < handle & matlab.mixin.Copyable
                     X = pos(:,ii-1) + (pos(:,ii)-pos(:,ii-1))*delta;
                 end
             else
-                X = interp1(etas',pos',eta)';
+                %fast interp
+                bin_idx = discretize(eta, etas);
+                % Calculate fractional indices directly
+                eta_low = etas(bin_idx);
+                eta_high = etas(bin_idx + 1);
+                alpha = (eta - eta_low) ./ (eta_high - eta_low);
+                beta = 1-alpha;
+                idx_low = bin_idx;
+                idx_high = bin_idx + 1;
+
+                X = pos(:, idx_low) .* beta + pos(:, idx_high) .* alpha;
             end
             % deal with extrapolated etas
             idx = eta<etas(1);
             if nnz(idx)>0
-                X(:,idx) = obj(1).EtaDir.*(eta(idx)-etas(1)) + repmat(pos(:,1),1,nnz(idx));
+                X(:,idx) = obj.EtaDir(:,1).*(eta(idx)-etas(1)) + repmat(pos(:,1),1,nnz(idx));
             end
             idx = eta>etas(end);
             if nnz(idx)>0
-                X(:,idx) = obj(end).EtaDir.*(eta(idx)-etas(end)) + repmat(pos(:,end),1,nnz(idx));
+                X(:,idx) = obj.EtaDir(:,end).*(eta(idx)-etas(end)) + repmat(pos(:,end),1,nnz(idx));
             end
             if any(isnan(X))
                 error("unexpected NaN in interpolation of station positions")
