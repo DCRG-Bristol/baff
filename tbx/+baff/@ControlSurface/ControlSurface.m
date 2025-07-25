@@ -45,6 +45,7 @@ classdef ControlSurface
                 Parent baff.Wing
                 opts.Origin (3,1) double = [0,0,0];
                 opts.A (3,3) double = eye(3);
+                opts.Type string {mustBeMember(opts.Type,["stick","surf","mesh"])} = "stick";
             end
             p = [];
             for i = 1:length(obj)

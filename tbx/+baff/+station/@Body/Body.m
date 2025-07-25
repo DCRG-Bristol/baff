@@ -76,7 +76,7 @@ classdef Body < baff.station.Beam
             val = isa(obj2,'baff.station.Body') && eq@baff.station.Beam(obj1,obj2) && obj1.Radius == obj2.Radius;
         end
         function out = GetIndex(obj,i)
-            if i>obj.N || i<1
+            if any(i>obj.N | i<1)
                 error('Index must be valid')
             end
             out = baff.station.Body(obj.Eta(i));
@@ -89,7 +89,7 @@ classdef Body < baff.station.Beam
             out.Radius = obj.Radius(i);
         end
         function obj = SetIndex(obj,i,val)
-            if i>obj.N || i<1
+            if any(i>obj.N | i<1)
                 error('Index must be valid')
             end
             obj.Eta(i) = val.Eta;

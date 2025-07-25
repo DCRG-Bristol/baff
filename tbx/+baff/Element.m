@@ -3,7 +3,7 @@ classdef Element < matlab.mixin.Heterogeneous & handle
     %   Detailed explanation goes here
     properties
         A = eye(3); % Rotation Matrix
-        Offset = [0;0;0]; % Offset of the element in the parent element's coordinate system
+        Offset (3,1)= [0;0;0]; % Offset of the element in the parent element's coordinate system
         isAbsolute = false; %if true, the element is referenced to the global coordinate system, otherwise it is referenced to the parent element
         Eta = 0; %eta coordinate of the element in the parent element's coordinate system
         EtaLength = 0;      % Length of the element in the eta direction
@@ -11,7 +11,7 @@ classdef Element < matlab.mixin.Heterogeneous & handle
         Parent = baff.Element.empty; % Parent element
         Children = baff.Element.empty; % Children elements
         
-        Name = "Default Component";    % Name of the element       
+        Name string = "Default Component";    % Name of the element       
         Index = 0;          % Unique index for each element (for use in HDF5 files to link parents and children)
 
         Meta struct = struct; % Meta data for the element
@@ -163,6 +163,7 @@ classdef Element < matlab.mixin.Heterogeneous & handle
                 obj
                 opts.Origin (3,1) double = [0,0,0];
                 opts.A (3,3) double = eye(3);
+                opts.Type string {mustBeMember(opts.Type,["stick","surf","mesh"])} = "stick";
             end
             plt_obj= [];
             Origin = opts.Origin + opts.A*obj.Offset;

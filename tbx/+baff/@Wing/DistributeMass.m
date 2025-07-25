@@ -14,11 +14,14 @@ function obj = DistributeMass(obj, mass, Nele,opts)
     % point proportional to the chord at each point
     % if IncludeTips include masses at both ends, otherwise spread equally
     % across
-    if isnan(opts.Etas(1))
-        Etas = [obj.AeroStations([1,end]).Eta];
-    else
-        Etas = opts.Etas;
+    Etas = opts.Etas;
+    if isnan(Etas(1))
+        Etas(1) = obj.Stations.Eta(1);
     end
+    if isnan(Etas(2))
+        Etas(2) = obj.Stations.Eta(end);
+    end
+    
     switch opts.Method
         case "ByArea"
             sec_etas = linspace(Etas(1),Etas(2),Nele+1);

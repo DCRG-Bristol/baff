@@ -1,6 +1,6 @@
 classdef Airfoil
 properties
-    Name
+    Name string
     NormArea
     NormPerimeter
     Cl_max

@@ -117,7 +117,7 @@ classdef Beam < baff.station.Base
                 && all(obj1.tau == obj2.tau,"all");
         end
         function out = GetIndex(obj,i)
-            if i>obj.N || i<1
+            if any(i>obj.N | i<1)
                 error('Index must be valid')
             end
             out = baff.station.Beam(obj.Eta(i));
@@ -129,7 +129,7 @@ classdef Beam < baff.station.Base
             out.tau = obj.tau(:,:,i);
         end
         function obj = SetIndex(obj,i,val)
-            if i>obj.N || i<1
+            if any(i>obj.N | i<1)
                 error('Index must be valid')
             end
             obj.Eta(i) = val.Eta;

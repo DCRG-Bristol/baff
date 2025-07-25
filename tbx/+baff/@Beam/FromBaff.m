@@ -14,7 +14,7 @@ bStations = baff.station.Beam.FromBaff(filepath,loc);
 bSum = [0,cumsum(bIdx)'];
 for i = 1:Qty
     obj(i) = baff.Beam();
-    obj(i).Stations = bStations((bSum(i)+1):(bSum(i)+bIdx(i)));
+    obj(i).Stations = bStations.GetIndex((bSum(i)+1):(bSum(i)+bIdx(i)));
 end
 BaffToProp(obj,filepath,loc);    
 end

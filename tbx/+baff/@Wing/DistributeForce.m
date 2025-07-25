@@ -17,7 +17,7 @@ function obj = DistributeForce(obj,Nele,opts)
         etas = opts.Etas;
     else
         if isnan(opts.EtaLimits(1))
-            Etas = [obj.AeroStations([1,end]).Eta];
+            Etas = obj.AeroStations.Eta([1,end]);
         else
             Etas = opts.Etas;
         end
@@ -33,7 +33,7 @@ function obj = DistributeForce(obj,Nele,opts)
     for i = 1:length(etas)
         tmp_p = baff.Point("eta",etas(i),"Name",sprintf('%s_%.0f',opts.tag,i),"Force",opts.Force);
         if opts.BeamOffset ~= 0
-            tmp_p.Offset = secs(i).StationDir./norm(secs(i).StationDir)*opts.BeamOffset*secs(i).Chord;
+            tmp_p.Offset = secs.StationDir(:,i)./norm(secs.StationDir(:,i))*opts.BeamOffset*secs.Chord(i);
         end
         obj.add(tmp_p);
     end

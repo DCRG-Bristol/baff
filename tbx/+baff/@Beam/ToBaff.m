@@ -7,7 +7,7 @@ if N ~= 0
     %write beam stations
     Bstations = [obj.Stations];
     Bstations.ToBaff(filepath,loc);
-    BNs = arrayfun(@(x)length(x.Stations),obj);
+    BNs = arrayfun(@(x)x.Stations.N,obj);
     h5writeatt(filepath,sprintf('%s/',loc),'BeamStationsIdx', BNs);
 end
 end

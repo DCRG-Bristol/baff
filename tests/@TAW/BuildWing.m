@@ -79,13 +79,9 @@ con_etas = (etas(etas<=etas_centre2tip(2) & etas>=etas_centre2tip(1))-etas_centr
 Connector.Stations = Connector.Stations.interpolate(con_etas);
 deltaEta = (obj.Span/2)/20/Connector.EtaLength;
 Connector.AeroStations = Connector.AeroStations.interpolate(cast.util.AddUntillFill(Connector.AeroStations.Eta,deltaEta));
-
 if ~isRight
-    for i = 1:length(Connector.Stations)
-        Connector.Stations(i).EtaDir(1) = -Connector.Stations(i).EtaDir(1);
-    end
+    Connector.Stations.EtaDir(1,:) = -Connector.Stations.EtaDir(1,:);
 end
-
 %% fuel volume
 ConFuelVol = Connector.AeroStations.GetNormVolume([0.15 0.65])*Connector.EtaLength;
 % if enforced volume adjust scaling factor
@@ -127,9 +123,7 @@ Wing.AeroStations = Wing.AeroStations.interpolate(aero_eta);
 
 %convert to draggable item
 if ~isRight
-    for i = 1:length(Wing.Stations)
-        Wing.Stations(i).EtaDir(1) = -Wing.Stations(i).EtaDir(1);
-    end
+    Wing.Stations.EtaDir(1,:) = -Wing.Stations.EtaDir(1,:);
 end
 Connector.add(Wing);
 
@@ -195,9 +189,7 @@ if HasFoldingWingtip
     %convert to draggable item
     if ~isRight
         FFWT.A = ads.util.roty(obj.Dihedral(end));
-        for i = 1:length(FFWT.Stations)
-            FFWT.Stations(i).EtaDir(1) = -FFWT.Stations(i).EtaDir(1);
-        end
+        FFWT.Stations.EtaDir(1,:) = -FFWT.Stations.EtaDir(1,:);
     else
         FFWT.A = ads.util.roty(-obj.Dihedral(end));
     end

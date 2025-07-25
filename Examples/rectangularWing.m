@@ -12,10 +12,7 @@ eta_hinge = 0.8;
 mainBeam = baff.Wing.UniformWing(L*eta_hinge,BarThickness,BarWidth...
     ,baff.Material.Stainless400,WingChord,BarChordwisePos,"NAeroStations",10);
 mainBeam.Name = 'Wing 1';
-twists = linspace(0,10,10);
-for i = 1:10
-    mainBeam.AeroStations(i).Twist = twists(i);
-end
+mainBeam.AeroStations.Twist = linspace(0,10,10);
 % Add Control Surface
 mainBeam.ControlSurfaces(1) =  baff.ControlSurface("Ail",[0.7 0.9],[0.25 0.25]);
 

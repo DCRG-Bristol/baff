@@ -18,7 +18,7 @@ obj.StationDir = h5read(filepath,sprintf('%s/AeroStations/StationDir',loc));
 obj.Chord = h5read(filepath,sprintf('%s/AeroStations/Chord',loc));
 obj.Twist = h5read(filepath,sprintf('%s/AeroStations/Twist',loc));
 obj.BeamLoc = h5read(filepath,sprintf('%s/AeroStations/BeamLoc',loc));
-obj.ThicknessRatios = h5read(filepath,sprintf('%s/AeroStations/ThicknessRatio',loc));
+obj.ThicknessRatio = h5read(filepath,sprintf('%s/AeroStations/ThicknessRatio',loc));
 obj.LiftCurveSlope = h5read(filepath,sprintf('%s/AeroStations/LiftCurveSlope',loc));
 
 obj.LinearDensity = h5read(filepath,sprintf('%s/AeroStations/LinearDensity',loc));

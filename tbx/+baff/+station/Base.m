@@ -124,7 +124,7 @@ classdef (Abstract) Base < handle & matlab.mixin.Copyable
                 end
             else
                 %fast interp
-                bin_idx = discretize(eta, etas);
+                bin_idx = discretize(clip(eta,min(etas),max(etas)), etas);
                 % Calculate fractional indices directly
                 eta_low = etas(bin_idx);
                 eta_high = etas(bin_idx + 1);

@@ -142,7 +142,7 @@ classdef Aero < baff.station.Base
                 && all(obj1.MassLoc == obj2.MassLoc) && all(obj1.StationDir == obj2.StationDir,"all");
         end 
         function out = GetIndex(obj,i)
-            if i>obj.N || i<1
+            if any(i>obj.N | i<1)
                 error('Index must be valid')
             end
             out = baff.station.Aero(obj.Eta(i));
@@ -160,7 +160,7 @@ classdef Aero < baff.station.Base
             out.MassLoc = obj.MassLoc(i);
         end
         function obj = SetIndex(obj,i,val)
-            if i>obj.N || i<1
+            if any(i>obj.N | i<1)
                 error('Index must be valid')
             end
             obj.Eta(i) = val.Eta;

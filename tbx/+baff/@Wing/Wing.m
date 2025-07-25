@@ -152,7 +152,7 @@ classdef Wing < baff.Beam
             stations = baff.station.Beam.Bar(linspace(0,opts.etaBeamMax,opts.NStations),barHeight,barWidth,Mat=Material);
             aeroStation = baff.station.Aero(0,Chord,BeamLoc,LiftCurveSlope=opts.LiftCurveSlope);
             %create end aero station
-            aeroStations = aeroStation.Distribute(linspace(opts.etaAeroMin,opts.etaAeroMax,opts.NAeroStations));
+            aeroStations = aeroStation.Duplicate(linspace(opts.etaAeroMin,opts.etaAeroMax,opts.NAeroStations));
             %gen wing
             obj = baff.Wing(aeroStations);
             obj.EtaLength = length;

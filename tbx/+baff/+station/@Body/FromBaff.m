@@ -8,10 +8,10 @@ if Qty == 0
     return;
 end
 %% create Body Stations
-obj = baff.station.Beam.Blank(Qty);
+obj = baff.station.Body.Blank(Qty);
 %% create Mats
 aIdx = h5readatt(filepath,[loc,'/'],'MatsIdx');
-Mats = baff.Mats.FromBaff(filepath,loc);
+Mats = baff.Material.FromBaff(filepath,loc);
 obj.Mat = Mats(aIdx);
 %% create stations
 obj.Eta = h5read(filepath,sprintf('%s/BodyStations/Eta',loc));

@@ -45,10 +45,11 @@ classdef Model < handle
                 obj.Orphans(end+1) = ele;
             end
         end
-        function draw(obj,fig_handle)
+        function draw(obj,fig_handle,opts)
             arguments
                 obj
                 fig_handle = figure;
+                opts.Type string {mustBeMember(opts.Type,["stick","surf","mesh"])} = "stick";
             end
             hold on
             
@@ -58,7 +59,7 @@ classdef Model < handle
             %draw the elements
             plt_obj = [];
             for i = 1:length(obj.Orphans)
-                p = obj.Orphans(i).draw();
+                p = obj.Orphans(i).draw(Type=opts.Type);
                 plt_obj = [plt_obj,p];
             end
             if isa(fig_handle,'matlab.ui.Figure')

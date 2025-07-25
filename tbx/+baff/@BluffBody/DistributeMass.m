@@ -12,15 +12,20 @@ function obj = DistributeMass(obj, mass, Nele,opts)
     end
     % create N lumped masses spread across the wing with the fraction at each
     % point proportional to the chord at each point
-    if isnan(opts.Etas(1))
-        Etas = [obj.Stations([1,end]).Eta];
-    else
-        Etas = opts.Etas;
+    Etas = opts.Etas;
+    if isnan(Etas(1))
+        Etas(1) = obj.Stations.Eta(1);
     end
+    if isnan(Etas(2))
+        Etas(2) = obj.Stations.Eta(end);
+    end
+
+    % get mass of each section
     etas = linspace(Etas(1),Etas(2),Nele+1);
     secs = obj.Stations.interpolate(etas);
     NormVols = secs.GetNormVolumes();
     masses = NormVols./sum(NormVols) * mass;
+
     % get postions of the masses
     if opts.IncludeTips
         etas = linspace(Etas(1),Etas(2),Nele);
@@ -28,6 +33,7 @@ function obj = DistributeMass(obj, mass, Nele,opts)
         etas = linspace(Etas(1),Etas(2),(2*Nele)+1);
         etas = etas(2:2:(end-1));
     end
+
     %create the point masses and add to the wing
     for i = 1:Nele
         if opts.isFuel
@@ -40,4 +46,5 @@ function obj = DistributeMass(obj, mass, Nele,opts)
         tmp_mass.Offset = opts.Offset;
         obj.add(tmp_mass);
     end
+
 end

@@ -3,31 +3,52 @@ arguments
     obj
     opts.Origin (3,1) double = [0,0,0];
     opts.A (3,3) double = eye(3);
+    opts.Type string {mustBeMember(opts.Type,["stick","surf","mesh"])} = "surf";
 end
 Origin = opts.Origin + opts.A*(obj.Offset);
 Rot = opts.A*obj.A;
-%plot beam
-N = length(obj.Stations);
-points = cell2mat(arrayfun(@(x)obj.GetPos(x),[obj.Stations.Eta],'UniformOutput',false));
-points = repmat(Origin,1,N) + Rot*points;
+%get central points
+N = obj.Stations.N;
+points = repmat(Origin,1,N) + Rot*obj.GetPos(obj.Stations.Eta);
+
+% create mesh
+th = 0:pi/10:2*pi;
+Nth = length(th);
+stDirs = obj.Stations.StationDir./vecnorm(obj.Stations.StationDir);
+z = cross(obj.Stations.EtaDir./vecnorm(obj.Stations.EtaDir),stDirs);
+perp = cross(stDirs,z);
+% create mesh
+[X,Y,Z] = deal(zeros(Nth,N));
+for n = 1:N
+    A = [stDirs(:,n),cross(perp(:,n),stDirs(:,n)),perp(:,n)];
+    Xi = A*[obj.Stations.Radius(n).*cos(th);obj.Stations.Radius(n).*sin(th);th*0] + repmat(points(:,n),1,length(th));
+    X(:,n) = Xi(1,:)';
+    Y(:,n) = Xi(2,:)';
+    Z(:,n) = Xi(3,:)';
+end
 p = plot3(points(1,:),points(2,:),points(3,:),'-o');
 p.Color = 'c';
 p.MarkerFaceColor = 'c';
 p.Tag = 'Body';
-%plot Beam Stations
-th = 0:pi/50:2*pi;
-stDirs = obj.Stations.StationDir./vecnorm(obj.Stations.StationDir);
-z = cross(obj.Stations.EtaDir./vecnorm(obj.Stations.EtaDir),stDirs);
-perp = cross(stDirs,z);
-
-for n = 1:obj.N
-    A = [stDirs(:,n),cross(perp(:,n),stDirs(:,n)),perp(:,n)];
-    X = A*[obj.Stations.Radius(n).*cos(th);obj.Stations.Radius(n).*sin(th);th*0];
-    plt_obj = plot3(X(1,:),X(2,:),X(3,:),'-');
-    plt_obj.Color = [0.4 0.4 0.4];
-    plt_obj.Tag = 'Body';
-    plt_objs(end+1) = plt_obj;
+switch opts.Type
+    case "stick"
+        %plot Beam Stations
+        for n = 1:N
+            plt_obj = plot3(X(:,n),Y(:,n),Z(:,n),'-');
+            plt_obj.Color = [0.4 0.4 0.4];
+            plt_obj.Tag = 'Body';
+            p(end+1) = plt_obj;
+        end
+    case "surf"
+        % create mesh
+        p(end+1) = surf(X, Y, Z, FaceColor=[1 1 1]*0.9, EdgeColor='k');
+        p(end).Tag = 'BodySurface';
+    case "mesh"
+        % create mesh
+        p(end+1) = surf(X, Y, Z, FaceColor=[1 1 1]*0.9, EdgeColor='none');
+        p(end).Tag = 'BodySurface';
 end
+
 
 %plot children
 optsCell = namedargs2cell(opts);
