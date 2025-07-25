@@ -2,6 +2,7 @@
 st1 = baff.station.Body(0,A=1,J=0.1,radius=2);
 
 %% Test 1: test equality
+st1 = baff.station.Body(0,A=1,J=0.1,radius=2);
 st2 = baff.station.Body(0,A=1,J=0.1,radius=2);
 st3 = baff.station.Body(0,A=1,J=0.1,radius=1);
 %manually test
@@ -19,6 +20,7 @@ assert(st1==st2);
 assert(st1~=st3);
 
 %% Test 2: test concatination
+st1 = baff.station.Body(0,A=1,J=0.1,radius=2);
 st2 = baff.station.Body(1,A=0.5,J=0.01,radius=1);
 sts = st1 & st2;
 assert(all(sts.Eta == [st1.Eta,st2.Eta]));
@@ -32,6 +34,7 @@ assert(all(sts.Mat == [st1.Mat,st2.Mat]));
 assert(all(sts.Radius == [st1.Radius,st2.Radius]));
 
 %% Test 3: distribute station from 0 to 1 eta
+st1 = baff.station.Body(0,A=1,J=0.1,radius=2);
 sts = st1.Duplicate(0:0.1:1);
 assert(sts.N == 11);
 %extract the 5th element

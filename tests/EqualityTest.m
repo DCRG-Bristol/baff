@@ -73,9 +73,9 @@ classdef EqualityTest < matlab.unittest.TestCase
         end
         %% test beam-like Elements
         function BeamEqTest(testCase)
-            st = baff.station.Beam(0) + [0,0.5,1];
+            st = baff.station.Beam([0,0.5,1]);
             ele1 = baff.Beam("eta",0,"Stations",st);
-            ele2 = baff.Beam("eta",0.5,"Stations",st(1) + (0:0.2:1));
+            ele2 = baff.Beam("eta",0.5,"Stations",st.GetIndex(1).Duplicate(0:0.2:1));
             ele3 = baff.Beam("eta",0,"Stations",st);
             testCase.assertTrue(ele1 == ele3);
             testCase.assertFalse(ele1 ~= ele3);
@@ -84,9 +84,9 @@ classdef EqualityTest < matlab.unittest.TestCase
             testCase.assertTrue(ele1 ~= ele2);
         end
         function BodyEqTest(testCase)
-            st = baff.station.Body(0,"radius",2) + [0,0.5,1];
+            st = baff.station.Body([0,0.5,1],"radius",2);
             ele1 = baff.BluffBody("eta",0,"Stations",st);
-            ele2 = baff.BluffBody("eta",0.5,"Stations",st(1) + (0:0.2:1));
+            ele2 = baff.BluffBody("eta",0.5,"Stations",st.GetIndex(1).Duplicate(0:0.2:1));
             ele3 = baff.BluffBody("eta",0,"Stations",st);
             testCase.assertTrue(ele1 == ele3);
             testCase.assertFalse(ele1 ~= ele3);
@@ -95,10 +95,10 @@ classdef EqualityTest < matlab.unittest.TestCase
             testCase.assertTrue(ele1 ~= ele2);
         end
         function WingEqTest(testCase)
-            st = baff.station.Beam(0) + [0,0.5,1];
-            aSt = baff.station.Aero(0,2,0.4) + (0:0.3:1.2);
+            st = baff.station.Beam([0,0.5,1]);
+            aSt = baff.station.Aero(0:0.3:1.2,2,0.4);
             ele1 = baff.Wing(aSt,"BeamStations",st,"eta",0,"EtaLength",2);
-            ele2 = baff.Wing(aSt(1) + (0:0.2:1),"BeamStations",st,"eta",0.3,"EtaLength",1);
+            ele2 = baff.Wing(aSt.GetIndex(1).Duplicate(0:0.2:1),"BeamStations",st,"eta",0.3,"EtaLength",1);
             ele3 = baff.Wing(aSt,"BeamStations",st,"eta",0,"EtaLength",2);
             testCase.assertTrue(ele1 == ele3);
             testCase.assertFalse(ele1 ~= ele3);

@@ -73,7 +73,7 @@ classdef Body < baff.station.Beam
             end
         end
         function val = eq(obj1,obj2)
-            val = isa(obj2,'baff.station.Body') && eq@baff.station.Beam(obj1,obj2) && obj1.Radius == obj2.Radius;
+            val = isa(obj2,'baff.station.Body') && eq@baff.station.Beam(obj1,obj2) && all(obj1.Radius == obj2.Radius);
         end
         function out = GetIndex(obj,i)
             if any(i>obj.N | i<1)

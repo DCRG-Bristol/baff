@@ -2,6 +2,7 @@
 st1 = baff.station.Aero(0,1,0.25);
 
 %% Test 1: test equality
+st1 = baff.station.Aero(0,1,0.25);
 st2 = baff.station.Aero(0,1,0.25);
 st3 = baff.station.Aero(1,1,0.25);
 %manually test
@@ -23,6 +24,7 @@ assert(st1==st2);
 assert(st1~=st3);
 
 %% Test 2: test concatination
+st1 = baff.station.Aero(0,1,0.25);
 st2 = baff.station.Aero(1,1,0.25);
 sts = st1 & st2;
 assert(all(sts.Eta == [st1.Eta,st2.Eta]));
@@ -38,6 +40,7 @@ assert(all(sts.LinearInertia == cat(3,st1.LinearInertia,st2.LinearInertia),"all"
 assert(all(sts.MassLoc == [st1.MassLoc,st2.MassLoc]));
 
 %% Test 3: distribute station from 0 to 1 eta
+st1 = baff.station.Aero(0,1,0.25);
 sts = st1.Duplicate(0:0.1:1);
 assert(sts.N == 11);
 %extract the 5th element

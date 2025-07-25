@@ -36,5 +36,3 @@ See also the list of [contributors](https://github.com/DCRG-bristol/baff/contrib
 This project is licensed under the Apache License - see the [LICENSE.md](https://github.com/farg-bristol/Matran/blob/master/LICENSE) file for details
 
 ## Acknowledgments
-
-* Inspired by the [pyNastran](https://github.com/SteveDoyle2/pyNastran) package by Steve Doyle.
