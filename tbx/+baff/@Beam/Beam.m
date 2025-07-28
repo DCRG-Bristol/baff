@@ -9,7 +9,7 @@ classdef Beam < baff.Element
         TemplateHdf5(filepath,loc);
     end
     methods
-        function val = Type(obj)
+        function val = getType(obj)
             val ="Beam";
         end
     end

@@ -12,7 +12,7 @@ classdef Point < baff.Element
         TemplateHdf5(filepath,loc);
     end
     methods
-        function val = Type(obj)
+        function val = getType(obj)
             val ="Point";
         end
     end

@@ -1,12 +1,13 @@
 classdef Airfoil
-properties
-    Name string
-    NormArea
-    NormPerimeter
-    Cl_max
-    Etas (:,1) double
-    Ys (:,2) double
-end
+    %Airfoil Represents an airfoil with geometry and aerodynamic properties.
+    properties
+        Name string % Name of the airfoil
+        NormArea     % Normalized area
+        NormPerimeter % Normalized perimeter
+        Cl_max       % Maximum lift coefficient
+        Etas (:,1) double % Normalized chordwise locations
+        Ys (:,2) double   % Upper and lower surface thickness distribution
+    end
 properties(Dependent)
     NEta
 end

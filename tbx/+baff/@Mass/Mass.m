@@ -10,7 +10,7 @@ classdef Mass < baff.Point
         TemplateHdf5(filepath,loc);
     end
     methods
-        function val = Type(obj)
+        function val = getType(obj)
             val ="Mass";
         end
     end

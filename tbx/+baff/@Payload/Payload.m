@@ -14,7 +14,7 @@ classdef Payload < baff.Mass
     end
 
     methods
-        function val = Type(obj)
+        function val = getType(obj)
             val ="Payload";
         end
     end

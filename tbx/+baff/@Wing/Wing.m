@@ -14,7 +14,7 @@ classdef Wing < baff.Beam
         function A = get.PlanformArea(obj)
             A = obj.AeroStations.GetNormArea * obj.EtaLength;
         end
-        function val = Type(obj)
+        function val = getType(obj)
             val ="Wing";
         end
         function b = get.Span(obj)
