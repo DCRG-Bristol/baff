@@ -92,7 +92,7 @@ def find_matlab_items(package_dir):
     return class_map, function_map
 
 
-def write_class_rst(subpackage, class_name):
+def write_class_rst(subpackage, class_name, package_dir):
     """Generate RST file for a MATLAB class."""
     sub_dir = os.path.join(API_DIR, subpackage.replace('.', os.sep)) if subpackage else API_DIR
     os.makedirs(sub_dir, exist_ok=True)
@@ -105,9 +105,17 @@ def write_class_rst(subpackage, class_name):
     else:
         full_qual_name = f"+{ROOT_PACKAGE}.{class_name}"
 
+    # Look for README in @ClassName folder
+    class_readme_path = find_class_readme_file(package_dir, subpackage, class_name)
+
     with open(rst_path, 'w', encoding='utf-8') as f:
         f.write(f"{class_name} class\n")
         f.write("=" * (len(class_name) + 7) + "\n\n")
+        
+        # Include class README content if found
+        if class_readme_path:
+            include_readme_content(f, class_readme_path)
+        
         f.write(f".. mat:autoclass:: {full_qual_name}\n")
         f.write("   :members:\n")
         f.write("   :undoc-members:\n")
@@ -138,7 +146,7 @@ def write_function_rst(subpackage, function_name):
 
 
 def find_readme_file(package_dir, subpackage):
-    """Find readme file in package directory (case-insensitive search)."""
+    """Find readme.rst file in package directory (case-insensitive search)."""
     if subpackage:
         # Convert subpackage to directory path
         sub_path = subpackage.replace('.', os.sep)
@@ -150,30 +158,53 @@ def find_readme_file(package_dir, subpackage):
         package_path = package_dir
     
     if not os.path.exists(package_path):
-        return None, None
+        return None
     
     # Get all files in the directory for case-insensitive matching
     try:
         actual_files = os.listdir(package_path)
     except OSError:
-        return None, None
+        return None
     
-    # Check for various readme file names (case-insensitive)
-    readme_patterns = ['readme.txt', 'readme.md', 'readme.rst']
+    # Look for readme.rst (case-insensitive)
+    for actual_file in actual_files:
+        if actual_file.lower() == 'readme.rst':
+            return os.path.join(package_path, actual_file)
     
-    for pattern in readme_patterns:
-        # Find case-insensitive match
-        for actual_file in actual_files:
-            if actual_file.lower() == pattern:
-                readme_path = os.path.join(package_path, actual_file)
-                file_ext = actual_file.lower().split('.')[-1]
-                return readme_path, file_ext
-    
-    return None, None
+    return None
 
 
-def include_readme_content(f, readme_path, file_ext):
-    """Include readme content in the RST file."""
+def find_class_readme_file(package_dir, subpackage, class_name):
+    """Find readme.rst file in @ClassName directory (case-insensitive search)."""
+    if subpackage:
+        # Convert subpackage to directory path
+        sub_path = subpackage.replace('.', os.sep)
+        # Convert to +package format
+        path_parts = sub_path.split(os.sep)
+        class_dir = os.path.join(package_dir, *[f'+{part}' for part in path_parts], f'@{class_name}')
+    else:
+        # Root package
+        class_dir = os.path.join(package_dir, f'@{class_name}')
+    
+    if not os.path.exists(class_dir):
+        return None
+    
+    # Get all files in the @Class directory for case-insensitive matching
+    try:
+        actual_files = os.listdir(class_dir)
+    except OSError:
+        return None
+    
+    # Look for readme.rst (case-insensitive)
+    for actual_file in actual_files:
+        if actual_file.lower() == 'readme.rst':
+            return os.path.join(class_dir, actual_file)
+    
+    return None
+
+
+def include_readme_content(f, readme_path):
+    """Include readme.rst content in the RST file."""
     try:
         with open(readme_path, 'r', encoding='utf-8') as readme_f:
             content = readme_f.read().strip()
@@ -181,25 +212,8 @@ def include_readme_content(f, readme_path, file_ext):
         if content:
             f.write("Overview\n")
             f.write("--------\n\n")
-            
-            if file_ext == 'rst':
-                # For RST files, include content directly
-                f.write(content)
-                f.write("\n\n")
-            elif file_ext == 'md':
-                # For markdown, include as a literal block with note
-                f.write(".. note::\n")
-                f.write("   This content is from a Markdown file and may not render perfectly.\n\n")
-                f.write("::\n\n")
-                for line in content.split('\n'):
-                    f.write(f"   {line}\n")
-                f.write("\n")
-            else:  # txt files
-                # For text files, include as literal block
-                f.write("::\n\n")
-                for line in content.split('\n'):
-                    f.write(f"   {line}\n")
-                f.write("\n")
+            f.write(content)
+            f.write("\n\n")
     except Exception as e:
         print(f"⚠️  Warning: Could not read README file {readme_path}: {e}")
 
@@ -236,7 +250,7 @@ def write_subpackage_index(subpackage, class_names, function_names, all_subpacka
     child_packages.sort()
     
     # Look for README file
-    readme_path, file_ext = find_readme_file(package_dir, subpackage)
+    readme_path = find_readme_file(package_dir, subpackage)
     
     with open(index_path, 'w', encoding='utf-8') as f:
         f.write(f"{title}\n")
@@ -244,7 +258,7 @@ def write_subpackage_index(subpackage, class_names, function_names, all_subpacka
         
         # Include README content if found
         if readme_path:
-            include_readme_content(f, readme_path, file_ext)
+            include_readme_content(f, readme_path)
         
         # Add subpackages section if any
         if child_packages:
@@ -296,9 +310,9 @@ def write_api_reference_index(subpackages):
     api_ref_path = os.path.join(DOCS_DIR, 'api_reference.rst')
     
     with open(api_ref_path, 'w', encoding='utf-8') as f:
-        f.write("Matlab API Reference\n")
-        f.write("=====================\n\n")
-        f.write("Auto-generated API documentation for the Matlab implementation of BAFF.\n\n")
+        f.write("API Reference\n")
+        f.write("=============\n\n")
+        f.write("Complete API documentation for all BAFF packages.\n\n")
         
         f.write(".. toctree::\n")
         f.write("   :maxdepth: 2\n\n")
@@ -310,6 +324,33 @@ def write_api_reference_index(subpackages):
                 f.write("   api/index\n")
             elif '.' not in sub:  # First level subpackages only
                 f.write(f"   api/{sub}/index\n")
+
+
+def write_package_entry_point():
+    """Generate entry point files for embedding in parent documentation."""
+    # Create a simple baff.rst that can be referenced from parent docs
+    entry_point_path = os.path.join(DOCS_DIR, 'baff.rst')
+    
+    with open(entry_point_path, 'w', encoding='utf-8') as f:
+        f.write("BAFF Package\n")
+        f.write("============\n\n")
+        f.write("Binary Aircraft File Format (BAFF) package documentation.\n\n")
+        
+        f.write(".. toctree::\n")
+        f.write("   :maxdepth: 2\n\n")
+        f.write("   overview\n")
+        f.write("   api_reference\n")
+    
+    # Also create a minimal standalone index for iframe embedding
+    iframe_index_path = os.path.join(DOCS_DIR, 'standalone.rst')
+    
+    with open(iframe_index_path, 'w', encoding='utf-8') as f:
+        f.write("BAFF Documentation\n")
+        f.write("==================\n\n")
+        f.write(".. raw:: html\n\n")
+        f.write("   <div style=\"margin: -20px;\">\n")
+        f.write("   <iframe src=\"../_static/baff_docs/index.html\" width=\"100%\" height=\"800px\" frameborder=\"0\"></iframe>\n")
+        f.write("   </div>\n")
 
 
 def print_summary(class_map, function_map):
@@ -333,6 +374,21 @@ def print_summary(class_map, function_map):
         print(f"  📦 {pkg_name}: {classes} classes, {functions} functions")
 
 
+def write_package_entry_point():
+    """Generate a baff.rst file for embedding in parent documentation."""
+    entry_point_path = os.path.join(DOCS_DIR, 'baff.rst')
+    
+    with open(entry_point_path, 'w', encoding='utf-8') as f:
+        f.write("BAFF Package\n")
+        f.write("============\n\n")
+        f.write("Binary Aircraft File Format (BAFF) package documentation.\n\n")
+        
+        f.write(".. toctree::\n")
+        f.write("   :maxdepth: 2\n\n")
+        f.write("   overview\n")
+        f.write("   api_reference\n")
+
+
 if __name__ == '__main__':
     print(f"🔍 Scanning MATLAB package: +{ROOT_PACKAGE}")
     package_path = os.path.join(MATLAB_SRC_DIR, f'+{ROOT_PACKAGE}')
@@ -352,7 +408,7 @@ if __name__ == '__main__':
         functions = function_map.get(subpackage, set())
         
         # Generate individual RST files
-        class_rst_files = [write_class_rst(subpackage, cls) for cls in classes]
+        class_rst_files = [write_class_rst(subpackage, cls, package_path) for cls in classes]
         function_rst_files = [write_function_rst(subpackage, func) for func in functions]
         
         # Generate subpackage index
@@ -364,10 +420,14 @@ if __name__ == '__main__':
     # Generate top-level index
     write_top_index(all_subpackages)
     
+    # Generate entry point for embedding in parent docs
+    write_package_entry_point()
+    
     print_summary(class_map, function_map)
     print(f"\n✅ Documentation structure generated successfully!")
     print(f"📝 Run: sphinx-build -b html {DOCS_DIR} {DOCS_DIR}/_build/html")
     print(f"\n📋 Next steps:")
     print(f"   1. Create '{DOCS_DIR}/overview.rst' with your manual overview content")
-    print(f"   2. Add any README files to package directories for automatic inclusion")
+    print(f"   2. Add 'readme.rst' files to package directories and @Class folders for automatic inclusion")
     print(f"   3. Build the documentation with Sphinx")
+    print(f"   4. For embedding in parent docs, reference '{DOCS_DIR}/baff.rst'")
