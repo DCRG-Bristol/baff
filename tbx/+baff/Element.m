@@ -68,6 +68,32 @@ classdef Element < matlab.mixin.Heterogeneous & handle
             end
         end        
     end
+    % operator overloading
+    methods
+        function val = ne(obj1,obj2)
+            %overloads the ~= operator
+            val = ~(obj1.eq(obj2));
+        end
+        function val = eq(obj1,obj2)
+            %overloads the == operator
+            if length(obj1)~= length(obj2) || ~isa(obj2,'baff.Element')
+                val = false;
+                return
+            end
+            val = true;
+            for i = 1:length(obj1)
+                val = val && all(obj1(i).A == obj2(i).A,'all');
+                val = val && all(obj1(i).Offset == obj2(i).Offset,'all');
+                val = val && obj1(i).isAbsolute == obj2(i).isAbsolute;
+                val = val && obj1(i).Eta == obj2(i).Eta;
+                val = val && obj1(i).EtaLength == obj2(i).EtaLength;
+                val = val && obj1(i).Children == obj2(i).Children;
+                % dont check index as its only there to facitliate read/write...
+                % dont check name to be able to see if the actual element
+                % is the same
+            end
+        end
+    end
     methods
         function Area = WettedArea(obj)
             %Returns the wetted area of the object (Default 0)
@@ -128,29 +154,6 @@ classdef Element < matlab.mixin.Heterogeneous & handle
             end
             if any(isnan(X))
                 error('NaN pos found')
-            end
-        end
-        function val = ne(obj1,obj2)
-            %overloads the ~= operator
-            val = ~(obj1.eq(obj2));
-        end
-        function val = eq(obj1,obj2)
-            %overloads the == operator
-            if length(obj1)~= length(obj2) || ~isa(obj2,'baff.Element')
-                val = false;
-                return
-            end
-            val = true;
-            for i = 1:length(obj1)
-                val = val && all(obj1(i).A == obj2(i).A,'all');
-                val = val && all(obj1(i).Offset == obj2(i).Offset,'all');
-                val = val && obj1(i).isAbsolute == obj2(i).isAbsolute;
-                val = val && obj1(i).Eta == obj2(i).Eta;
-                val = val && obj1(i).EtaLength == obj2(i).EtaLength;
-                val = val && obj1(i).Children == obj2(i).Children;
-                % dont check index as its only there to facitliate read/write...
-                % dont check name to be able to see if the actual element
-                % is the same
             end
         end
     end
