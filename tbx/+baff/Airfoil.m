@@ -1,12 +1,13 @@
 classdef Airfoil
-properties
-    Name string
-    NormArea
-    NormPerimeter
-    Cl_max
-    Etas (:,1) double
-    Ys (:,2) double
-end
+    %Airfoil Represents an airfoil with geometry and aerodynamic properties.
+    properties
+        Name string % Name of the airfoil
+        NormArea     % Normalized area
+        NormPerimeter % Normalized perimeter
+        Cl_max       % Maximum lift coefficient
+        Etas (:,1) double % Normalized chordwise locations
+        Ys (:,2) double   % Upper and lower surface thickness distribution
+    end
 properties(Dependent)
     NEta
 end
@@ -55,14 +56,14 @@ methods
         h5write(filepath,sprintf('%s/Airfoils/NormArea',loc),[obj.NormArea],[1 1],[1 N]);
         h5write(filepath,sprintf('%s/Airfoils/Cl_max',loc),[obj.Cl_max],[1 1],[1 N]);
         h5write(filepath,sprintf('%s/Airfoils/NormPerimeter',loc),[obj.NormPerimeter],[1 1],[1 N]);
-        Etas = zeros(max([obj.NEta]),N)*nan;
-        Ys = zeros(max([obj.NEta]),N*2)*nan;
+        ac_Etas = zeros(max([obj.NEta]),N)*nan;
+        ac_Ys = zeros(max([obj.NEta]),N*2)*nan;
         for i = 1:N
-            Etas(1:obj(i).NEta,i) = obj(i).Etas;
-            Ys(1:obj(i).NEta,(i*2-1):(i*2)) = obj(i).Ys;
+            ac_Etas(1:obj(i).NEta,i) = obj(i).Etas;
+            ac_Ys(1:obj(i).NEta,(i*2-1):(i*2)) = obj(i).Ys;
         end
-        h5write(filepath,sprintf('%s/Airfoils/Etas',loc),Etas,[1 1],[size(Etas,1) N]);
-        h5write(filepath,sprintf('%s/Airfoils/Ys',loc),Ys,[1 1],[size(Etas,1) N*2]);    
+        h5write(filepath,sprintf('%s/Airfoils/Etas',loc),ac_Etas,[1 1],[size(ac_Etas,1) N]);
+        h5write(filepath,sprintf('%s/Airfoils/Ys',loc),ac_Ys,[1 1],[size(ac_Etas,1) N*2]);    
         h5writeatt(filepath,[loc,'/Airfoils/'],'Qty', N);
     end
     
@@ -131,11 +132,15 @@ methods(Static)
         obj = baff.Airfoil(name,Area,perimeter,1.5,etas',ys');
     end
     function obj = NACA_sym()
-        etas = 0:0.02:1;
-        t = 1;
-        yt = 5*t*(0.2969*sqrt(etas)-0.126*etas-0.3516*etas.^2+0.2843*etas.^3-0.1015*etas.^4);
-        ys = [yt;-yt];
-        obj = baff.Airfoil('NACA',0.6833,3.04,1.5,etas',ys');
+        persistent defaultAirfoil
+        if isempty(defaultAirfoil)
+            etas = 0:0.02:1;
+            t = 1;
+            yt = 5*t*(0.2969*sqrt(etas)-0.126*etas-0.3516*etas.^2+0.2843*etas.^3-0.1015*etas.^4);
+            ys = [yt;-yt];
+            defaultAirfoil = baff.Airfoil('NACA',0.6833,3.04,1.5,etas',ys');
+        end
+        obj = defaultAirfoil;
     end
     function obj = SC2_0614()
         % http://airfoiltools.com/airfoil/details?airfoil=sc20614-il

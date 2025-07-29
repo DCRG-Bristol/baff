@@ -8,13 +8,13 @@ classdef H5Test < matlab.unittest.TestCase
         function buildModels(testCase)
             %build some elements with non-default values
             mat1 = baff.Material(1,2,3);
-            st = baff.station.Beam(0,"A",2,"EtaDir",rand(3,1),"I",rand(3),"tau",rand(3),"Mat",mat1);
-            beam1 = baff.Beam("eta",0,"Stations",st + [0,0.5,1]);
-            bst = baff.station.Body(0,"A",2,"EtaDir",[0;0.4;0],"I",rand(3),"radius",rand(1));
-            body1 = baff.BluffBody("eta",0,"Stations",bst + [0:0.1:1],"Offset",rand(3,1));
-            ast = baff.station.Aero(0,rand(1),rand(1),"EtaDir",rand(3,1),"Twist",rand(1));
-            wing1 = baff.Wing(ast + [0:0.25:1],"BeamStations",st + [0,0.5,1],"eta",0,"EtaLength",2);
-            wing2 = baff.Wing(ast + [0:0.25:1],"BeamStations",st + [0:0.5:1],"eta",1,"EtaLength",2);
+            st = baff.station.Beam([0,0.5,1],"A",2,"EtaDir",rand(3,1),"I",rand(3),"tau",rand(3),"Mat",mat1);
+            beam1 = baff.Beam("eta",0,"Stations",st);
+            bst = baff.station.Body(0:0.1:1,"A",2,"EtaDir",[0;0.4;0],"I",rand(3),"radius",rand(1));
+            body1 = baff.BluffBody("eta",0,"Stations",bst,"Offset",rand(3,1));
+            ast = baff.station.Aero(0:0.25:1,rand(1),rand(1),"EtaDir",rand(3,1),"Twist",rand(1));
+            wing1 = baff.Wing(ast,"BeamStations",st,"eta",0,"EtaLength",2);
+            wing2 = baff.Wing(ast,"BeamStations",st,"eta",1,"EtaLength",2);
             control1 = baff.ControlSurface('Test',[0.5,0.75],[0.2,0.2]);
             control2 = baff.ControlSurface('Test2',[0.25,0.5],[0.2,0.2]);
             wing2.ControlSurfaces = [control1,control2];

@@ -1,36 +1,62 @@
 classdef Element < matlab.mixin.Heterogeneous & handle
-    %COMPONENT Summary of this class goes here
-    %   Detailed explanation goes here
+    %Base class which all Baff elements Inherit from
+    %   defines common properties and methods for all Baff elements
+    %   multple key constructs:
+    %       Parent/Children: the parent element defines the origin of the elements location in space
+    %       Location: the offset defines the element offset in the parents coordinate system and A the rotaion matrix
+    %       Eta: all elementshave a notion of normlised postion, so children can be located at a specific position along the element
     properties
-        A (3,3) double = eye(3); % Rotation Matrix
-        Offset (3,1) double = [0;0;0]; % Offset of the element in the parent element's coordinate system
+        A = eye(3); % Rotation Matrix
+        Offset (3,1)= [0;0;0]; % Offset of the element in the parent element's coordinate system
         isAbsolute = false; %if true, the element is referenced to the global coordinate system, otherwise it is referenced to the parent element
-        Eta (1,1) double = 0; %eta coordinate of the element in the parent element's coordinate system
+        Eta = 0; %eta coordinate of the element in the parent element's coordinate system
         EtaLength = 0;      % Length of the element in the eta direction
         
-        Parent baff.Element = baff.Element.empty; % Parent element
-        Children (:,1) baff.Element = baff.Element.empty; % Children elements
+        Parent = baff.Element.empty; % Parent element
+        Children = baff.Element.empty; % Children elements
         
-        Name string = "";    % Name of the element       
+        Name string = "Default Component";    % Name of the element       
         Index = 0;          % Unique index for each element (for use in HDF5 files to link parents and children)
 
         Meta struct = struct; % Meta data for the element
     end
+    properties (Dependent)
+        Type; % Element Type String
+    end
     methods
-        function val = Type(obj)
+        function val = get.Type(obj)
+            val = obj.getType();
+        end
+        function val = getType(obj)
             val = "Element";
         end
     end
     methods(Static)
         function obj = FromBaff(filepath,loc)
+            %FromBaff Create an Element from a Baff HDF5 file
+            % placeholder for subclasses to overload
+            %
+            %Args:
+            %   filepath (string): Path to the Baff HDF5 file
+            %   loc (string): Location in the HDF5 file
+            %
+            %Returns:
+            %   Elementtwo
             error('NotImplemented')
         end
     end
     methods(Sealed)
         function val = GetMass(obj,opts)
+            %GetMass Get the mass of the element
+            %
+            %Args:
+            %   opts.IncludeChildren (logical, optional, default=true): Include elements children in mass estimation
+            %
+            %Returns:
+            %   Mass of the element
             arguments
                 obj
-                opts.IncludeChildren (1,1) logical = true;
+                opts.IncludeChildren = true; % Include children in the mass estimation
             end
             val = zeros(size(obj));
             for i = 1:length(obj)
@@ -42,53 +68,14 @@ classdef Element < matlab.mixin.Heterogeneous & handle
             end
         end        
     end
+    % operator overloading
     methods
-        function Area = WettedArea(obj)
-            Area = zeros(size(obj));      
-        end
-        function val = GetElementMass(obj)
-            val = zeros(size(obj));
-        end
-        function val = GetElementOEM(obj)
-            val = GetElementMass(obj);
-        end
-        function [Xs,masses] = GetElementCoM(obj)
-            Xs = zeros(3,length(obj));
-            masses = zeros(1,length(obj));
-        end
-        function [X,mass] = GetGlobalCoM(obj)
-            [X,mass] = obj.GetCoM();
-            X = obj.GetGlobalPos(0,X);
-        end
-        function [X,mass] = GetCoM(obj)
-            if length(obj)>1
-                error('Currently only works on scalar calls')
-            end
-%             Xs = zeros(3,length(obj));
-            [Xs,masses] = obj.GetElementCoM();
-%             masses = obj.GetElementMass();
-            for i = 1:length(obj.Children)
-                tmpObj = obj.Children(i);
-                [tmpX,tmpM] = tmpObj.GetCoM();
-                tmpX = tmpObj.A' * tmpX;
-                tmpX = tmpX + repmat(obj.GetPos(tmpObj.Eta)+tmpObj.Offset,1,length(tmpM));
-                Xs = [Xs,tmpX];
-                masses = [masses,tmpM];
-            end
-            mass = sum(masses);
-            if mass == 0
-                X = mean(Xs,2);
-            else
-                X = sum(Xs.*repmat(masses,3,1),2)./mass;
-            end
-            if any(isnan(X))
-                error('NaN pos found')
-            end
-        end
         function val = ne(obj1,obj2)
+            %overloads the ~= operator
             val = ~(obj1.eq(obj2));
         end
         function val = eq(obj1,obj2)
+            %overloads the == operator
             if length(obj1)~= length(obj2) || ~isa(obj2,'baff.Element')
                 val = false;
                 return
@@ -108,33 +95,115 @@ classdef Element < matlab.mixin.Heterogeneous & handle
         end
     end
     methods
+        function Area = WettedArea(obj)
+            %Returns the wetted area of the object (Default 0)
+            Area = zeros(size(obj));      
+        end
+        function val = GetElementMass(obj)
+            %Returns the mass of the object (Default 0)
+            val = zeros(size(obj));
+        end
+        function val = GetElementOEM(obj)
+            %Returns Operational Empty Mass, e.g. the mass if fuel and payload are have zero filling
+            val = GetElementMass(obj);
+        end
+        function [Xs,masses] = GetElementCoM(obj)
+            %Returns Centre of mass and associated mass
+            %
+            %Returns:
+            %   Xs (numeric array): Location of CoM - default zeros.
+            %   masses (numeric array): Mass of each object.
+            Xs = zeros(3,length(obj));
+            masses = zeros(1,length(obj));
+        end
+        function [X,mass] = GetGlobalCoM(obj)
+            %Returns Centre of mass and associated mass
+            %
+            %Returns: 
+            %   Xs (double): Location of CoM - default zeros.
+            %   masses (double): Mass of each object.
+            [X,mass] = obj.GetCoM();
+            X = obj.GetGlobalPos(0,X);
+        end
+        function [X,mass] = GetCoM(obj)
+            if length(obj)>1
+                error('Currently only works on scalar calls')
+            end
+%             Xs = zeros(3,length(obj));
+            [X,mass] = obj.GetElementCoM();
+            if ~isempty(obj.Children)
+                CoM = X.*mass;
+                childEtas = [obj.Children.Eta];
+                childPos = obj.GetPos(childEtas) + [obj.Children.Offset];
+                for i = 1:length(obj.Children)
+                    tmpObj = obj.Children(i);
+                    [tmpX,tmpM] = tmpObj.GetCoM();
+                    tmpX = tmpObj.A' * tmpX;
+                    tmpX = tmpX + repmat(childPos(:,i),1,length(tmpM));
+                    mass = mass + sum(tmpM);
+                    CoM = CoM + sum(tmpX.*repmat(tmpM,3,1),2);
+                    % Xs = [Xs,tmpX];
+                    % masses = [masses,tmpM];
+                end
+                % mass = sum(masses);
+                if mass ~= 0
+                    % X = mean(Xs,2);
+                % else
+                    X = CoM./mass;
+                end
+            end
+            if any(isnan(X))
+                error('NaN pos found')
+            end
+        end
+    end
+    methods
         function obj = Element(opts)
+            %Constructor for Element
+            %
+            %Args:
+            %   opts.Offset (double,Default=[0;0;0]): Offset from Parent
+            %   opts.eta (double,Default=0): eta coordinate of the element in Parent's coordinate system
+            %   opts.Name (string,Default=''): Name of the element
+            %   opts.A (double,Default=eye(3)): Rotation Matrix From Parent
+            %   opts.EtaLength (double,Default=1): Length of the element in eta direction
             arguments
                 opts.Offset = [0;0;0];
                 opts.eta = 0;
-                opts.Name = 'Default Component'
+                opts.Name = ''
                 opts.A = eye(3);
+                opts.EtaLength = 1;
             end
             obj.Eta = opts.eta;
             obj.Offset = opts.Offset;
             obj.A = opts.A;
-            obj.Name = opts.Name;
+            if ~isempty(opts.Name)
+                obj.Name = opts.Name;
+            end
+            obj.EtaLength = opts.EtaLength;
         end
         function obj = add(obj,childObj)
+            %Adds a child object
+            %
+            %Args:
+            %   childObj (Element): Child object
             arguments
                 obj
-                childObj baff.Element
+                childObj
             end
-            
-            for i = 1:length(childObj)
-                childObj(i).Parent = obj;
-                obj.Children(end+1) = childObj(i);
-            end
+            [childObj.Parent] = deal(obj);
+            obj.Children = [obj.Children;childObj];
         end
         function X = GetPos(obj,eta)
+            %Returns the position of the object at eta (Default: [0;0;0])
             X = [0;0;0];
         end
         function X = GetGlobalPos(obj,Eta,Offset)
+            %Returns the global position of the object
+            %
+            %Args:
+            %   Eta (double): normalised position along element
+            %   Offset (double): Offset in element frame of reference (Default [0;0;0])
             arguments
                 obj
                 Eta
@@ -146,16 +215,30 @@ classdef Element < matlab.mixin.Heterogeneous & handle
             end
         end
         function A = GetGlobalA(obj)
+            %Returns the global rotation matrix
+            %
+            %Returns:
+            %   A (double): Global rotation matrix
             A = obj.A';
             if ~isempty(obj.Parent)
                 A = obj.Parent.GetGlobalA() * A;
             end
         end
         function plt_obj = draw(obj,opts)
+            %Draws the object
+            %
+            %Args:
+            %   opts.Origin (double): Origin of object in global frame
+            %   opts.A (3,3 double): global Rotaion Matrix
+            %   opts.Type (string, Default="stick"): plot type {mustBeMember(opts.Type,["stick","surf","mesh"])}
+            %
+            %Returns:
+            %   plt_obj: plot object
             arguments
                 obj
                 opts.Origin (3,1) double = [0,0,0];
                 opts.A (3,3) double = eye(3);
+                opts.Type string {mustBeMember(opts.Type,["stick","surf","mesh"])} = "stick";
             end
             plt_obj= [];
             Origin = opts.Origin + opts.A*obj.Offset;
@@ -189,6 +272,11 @@ classdef Element < matlab.mixin.Heterogeneous & handle
             end
         end
         function ToBaff(obj,filepath,loc)
+            %Write the object to a Baff HDF5 file
+            %
+            %Args:
+            %   filepath (string): Path to file
+            %   loc (string): Location in file
             N = length(obj);
             h5writeatt(filepath,[loc,'/'],'Qty', N);
             if N ~= 0
@@ -224,6 +312,7 @@ classdef Element < matlab.mixin.Heterogeneous & handle
     end
     methods(Sealed)
         function LinkElements(obj,filepath,loc,linker)
+            %LinkElements Link the elements to their parents and children
             if ~isempty(obj)
                 pIdx = h5read(filepath,sprintf('%s/Parent',loc));
                 cIdx = h5read(filepath,sprintf('%s/Children',loc));
@@ -243,7 +332,11 @@ classdef Element < matlab.mixin.Heterogeneous & handle
     end
     methods(Static)
         function TemplateHdf5(filepath,loc)
-            %create place holders
+            %TemplateHdf5 Create a template HDF5 file
+            %
+            %Args:
+            %   filepath (string): Path to file
+            %   loc (string): Location in file
             h5create(filepath,sprintf('%s/Offset',loc),[3 inf],"Chunksize",[3,10]);
             h5create(filepath,sprintf('%s/Eta',loc),[1 inf],"Chunksize",[1,10]);
             h5create(filepath,sprintf('%s/A',loc),[9 inf],"Chunksize",[9,10]);

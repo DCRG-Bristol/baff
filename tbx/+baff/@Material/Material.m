@@ -14,8 +14,19 @@ classdef Material
         yield = nan;    % Yield stress
         uts = nan;      % Ultimate Tensile Strength
     end
+    methods (Static)
+        obj = FromBaff(filepath,loc);
+        TemplateHdf5(filepath,loc);
+    end
     
     methods
+        function val = Hash(obj)
+            %HASH -  A unique number used to sort / indentify unique Materials.
+            val = zeros(size(obj));
+            for i = 1:length(val)
+                val(i) = sum(double(char(obj(i).Name))) + obj(i).E + obj(i).G + obj(i).rho + obj(i).nu;
+            end
+        end
         function val = ne(obj1,obj2)
             val = ~(obj1.eq(obj2));
         end

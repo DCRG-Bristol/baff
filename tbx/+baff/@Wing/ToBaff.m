@@ -7,7 +7,7 @@ if N ~= 0
     %% sort out Aero stations
     Bstations = [obj.AeroStations];
     Bstations.ToBaff(filepath,loc);
-    ANs = arrayfun(@(x)length(x.AeroStations),obj);
+    ANs = arrayfun(@(x)x.AeroStations.N,obj);
     h5writeatt(filepath,sprintf('%s/',loc),'AeroStationsIdx', ANs);
 
     %% sort out Control Surfaces

@@ -5,7 +5,7 @@ hinge_eta = 0.8;
 beam_loc = 0.25;
 Chord = 0.12;
 flare = 20;
-fold = 20;
+fold = deg2rad(10);
 
 %empenage setting
 hSpan = 0.4;
@@ -29,9 +29,9 @@ end
 %% create Wing
 Wing = baff.Wing.UniformWing(span*hinge_eta,0.1,0.1,...
     baff.Material.Stiff,Chord,beam_loc,"NAeroStations",11);
-Wing.A = baff.util.rotz(90)*baff.util.rotx(180);
+Wing.A = baff.util.rotz(-90)*baff.util.rotx(180);
 Wing.Eta = 0.5;
-Wing.Offset = [0;-span*hinge_eta*0.5;fus_rad*0.66];
+Wing.Offset = [0;span*hinge_eta*0.5;fus_rad*0.66];
 fuselage.add(Wing);
 
 % Add Control Surface
@@ -71,9 +71,9 @@ hinge_lhs.add(Wingtip_lhs);
 %% create htp
 Htp = baff.Wing.UniformWing(hSpan,0.1,0.1,...
     baff.Material.Stiff,hChord,beam_loc,"NAeroStations",11);
-Htp.A = baff.util.rotz(90)*baff.util.rotx(180);
+Htp.A = baff.util.rotz(-90)*baff.util.rotx(180);
 Htp.Eta = 0.93;
-Htp.Offset = [0;-hSpan*0.5;-fus_rad*0.25];
+Htp.Offset = [0;hSpan*0.5;-fus_rad*0.25];
 fuselage.add(Htp);
 
 Htp.ControlSurfaces(1) =  baff.ControlSurface("Ele_R",[0.6 0.95],[0.3 0.3]);
@@ -82,7 +82,7 @@ Htp.ControlSurfaces(2) =  baff.ControlSurface("Ele_L",[0.05 0.4],[0.3 0.3]);
 %% create vtp
 Vtp = baff.Wing.UniformWing(vSpan,0.1,0.1,...
     baff.Material.Stiff,vChord,beam_loc,"NAeroStations",11);
-Vtp.A = baff.util.roty(90)*baff.util.rotx(90);
+Vtp.A = baff.util.roty(90)*baff.util.rotx(-90);
 Vtp.Eta = 0.93;
 Vtp.Offset = [0;0;-fus_rad*0.25];
 fuselage.add(Vtp);
@@ -97,27 +97,27 @@ tic;
 model = baff.Model;
 model.AddElement(fuselage);
 model.UpdateIdx();
-% model.ToBaff('test.h5');
-% toc;
-% 
-% f = figure(1);
-% clf;
-% hold on
-% model.draw(f)
-% ax = gca;
-% ax.Clipping = false;
-% % ax.ZAxis.Direction = "reverse";
-% axis equal
-% 
-% %% read file and plot again
-% tic;
-% model2 = baff.Model.FromBaff('test.h5');
-% toc;
-% f = figure(2);
-% clf;
-% hold on
-% model2.draw(f);
-% ax = gca;
-% ax.Clipping = false;
+model.ToBaff('test.h5');
+toc;
+
+f = figure(1);
+clf;
+hold on
+model.draw(f)
+ax = gca;
+ax.Clipping = false;
 % ax.ZAxis.Direction = "reverse";
-% axis equal
+axis equal
+
+%% read file and plot again
+tic;
+model2 = baff.Model.FromBaff('test.h5');
+toc;
+f = figure(2);
+clf;
+hold on
+model2.draw(f);
+ax = gca;
+ax.Clipping = false;
+ax.ZAxis.Direction = "reverse";
+axis equal

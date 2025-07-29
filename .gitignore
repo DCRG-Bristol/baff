@@ -4,4 +4,3 @@
 *.log
 *.m~
 .venv/*
-docs/build/*

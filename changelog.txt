@@ -5,7 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Explicit Versioning](https://github.com/exadra37-versioning/explicit-versioning).
 
+
 ## [Unreleased]
+### Added
+### Changed
+### Deprecated
+### Removed
+### Fixed
+
+## [0.2.0.0]
+### Added
+ - Documentation that will link to main documentation
+ - .draw() methods now have a Type argument for differnet plotting options
+    including 'stick' (as before), 'surf' (with patches) and 'surf' (thick airfoil)
+### Changed
+ - Stations are now stored in class instance rather then arrays of class instances
+### Deprecated
+### Removed
+### Fixed
+
+## [0.1.0.x]
 ### Added
 - [0.1.0.2] Method to get beam length
 - [0.1.0.4] Added way to extract Aero draw coords

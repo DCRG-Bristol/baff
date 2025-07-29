@@ -13,7 +13,7 @@ classdef Fuel < baff.Mass
         TemplateHdf5(filepath,loc);
     end
     methods
-        function val = Type(obj)
+        function val = getType(obj)
             val = "Fuel";
         end
     end
@@ -61,6 +61,7 @@ classdef Fuel < baff.Mass
                 obj
                 opts.Origin (3,1) double = [0,0,0];
                 opts.A (3,3) double = eye(3);
+                opts.Type string {mustBeMember(opts.Type,["stick","surf","mesh"])} = "stick";
             end
             Origin = opts.Origin + opts.A*(obj.Offset);
             Rot = opts.A*obj.A;

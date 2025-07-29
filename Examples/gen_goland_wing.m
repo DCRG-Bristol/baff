@@ -18,21 +18,17 @@ arguments
 end
 % make beam stations
 Mat = baff.Material.Unity().ZeroDensity();
-beamStation = baff.station.Beam(0,Mat=Mat,I=diag([0,opts.EI,0]),A=1,J=opts.GJ);
+beamStations = baff.station.Beam(linspace(0,1,opts.NBeamStations),Mat=Mat,I=diag([0,opts.EI,0]),A=1,J=opts.GJ);
 %create end aero station
-aeroStation = baff.station.Aero(0,opts.c,opts.x_f,LiftCurveSlope=opts.LiftCurveSlope,...
+aeroStations = baff.station.Aero(linspace(0,1,opts.NAeroStations),opts.c,opts.x_f,LiftCurveSlope=opts.LiftCurveSlope,...
     LinearDensity=opts.m,LinearInertia=diag([opts.Ix,0,0]),MassLoc=opts.x_m);
-aeroStations = aeroStation + linspace(0,1,opts.NAeroStations);
 %gen wing
 wing = baff.Wing(aeroStations);
 wing.EtaLength = opts.b;
 % add beam station Info
-wing.Stations = beamStation + linspace(0,1,opts.NBeamStations);
+wing.Stations = beamStations;
 wing.Name = 'GolandWing';
-
-for i = 1:opts.NAeroStations
-    wing.AeroStations(i).Twist = interp1(opts.EtaTwist,opts.Twist,wing.AeroStations(i).Eta);
-end
+wing.AeroStations.Twist = interp1(opts.EtaTwist,opts.Twist,wing.AeroStations.Eta);
 
 % Add Root Constraint
 con = baff.Constraint("ComponentNums",123456,"eta",0,"Name","Root Connection");

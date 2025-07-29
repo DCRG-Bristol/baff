@@ -8,7 +8,7 @@ if N ~= 0
     % Bluff Body Specific
     Bstations = [obj.Stations];
     Bstations.ToBaff(filepath,loc);
-    BNs = arrayfun(@(x)length(x.Stations),obj);
+    BNs = arrayfun(@(x)x.Stations.N,obj);
     h5writeatt(filepath,sprintf('%s/',loc),'BodyStationsIdx', BNs);
 end
 end
