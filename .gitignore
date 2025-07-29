@@ -4,7 +4,3 @@
 *.log
 *.m~
 .venv/*
-docs/_build/*
-docs/api/*
-docs/api_reference.rst
-docs/index.rst
