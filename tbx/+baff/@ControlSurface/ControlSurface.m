@@ -1,4 +1,5 @@
 classdef ControlSurface
+    %ControlSurface Represents a control surface on a wing.
     properties
         Name string = ""    % Name
         Etas (2,1) double = [0;1];       % start and end eta along the wing
@@ -15,9 +16,11 @@ classdef ControlSurface
     
     methods
         function val = ne(obj1,obj2)
+            %overloads the ~= operator to check the inequality of two ControlSurface objects.
             val = ~(obj1.eq(obj2));
         end
         function val = eq(obj1,obj2)
+            %overloads the == operator to check the equality of two ControlSurface objects.
             if length(obj1)~= length(obj2) || ~isa(obj2,'baff.ControlSurface')
                 val = false;
                 return
@@ -30,6 +33,11 @@ classdef ControlSurface
             end
         end
         function obj = ControlSurface(name,etas,pChords)
+            %ControlSurface Construct an instance of the ControlSurface class
+            %Args:
+            %   name (string): Name of the control surface
+            %   etas (2,1 double): Eta values for the start and end of the control surface
+            %   pChords (2,1 double): Percentage of chord that is control surface at either end
             arguments
                 name string
                 etas (2,1) double
@@ -40,6 +48,12 @@ classdef ControlSurface
             obj.pChord = pChords;
         end
         function p = draw(obj,Parent,opts)
+            %Draw draw an element in 3D Space
+            %Args:
+            %   Parent: Parent wing object
+            %   opts.Origin: Origin of the beam element in 3D space
+            %   opts.A: Rotation matrix to beam coordinate system
+            %   opts.Type: plot type
             arguments
                 obj
                 Parent baff.Wing

@@ -1,8 +1,7 @@
 classdef Constraint < baff.Element
-    %POINT Summary of this class goes here
-    %   Detailed explanation goes here
+    %Constraint class to respresent a constraint in the baff framework
     properties
-        ComponentNums = 123456;
+        ComponentNums = 123456; % constrained component numbers (123 XYZ, 456 rotation about XYZ). 
     end
     methods(Static)
         obj = FromBaff(filepath,loc);
@@ -15,6 +14,7 @@ classdef Constraint < baff.Element
     end
     methods
         function val = eq(obj1,obj2)
+            %overloads the == operator to check the equality of two Constraint objects.
             if length(obj1)~= length(obj2) || ~isa(obj2,'baff.Constraint')
                 val = false;
                 return
@@ -25,19 +25,23 @@ classdef Constraint < baff.Element
             end
         end
         function obj = Constraint(CompOpts,opts)
+            %CONSTRAINT Construct an instance of the Constraint Baff element class
             arguments
                 CompOpts.eta = 0
                 CompOpts.Offset
                 CompOpts.Name = "Point"
                 opts.ComponentNums = 123456;
             end
-            %MASS Construct an instance of this class
-            %   Detailed explanation goes here
             CompStruct = namedargs2cell(CompOpts);
             obj = obj@baff.Element(CompStruct{:});
             obj.ComponentNums = opts.ComponentNums;
         end
         function p = draw(obj,opts)
+            %Draw draw an element in 3D Space
+            %Args:
+            %   opts.Origin: Origin of the beam element in 3D space
+            %   opts.A: Rotation matrix to beam coordinate system
+            %   opts.Type: plot type
             arguments
                 obj
                 opts.Origin (3,1) double = [0,0,0];

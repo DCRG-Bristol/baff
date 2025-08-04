@@ -1,40 +1,48 @@
 classdef Wing < baff.Beam
-    %WING Summary of this class goes here
-    %   Detailed explanation goes here
+    %WING class to build Baff wing models
     properties
-        AeroStations (1,:) baff.station.Aero;
-        ControlSurfaces (1,:) baff.ControlSurface;
+        AeroStations (1,:) baff.station.Aero; % Aero stations for the wing
+        ControlSurfaces (1,:) baff.ControlSurface; % Control surfaces for the wing
     end
 
     properties(Dependent)
-        PlanformArea
-        Span
+        PlanformArea; % Planform area of the wing
+        Span; % Span of the wing
     end
     methods
         function A = get.PlanformArea(obj)
+            %PlanformArea returns the planform area of the wing
             A = obj.AeroStations.GetNormArea * obj.EtaLength;
         end
         function val = getType(obj)
+            %getType returns the type of the object as a string.
             val ="Wing";
         end
         function b = get.Span(obj)
+            %Span returns the span of the wing - assumes EtaDir component in spanwise direction is equal to 1 at each station.
             b = abs(obj.AeroStations.Eta(end)-obj.AeroStations.Eta(1)) * obj.EtaLength;
         end
     end
     methods(Sealed=true)   
         function As = PlanformAreas(obj)
+            %PlanformArea returns the planform area of the wing between each aero station
             As = length(obj);
             for i = 1;length(obj)
                 As(i) = obj(i).AeroStations.GetNormArea * obj(i).EtaLength;
             end
         end
         function bs = Spans(obj)
+            %Span returns the span of the wing between each aero station
             bs = length(obj);
             for i = 1;length(obj)
                 bs(i) = abs(obj(i).AeroStations(end).Eta-obj(i).AeroStations(1).Eta) * obj.EtaLength;
             end
         end
         function p = GetGlobalWingPos(obj,etas,pChord)
+            %GetGlobalWingPos returns the global position of the wing at given etas and pChord
+            %Args:
+            %   etas: vector of etas at which to get the position
+            %   pChord: normailised chord at which to get the position, where 0 is the leading edge and 1 is the trailing edge
             arguments
                 obj baff.Wing
                 etas (1,:) double
@@ -56,6 +64,9 @@ classdef Wing < baff.Beam
             end
         end
         function [mac,X] = GetMGC(obj,pChord)
+            %GetMGC returns the mean geometric chord and its position
+            %Args:
+            %   pChord: normailised chord at which to return the position, where 0 is the leading edge and 1 is the trailing edge
             arguments
                 obj
                 pChord = 0
@@ -74,11 +85,14 @@ classdef Wing < baff.Beam
             end
         end
         function [mac,X] = GetMAC(obj)
+            %GetMAC returns the mean aerodynamic chord and its position
+            % this is here for legacy as most people say mean aerodynamic chord, but actually mean the mean geometric chord...
             [mac,X] = GetMGC(obj);
         end
     end
     methods
         function val = eq(obj1,obj2)
+            %overloads the == operator to check the equality of two Wing objects.
             if length(obj1)~= length(obj2) || ~isa(obj2,'baff.Wing')
                 val = false;
                 return
@@ -90,6 +104,7 @@ classdef Wing < baff.Beam
             end
         end
         function obj = Wing(aeroStations,opts,CompOpts)
+            %WING Construct an instance of this class
             arguments
                 aeroStations
                 opts.BeamStations = [baff.station.Beam(0),baff.station.Beam(1)];
@@ -98,8 +113,6 @@ classdef Wing < baff.Beam
                 CompOpts.Offset
                 CompOpts.Name = "Wing"
             end
-            %WING Construct an instance of this class
-            %   Detailed explanation goes here
             CompStruct = namedargs2cell(CompOpts);
             obj = obj@baff.Beam(CompStruct{:});
             obj.Stations = opts.BeamStations;
@@ -107,15 +120,22 @@ classdef Wing < baff.Beam
             obj.EtaLength = opts.EtaLength;
         end
         function X = GetWingPos(obj,eta,pChord)
+            %GetWingPos returns the position of the wing at a given eta and pChord
             X = obj.GetPos(eta) + obj.AeroStations.GetPos(eta,pChord);
         end
         function X = GetPos(obj,eta)
+            %GetPos returns the position of the wing at a given eta along the beam line
             X = obj.Stations.GetPos(eta)*obj.EtaLength;
         end
         function Area = WettedArea(obj)
+            %WettedArea returns the wetted area of the wing
             Area = zeros(size(obj));      
         end
         function [sweepAngles] = GetSweepAngles(obj,cEta)
+            %GetSweepAngles returns the sweep angle of the wing at each aero station
+            %Args:
+            %   cEta: the normailised chord at which to calculate the sweep angle
+
             sweepAngles = zeros(1,length(obj)-1);
             aSt = obj.AeroStations;
             for i = 1:aSt.N-1
@@ -134,19 +154,33 @@ classdef Wing < baff.Beam
         TemplateHdf5(filepath,loc);
 
         function obj = UniformWing(length,barHeight,barWidth,Material,Chord,BeamLoc,opts)
+            % Static function to create a uniform wing
+            %Args:
+            %   length: length of the wing
+            %   barHeight: height of the beam cross section
+            %   barWidth: width of the beam cross section
+            %   Material: material of the beam
+            %   Chord: chord of the wing
+            %   BeamLoc: location of the beam in the chord
+            %   opts.NAeroStations: number of aero stations
+            %   opts.NStations: number of beam stations
+            %   opts.etaAeroMin: minimum eta for aero stations
+            %   opts.etaAeroMax: maximum eta for aero stations
+            %   opts.etaBeamMax: maximum eta for beam stations
+            %   opts.LiftCurveSlope: lift curve slope of the wing
             arguments
                 length
                 barHeight
                 barWidth
                 Material
-                Chord
-                BeamLoc
-                opts.NAeroStations = 2
-                opts.NStations = 2
-                opts.etaAeroMin = 0
-                opts.etaAeroMax = 1
-                opts.etaBeamMax = 1
-                opts.LiftCurveSlope = 2*pi;
+                Chord (1,1) double = 1; % Chord of the wing
+                BeamLoc (1,1) double = 0.5; % Location of the beam in the chord
+                opts.NAeroStations (1,1) double = 2; % Number of aero stations
+                opts.NStations (1,1) double = 2; % Number of beam stations
+                opts.etaAeroMin (1,1) double = 0; % Minimum eta for aero stations
+                opts.etaAeroMax (1,1) double = 1; % Maximum eta for aero stations
+                opts.etaBeamMax (1,1) double = 1; % Maximum eta for beam stations
+                opts.LiftCurveSlope (1,1) double = 2*pi; % Lift curve slope of the wing
             end
             % create root stations
             stations = baff.station.Beam.Bar(linspace(0,opts.etaBeamMax,opts.NStations),barHeight,barWidth,Mat=Material);
@@ -160,6 +194,18 @@ classdef Wing < baff.Beam
             obj.Stations = stations;
         end
         function wing = FromLETESweep(span,RootChord,etas,LESweep,TESweep,BeamLoc,Material,opts)
+            %FromLETESweep creates a wing from leading and trailing edge sweep angles
+            %Args:
+            %   span: span of the wing
+            %   RootChord: chord at the root of the wing
+            %   etas: vector of etas at which to create the wing
+            %   LESweep: leading edge sweep angles at each eta
+            %   TESweep: trailing edge sweep angles at each eta
+            %   BeamLoc: normalised location of the beam along the chord at each eta
+            %   Material: material of the wing
+            %   opts.Dihedral: dihedral angle at each eta ( or scalar for constant dihedral)
+            %   opts.Twist: twist angle at each eta ( or scalar for constant twist)
+            %   opts.ThicknessRatio: thickness ratio at each eta ( or scalar for constant thickness ratio) 
             arguments
                 span
                 RootChord

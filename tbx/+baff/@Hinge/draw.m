@@ -1,4 +1,9 @@
 function p = draw(obj,opts)
+%Draw draw an element in 3D Space
+%Args:
+%   opts.Origin: Origin of the beam element in 3D space
+%   opts.A: Rotation matrix to beam coordinate system
+%   opts.Type: plot type
 arguments
     obj
     opts.Origin (3,1) double = [0,0,0];
@@ -15,11 +20,7 @@ p.Color = 'r';
 p.Tag = 'Hinge';
 
 %plot children
-Origin = opts.Origin + opts.A*obj.Offset;
-Rot = opts.A*obj.A*baff.util.Rodrigues(obj.HingeVector,obj.Rotation);
-for i =  1:length(obj.Children)
-    eta_vector = [0;obj.Children(i).Eta;0]*obj.EtaLength;
-    plt_obj = obj.Children(i).draw(Origin=(Origin+Rot*eta_vector),A=Rot);
-    p = [p,plt_obj];
-end
+optsCell = namedargs2cell(opts);
+plt_obj = draw@baff.Element(obj,optsCell{:});
+p = [p,plt_obj];
 end

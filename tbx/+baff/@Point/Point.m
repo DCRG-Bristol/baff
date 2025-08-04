@@ -13,11 +13,13 @@ classdef Point < baff.Element
     end
     methods
         function val = getType(obj)
+            %getType returns the type of the object as a string.
             val ="Point";
         end
     end
     methods
         function val = eq(obj1,obj2)
+            %overloads the == operator to check the equality of two Point objects.
             if length(obj1)~= length(obj2) || ~isa(obj2,'baff.Point')
                 val = false;
                 return
@@ -30,6 +32,7 @@ classdef Point < baff.Element
         end
         
         function obj = Point(CompOpts,opts)
+            %POINT Construct an instance of the Point class
             arguments
                 CompOpts.eta = 0
                 CompOpts.Offset
@@ -45,6 +48,11 @@ classdef Point < baff.Element
             obj.Force = opts.Force;
         end
         function p = draw(obj,opts)
+            %Draw draw an element in 3D Space
+            %Args:
+            %   opts.Origin: Origin of the beam element in 3D space
+            %   opts.A: Rotation matrix to beam coordinate system
+            %   opts.Type: plot type
             arguments
                 obj
                 opts.Origin (3,1) double = [0,0,0];

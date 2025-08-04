@@ -13,7 +13,7 @@ classdef Element < matlab.mixin.Heterogeneous & handle
         EtaLength = 0;      % Length of the element in the eta direction
         
         Parent = baff.Element.empty; % Parent element
-        Children = baff.Element.empty; % Children elements
+        Children (1,:) = baff.Element.empty; % Children elements
         
         Name string = "Default Component";    % Name of the element       
         Index = 0;          % Unique index for each element (for use in HDF5 files to link parents and children)
@@ -41,7 +41,7 @@ classdef Element < matlab.mixin.Heterogeneous & handle
             %   loc (string): Location in the HDF5 file
             %
             %Returns:
-            %   Elementtwo
+            %   Element
             error('NotImplemented')
         end
     end
@@ -138,6 +138,9 @@ classdef Element < matlab.mixin.Heterogeneous & handle
                 for i = 1:length(obj.Children)
                     tmpObj = obj.Children(i);
                     [tmpX,tmpM] = tmpObj.GetCoM();
+                    if any(isnan([tmpX;tmpM]))
+                        error('NaN found')
+                    end
                     tmpX = tmpObj.A' * tmpX;
                     tmpX = tmpX + repmat(childPos(:,i),1,length(tmpM));
                     mass = mass + sum(tmpM);
@@ -189,10 +192,10 @@ classdef Element < matlab.mixin.Heterogeneous & handle
             %   childObj (Element): Child object
             arguments
                 obj
-                childObj
+                childObj (1,:)
             end
             [childObj.Parent] = deal(obj);
-            obj.Children = [obj.Children;childObj];
+            obj.Children = [obj.Children,childObj];
         end
         function X = GetPos(obj,eta)
             %Returns the position of the object at eta (Default: [0;0;0])
@@ -248,7 +251,7 @@ classdef Element < matlab.mixin.Heterogeneous & handle
                     obj.Children(i).draw(Origin=Origin,A=Rot);
                 else
                     eta_vector = obj.GetPos(obj.Children(i).Eta);
-                    tmp_obj = obj.Children(i).draw(Origin=(Origin+Rot*eta_vector),A=Rot);
+                    tmp_obj = obj.Children(i).draw(Origin=(Origin+Rot*eta_vector),A=Rot,Type=opts.Type);
                     plt_obj = [plt_obj,tmp_obj];
                 end
             end
