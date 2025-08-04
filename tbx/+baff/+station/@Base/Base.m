@@ -82,18 +82,16 @@ classdef (Abstract) Base < handle & matlab.mixin.Copyable
             end
             obj.Eta = obj.Eta .* val;
         end
-        function varargout = subsref(obj, S)
-            % Overload subsref to warn users of new station type in BAFF v0.2
-            if strcmp(S(1).type, '()')
-                warning(['Indexing is indicative of an old BAFF format in which stations were stored as arrays of station instances. ' ...
-                    'BAFF v0.2 reimplements stations to have all values stored in a single class instance. Ensure your code is suitable for the new stations! ...' ...
-                    '. This warning will be remove in a later release.']);
-            end
-            [varargout{1:nargout}] = builtin('subsref', obj, S);
-        end
+    end
+    methods(Static)
+        setDebugMode(enable);
     end
     %other
     methods
+        function val = length(obj)
+            %overloads the length operator
+            val = obj.N;
+        end
         function obj = Normalise(obj,NormEta)
             arguments
                 obj
