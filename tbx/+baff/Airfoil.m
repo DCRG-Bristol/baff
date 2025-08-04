@@ -18,6 +18,7 @@ methods
 end
 methods
     function obj = Airfoil(name, normArea, normPerimeter, Cl_max, etas, ys)
+        %AIRFOIL Construct an Airfoil object
         obj.Name = name;
         obj.NormArea = normArea;
         obj.NormPerimeter = normPerimeter;
@@ -33,6 +34,7 @@ methods
         end
     end
     function val = eq(obj1,obj2)
+        %overloads the == operator to check the equality of two Airfoil objects.
         if length(obj1)~= length(obj2) || ~isa(obj2,'baff.Airfoil')
             val = false;
             return
@@ -45,7 +47,10 @@ methods
         end
     end
     function ToBaff(obj,filepath,loc)
-        %% write mass specific items
+        %TOBAFF Write a beam BAFF object to a HDF5 file.
+        %Args:
+        %   filepath (string): Path to file
+        %   loc (string): Location in file
         N = length(obj);
         if N == 0
             h5writeatt(filepath,[loc,'/Airfoils/'],'Qty', 0);
@@ -68,6 +73,9 @@ methods
     end
     
     function vals = GetNormArea(obj,cEtas)
+        %GetNormArea returns the normalized area of the airfoil between two chordwise locations.
+        %Args:
+        %   cEtas (1,2) double: Chordwise locations to integrate between, default [0 1]
         arguments
             obj
             cEtas (1,2) double = [0 1]
@@ -85,8 +93,10 @@ methods
 end
 methods(Static)
     function obj = FromBaff(filepath,loc)
-        %FROMBAFF Summary of this function goes here
-        %   Detailed explanation goes here
+        %FROMBAFF build a beam BAFF object from a HDF5 file.
+        %Args:
+        %   filepath: path to the HDF5 file
+        %   loc: location in the HDF5 file where the beam data is stored
         Qty = h5readatt(filepath,[loc,'/Airfoils/'],'Qty');
         obj = baff.Airfoil.empty;
         if Qty == 0    
@@ -104,6 +114,11 @@ methods(Static)
         end
     end
     function TemplateHdf5(filepath,loc)
+        %TEMPLATEHDF5 Create a template for the Beam BAFF object in an HDF5 file.
+        %Args:
+        %   filepath (string): Path to the HDF5 file
+        %   loc (string): Location in the file where the Beam data will be stored
+
         %create placeholders
         h5create(filepath,sprintf('%s/Airfoils/Name',loc),[1 inf],"Chunksize",[1,10],"Datatype","string");
         h5create(filepath,sprintf('%s/Airfoils/NormArea',loc),[1 inf],"Chunksize",[1,10]);

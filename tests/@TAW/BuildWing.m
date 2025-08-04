@@ -141,10 +141,9 @@ if HasFoldingWingtip
         hinge.Rotation = 0;
         hinge.A = ads.util.roty(-obj.Dihedral(end));
     end
-    [K_fair,M_fair] = obj.GetHingeFairingSurrogate();
     hinge.isLocked = 0;
     hinge.Eta = 1;
-    hinge.K = 1e-3 + K_fair;
+    hinge.K = 1e-3;
     hinge.Name = strcat("SAH",Tag);
     Wing.add(hinge);
     %create hinge mass
@@ -152,7 +151,7 @@ if HasFoldingWingtip
         hingeMass = 0;
     else
         hingeMass = SAH_massFraction(obj.HingeEta)*obj.WingMass/2;
-        hingeMass = hingeMass.* obj.k_hinge + M_fair;
+        hingeMass = hingeMass.* obj.k_hinge;
     end
     obj.Masses.HingeMass = hingeMass*2;
     SAH_mass = baff.Mass(hingeMass,"eta",1,"Name",strcat("SAH_mass",Tag));
@@ -165,7 +164,6 @@ if HasFoldingWingtip
     inner_length = sum(seg_lengths(idx_ele));
     FFWT = baff.Wing.FromLETESweep(inner_length,cs(idx_ele),inner_etas,LE_sweeps(idx_ele),TE_sweeps(idx_ele),0.4,...
         wingMat,ThicknessRatio=tr(idx_node),Dihedral=-obj.Dihedral*ones(1,nnz(idx_ele)));
-    FFWT.Eta = 1;
     FFWT.Name = string(['FFWT',Tag]);
     % create enough beam stations
     ffwt_etas = (etas(etas<=etas_centre2tip(5) & etas>=etas_centre2tip(4))-etas_centre2tip(4))/(etas_centre2tip(5)-etas_centre2tip(4));
@@ -181,10 +179,6 @@ if HasFoldingWingtip
         warning('hello')
     end
     FFWT.AeroStations = FFWT.AeroStations.interpolate(aero_eta);
-
-    % apply wing twist
-    aero_eta = FFWT.AeroStations.Eta*(etas_centre2tip(5)-etas_centre2tip(4))+etas_centre2tip(4);
-    FFWT.AeroStations.Twist = interp1(obj.InterpEtas,obj.InterpTwists,aero_eta);
 
     %convert to draggable item
     if ~isRight

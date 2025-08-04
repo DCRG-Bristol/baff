@@ -2,8 +2,8 @@ classdef Mass < baff.Point
     %MASS Summary of this class goes here
     %   Detailed explanation goes here
     properties
-        mass (1,1) double;
-        InertiaTensor (3,3) double= zeros(3);
+        mass (1,1) double; % mass of the point mass
+        InertiaTensor (3,3) double= zeros(3); % {(3,3) double} inertia tensor of the point mass
     end
     methods(Static)
         obj = FromBaff(filepath,loc);
@@ -11,15 +11,18 @@ classdef Mass < baff.Point
     end
     methods
         function val = getType(obj)
+            %getType returns the type of the object as a string.
             val ="Mass";
         end
     end
     
     methods
         function val = GetElementMass(obj)
+            %GetElementMass returns the mass of the mass element (excluding children).
             val = [obj.mass];
         end
         function [Xs,masses] = GetElementCoM(obj)
+            %GetElementCoM returns the center of mass and masses of the mass element (excluding children).
             masses = [obj.mass];
             Xs = zeros(3,length(obj));
             % for i = 1:length(obj)
@@ -27,6 +30,7 @@ classdef Mass < baff.Point
             % end
         end
         function val = eq(obj1,obj2)
+            %overloads the == operator to check the equality of two Mass objects.
             if length(obj1)~= length(obj2) || ~isa(obj2,'baff.Mass')
                 val = false;
                 return
@@ -38,6 +42,21 @@ classdef Mass < baff.Point
             end
         end
         function obj = Mass(mass,opts,CompOpts)
+            %MASS Construct an instance of this class
+            %Args:
+            %   mass (double): Mass of the point mass
+            %   opts.Ixx (double): Inertia tensor component Ixx
+            %   opts.Iyy (double): Inertia tensor component Iyy
+            %   opts.Izz (double): Inertia tensor component Izz
+            %   opts.Ixy (double): Inertia tensor component Ixy
+            %   opts.Ixz (double): Inertia tensor component Ixz
+            %   opts.Iyz (double): Inertia tensor component Iyz
+            %   CompOpts.Eta (double): Eta value for the mass
+            %   CompOpts.Offset (3,1) double: Offset of the mass element from its parent
+            %   CompOpts.Name (string): Name of the mass element
+            %   CompOpts.Force (3,1) double: Force applied to the mass
+            %   CompOpts.Moment (3,1) double: Moment applied to the mass
+
             arguments
                 mass
                 opts.Ixx = 0;
@@ -53,8 +72,6 @@ classdef Mass < baff.Point
                 CompOpts.Force = nan(3,1);
                 CompOpts.Moment = nan(3,1);
             end
-            %MASS Construct an instance of this class
-            %   Detailed explanation goes here
             CompStruct = namedargs2cell(CompOpts);
             obj = obj@baff.Point(CompStruct{:});
             obj.mass = mass;
@@ -63,6 +80,11 @@ classdef Mass < baff.Point
                                 opts.Ixz,opts.Iyz,opts.Izz];
         end
         function p = draw(obj,opts)
+            %Draw draw an element in 3D Space
+            %Args:
+            %   opts.Origin: Origin of the beam element in 3D space
+            %   opts.A: Rotation matrix to beam coordinate system
+            %   opts.Type: plot type
             arguments
                 obj
                 opts.Origin (3,1) double = [0,0,0];

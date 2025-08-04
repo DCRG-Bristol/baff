@@ -13,13 +13,15 @@ and this project adheres to [Explicit Versioning](https://github.com/exadra37-ve
 ### Removed
 ### Fixed
 
-## [0.2.0.0]
+## [0.2.0.x]
 ### Added
- - Documentation that will link to main documentation
- - .draw() methods now have a Type argument for differnet plotting options
+ - [0.2.0.0] Documentation that will link to main documentation
+ - [0.2.0.0] .draw() methods now have a Type argument for differnet plotting options
     including 'stick' (as before), 'surf' (with patches) and 'surf' (thick airfoil)
+ - [0.2.0.1] Lots more Docstrings
+ - [0.2.0.1] the static method baff.station.Base.setDebugmode(true); which enables / disables a warnign about indexing 
 ### Changed
- - Stations are now stored in class instance rather then arrays of class instances
+ - [0.2.0.0] Stations are now stored in class instance rather then arrays of class instances
 ### Deprecated
 ### Removed
 ### Fixed

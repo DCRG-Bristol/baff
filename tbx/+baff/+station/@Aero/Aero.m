@@ -218,11 +218,11 @@ classdef Aero < baff.station.Base
             out.Chord = obj.Chord(idx_low) .* beta + obj.Chord(idx_high) .* alpha;
             out.BeamLoc = obj.BeamLoc(idx_low) .* beta + obj.BeamLoc(idx_high) .* alpha;
             out.Twist = obj.Twist(idx_low) .* beta + obj.Twist(idx_high) .* alpha;
-            out.EtaDir = obj.EtaDir(:,idx_low) .* beta + obj.EtaDir(:,idx_high) .* alpha;
-            out.StationDir = obj.StationDir(:,idx_low) .* beta + obj.StationDir(:,idx_high) .* alpha;
+            out.EtaDir = obj.EtaDir(:,idx_low);
+            out.StationDir = obj.StationDir(:,idx_low);
             out.Airfoil = obj.Airfoil(idx_low);
             out.ThicknessRatio = obj.ThicknessRatio(idx_low) .* beta + obj.ThicknessRatio(idx_high) .* alpha;
-            out.LiftCurveSlope = obj.LiftCurveSlope(idx_low) .* beta + obj.LiftCurveSlope(idx_high) .* alpha;
+            out.LiftCurveSlope = obj.LiftCurveSlope(idx_low);
             out.LinearDensity = obj.LinearDensity(idx_low) .* beta + obj.LinearDensity(idx_high) .* alpha;
             out.LinearInertia = obj.LinearInertia(:,:,idx_low) .* permute(beta,[1,3,2]) + obj.LinearInertia(:,:,idx_high) .* permute(alpha,[1,3,2]);
             out.MassLoc = obj.MassLoc(idx_low) .* beta + obj.MassLoc(idx_high) .* alpha;
@@ -237,29 +237,38 @@ classdef Aero < baff.station.Base
             if ~isscalar(eta) && ~isscalar(pChord)
                 error("Either pChord or Eta must be Scalar, Otherwise output order would be unknown")
             end
-            etas = obj.Eta;
+            
             if obj.N == 1
                 stDir = obj.StationDir;
-                stDir = stDir./vecnorm(stDir);
-                chord =   obj.Chord;
+                chord = obj.Chord;
                 beamLoc = obj.BeamLoc;
-                twist =   obj.Twist;
+                twist = obj.Twist;
                 etaDir = obj.EtaDir;
+            elseif isscalar(eta) && ismember(eta,obj.Eta)
+                % if eta is one of the stations, get the station
+                idx = find(obj.Eta == eta,1);
+                stDir = obj.StationDir(:,idx);
+                chord = obj.Chord(idx);
+                beamLoc = obj.BeamLoc(idx);
+                twist = obj.Twist(idx);
+                etaDir = obj.EtaDir(:,idx);
             else
-                % if abs(sum(stDir-repmat(stDir(:,1),1,size(stDir,2)),"all"))>1e-6
-                %     warning('This method currently assumes all aerodynamic stations are parrallel')
-                % end
-                stDir = interp1(etas,obj.StationDir',eta,"previous")';
-                stDir = stDir./vecnorm(stDir);
-                chord = interp1(etas,obj.Chord,eta,"linear");
-                beamLoc = interp1(etas,obj.BeamLoc,eta,"linear");
-                twist = interp1(etas,obj.Twist,eta,"linear");
-                etaDir = interp1(etas,obj.EtaDir',eta,"previous")';
+                [~,idx_low,idx_high,alpha] = obj.InterpolateEtas(eta);
+                beta = 1-alpha;
+                
+                stDir = obj.StationDir(:,idx_low);
+                chord = obj.Chord(idx_low) .* beta + obj.Chord(idx_high) .* alpha;
+                beamLoc = obj.BeamLoc(idx_low) .* beta + obj.BeamLoc(idx_high) .* alpha;
+                twist = obj.Twist(idx_low) .* beta + obj.Twist(idx_high) .* alpha;
+                etaDir = obj.EtaDir(:,idx_low);
             end
-            z = cross(etaDir./norm(etaDir),stDir);
+            
+            stDir = stDir./vecnorm(stDir);
+            z = cross(etaDir./vecnorm(etaDir), stDir);
             perp = cross(stDir,z);
+            
             if isscalar(eta)
-                points = repmat(stDir,1,length(pChord)).*+(beamLoc - pChord);
+                points = repmat(stDir,1,length(pChord)).*(beamLoc - pChord);
                 X = baff.util.Rodrigues(perp,deg2rad(twist))*points.*chord;
             else
                 points = stDir.*(beamLoc - pChord).*chord;
@@ -329,8 +338,8 @@ classdef Aero < baff.station.Base
             %GETMGCS - get wing mean geometric chord between each station
             % MGC is the chord at half wing section area.
             tr = obj.Chord(2:end)./obj.Chord(1:end-1);
-            mgcs = 2/3*obj.Chord.*(1+tr+tr.^2)./(1+tr);
-            thicknessRatios = (obj(1:end-1).ThicknessRatio + obj(2:end).ThicknessRatio)/2;
+            mgcs = 2/3*obj.Chord(1:end-1).*(1+tr+tr.^2)./(1+tr);
+            thicknessRatios = (obj.ThicknessRatio(1:end-1) + obj.ThicknessRatio(2:end))/2;
         end
         function vol = GetNormVolume(obj,cEtas,Etas)
             %GETNORMVOLUME get wing normalised volume

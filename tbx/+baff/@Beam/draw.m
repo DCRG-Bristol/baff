@@ -1,4 +1,9 @@
 function p = draw(obj,opts)
+%Draw draw an element in 3D Space
+%Args:
+%   opts.Origin: Origin of the beam element in 3D space
+%   opts.A: Rotation matrix to beam coordinate system
+%   opts.Type: plot type
 arguments
     obj
     opts.Origin (3,1) double = [0,0,0];

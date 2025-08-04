@@ -39,7 +39,7 @@ switch opts.Type
     case "stick"
         %plot Beam Stations
         for i = 1:N
-            plt_obj = plot3(X(:,n),Y(:,n),Z(:,n),'-o');
+            plt_obj = plot3(X(:,i),Y(:,i),Z(:,i),'-o');
             plt_obj.Color = 'k';
             plt_obj.Tag = 'WingSection';
             p = [p,plt_obj];

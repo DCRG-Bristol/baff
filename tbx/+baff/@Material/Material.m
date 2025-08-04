@@ -1,13 +1,11 @@
 classdef Material
-    %MATERIAL Summary of this class goes here
-    %   Detailed explanation goes here
-    
+    %MATERIAL Class to describe material properties
     properties
-        E = 0
-        G = 0;
-        rho = 0;
-        nu = 0;
-        Name = "";
+        E = 0; % Young's modulus
+        G = 0; % Shear modulus, if not provided it is calculated from E and nu
+        rho = 0; % Density
+        nu = 0; % Poisson's ratio
+        Name = ""; % Name of the material
     end
 
     properties
@@ -21,19 +19,22 @@ classdef Material
     
     methods
         function val = Hash(obj)
-            %HASH -  A unique number used to sort / indentify unique Materials.
+            %HASH returns a unique number used to sort / indentify unique Materials.
             val = zeros(size(obj));
             for i = 1:length(val)
                 val(i) = sum(double(char(obj(i).Name))) + obj(i).E + obj(i).G + obj(i).rho + obj(i).nu;
             end
         end
         function val = ne(obj1,obj2)
+            %overloads the ~= operator to check the inequality of two Material objects.
             val = ~(obj1.eq(obj2));
         end
         function obj = ZeroDensity(obj)
+            %ZERODENSITY sets the density of the material to zero.
             obj.rho = 0;
         end
         function val = eq(obj1,obj2)
+            %overloads the == operator to check the equality of two Material objects.
             if length(obj1)~= length(obj2) || ~isa(obj2,'baff.Material')
                 val = false;
                 return
@@ -47,6 +48,15 @@ classdef Material
             end
         end
         function obj = Material(E,nu,rho,Name,opts)
+            %MATERIAL Construct an instance of this class
+            %Args:
+            %   E (double): Young's modulus
+            %   nu (double): Poisson's ratio
+            %   rho (double): Density
+            %   Name (string): Name of the material
+            %   opts.G (double): Shear modulus, if not provided it is calculated from E and nu
+            %   opts.yield (double): Yield stress, if not provided it is set to nan
+            %   opts.uts (double): Ultimate Tensile Strength, if not provided it is set to yield stress
             arguments
                 E
                 nu
@@ -82,8 +92,14 @@ classdef Material
     end
     methods(Static)
         function obj = Aluminium()
-            obj = baff.Material(71.7e9,0.33,2810,yield=5e8);
-            obj.Name = "Aluminium7075";
+            % Static mthod to create an Aluminium material
+            % E=71.7e9, nu=0.33, rho=2810
+            persistent al
+            if ~isempty(al)
+                al = baff.Material(71.7e9,0.33,2810,yield=5e8);
+                al.Name = "Aluminium7075";
+            end
+            obj = al;
         end
         function obj = IsoCarbonFibre()
             % Quasi-Isotropic Carbon fibre
@@ -100,24 +116,54 @@ classdef Material
             obj.Name = "IsoCarbonFibre";
         end
         function obj = Stainless304()
-            obj = baff.Material(193e9,0.29,7930);
-            obj.Name = "Stainless304";
+            % Static method to create a Stainless Steel 304 material
+            % E=193e9, nu=0.29, rho=7930
+            persistent m
+            if ~isempty(m)
+                m = baff.Material(193e9,0.29,7930);
+                m.Name = "Stainless304";
+            end
+            obj = m;
         end
         function obj = Stainless316()
-            obj = baff.Material(193e9,0.27,8000);
-            obj.Name = "Stainless304";
+            % Static method to create a Stainless Steel 316 material
+            % E=193e9, nu=0.3, rho=8000
+            persistent m
+            if ~isempty(m)
+                m = baff.Material(193e9,0.27,8000);
+                m.Name = "Stainless316";
+            end
+            obj = m;
         end
         function obj = Stainless400()
-            obj = baff.Material(200e9,0.282,7720);
-            obj.Name = "Stainless400";
+            % Static method to create a Stainless Steel 400 material
+            % E=200e9, nu=0.282, rho=7720
+            persistent m
+            if ~isempty(m)
+                m = baff.Material(200e9,0.282,7720);
+                m.Name = "Stainless400";
+            end
+            obj = m;
         end
         function obj = Stiff()
-            obj = baff.Material(inf,0,0);
-            obj.Name = "Stiff";
+            % Static method to create a Stiff material - this a a specif material, which analysis tools may use to define rigid elements
+            % E=inf, nu=0, rho=0
+            persistent m
+            if ~isempty(m)
+                m = baff.Material(inf,0,0);
+                m.Name = "Stiff";
+            end
+            obj = m;
         end
         function obj = Unity()
-            obj = baff.Material(1,-0.5,1);
-            obj.Name = "Unity";
+            % Static method to create a Unity material
+            % E=1, nu=-0.5, rho=1
+            persistent m
+            if ~isempty(m)
+                m = baff.Material(1,-0.5,1);
+                m.Name = "Unity";
+            end
+            obj = m;
         end
     end
 end

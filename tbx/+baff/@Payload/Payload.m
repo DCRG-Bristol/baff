@@ -1,12 +1,11 @@
 classdef Payload < baff.Mass
-    %FUEL Summary of this class goes here
-    %   Detailed explanation goes here
+    %Payload class for payload elements in a Baff model
     
     properties
-        FillingLevel = 1;
+        FillingLevel = 1; % Filling level of the payload, default is 1 (full), this can be set to a value between 0 and 1
     end
     properties(Dependent)
-        Capacity
+        Capacity; %Maximum payload capacity of this Element (if filling level =1
     end
     methods(Static)
         obj = FromBaff(filepath,loc);
@@ -19,11 +18,23 @@ classdef Payload < baff.Mass
         end
     end
     methods
-        function obj = Payload(mass,opts)
-            %FUEL Construct an instance of this class
-            %   Detailed explanation goes here
+        function obj = Payload(capacity,opts)
+            %Payload Construct an instance of this class
+            %Args:
+            %   capacity (double): capacity of the payload object
+            %   opts.Ixx (double): Inertia tensor component Ixx
+            %   opts.Iyy (double): Inertia tensor component Iyy
+            %   opts.Izz (double): Inertia tensor component Izz
+            %   opts.Ixy (double): Inertia tensor component Ixy
+            %   opts.Ixz (double): Inertia tensor component Ixz
+            %   opts.Iyz (double): Inertia tensor component Iyz
+            %   opts.eta (double): Eta value for the payload
+            %   opts.Offset (3,1) double: Offset of the payload element from its parent
+            %   opts.Name (string): Name of the payload element
+            %   opts.Force (3,1) double: Force applied to the payload
+            %   opts.Moment (3,1) double: Moment applied to the payload
             arguments
-                mass
+                capacity
                 opts.Ixx = 0;
                 opts.Iyy = 0;
                 opts.Izz = 0;
@@ -37,20 +48,24 @@ classdef Payload < baff.Mass
                 opts.Force = nan(3,1);
                 opts.Moment = nan(3,1);
             end
-            obj = obj@baff.Mass(mass,'Ixx',opts.Ixx,'Iyy',opts.Iyy,'Izz',opts.Izz,'Ixy',...
+            obj = obj@baff.Mass(capacity,'Ixx',opts.Ixx,'Iyy',opts.Iyy,'Izz',opts.Izz,'Ixy',...
                 opts.Ixy,'Ixz',opts.Ixz,'Iyz',opts.Iyz,'eta',opts.eta,'Offset',...
                 opts.Offset,'Name',opts.Name,'Force',opts.Force,'Moment',opts.Moment);
         end
         function val = get.Capacity(obj)
+            %Capacity returns the maximum payload capacity of this Element (if filling level =1)
             val = [obj.mass];
         end
         function val = GetElementMass(obj)
+            %GetElementMass returns the mass of the payload element, at current filling level
             val = [obj.mass].*[obj.FillingLevel];
         end
         function val = GetElementOEM(obj)
+            %GetElementOEM returns the operational empty mass of the payload element(e.g. zero...)
             val = zeros(size(obj));
         end
         function [Xs,masses] = GetElementCoM(obj)
+            %GetElementCoM returns the center of mass and masses of the payload element, at current filling level
             masses = [obj.mass].*[obj.FillingLevel];
             Xs = zeros(3,length(obj));
             % for i = 1:length(obj)
@@ -58,6 +73,11 @@ classdef Payload < baff.Mass
             % end
         end
         function p = draw(obj,opts)
+            %Draw draw an element in 3D Space
+            %Args:
+            %   opts.Origin: Origin of the beam element in 3D space
+            %   opts.A: Rotation matrix to beam coordinate system
+            %   opts.Type: plot type
             arguments
                 obj
                 opts.Origin (3,1) double = [0,0,0];

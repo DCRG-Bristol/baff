@@ -1,22 +1,29 @@
 classdef Model < handle
+    %MODEL class to build Baff models
+    %   This class is used to create and manage a Baff model, which consists
+    %   of various elements such as beams, bluff bodies, constraints, etc.
+    %   It provides methods to add elements, draw the model, and save/load
+    %   the model to/from a file.
     properties
-        Name = ""
-        Beam (:,1) baff.Beam = baff.Beam.empty
-        BluffBody (:,1) baff.BluffBody = baff.BluffBody.empty
-        Constraint (:,1) baff.Constraint = baff.Constraint.empty
-        Hinge (:,1) baff.Hinge = baff.Hinge.empty
-        Mass (:,1) baff.Mass = baff.Mass.empty
-        Fuel (:,1) baff.Fuel = baff.Fuel.empty
-        Payload (:,1) baff.Payload = baff.Payload.empty
-        Point (:,1) baff.Point = baff.Point.empty
-        Wing (:,1) baff.Wing = baff.Wing.empty
-        Orphans (:,1) baff.Element = baff.Beam.empty
+        Name = ""; % Name of the model
+        Beam (:,1) baff.Beam = baff.Beam.empty; % Beam elements
+        BluffBody (:,1) baff.BluffBody = baff.BluffBody.empty; % Bluff body elements
+        Constraint (:,1) baff.Constraint = baff.Constraint.empty; % Constraint elements
+        Hinge (:,1) baff.Hinge = baff.Hinge.empty; % Hinge elements
+        Mass (:,1) baff.Mass = baff.Mass.empty; % Mass elements
+        Fuel (:,1) baff.Fuel = baff.Fuel.empty; % Fuel elements
+        Payload (:,1) baff.Payload = baff.Payload.empty; % Payload elements
+        Point (:,1) baff.Point = baff.Point.empty; % Point elements
+        Wing (:,1) baff.Wing = baff.Wing.empty; % Wing elements
+        Orphans (:,1) baff.Element = baff.Element.empty; % Orphan elements
     end
     methods
         function val = ne(obj1,obj2)
+            %overloads the ~= operator to check the inequality of two Model objects.
             val = ~(obj1.eq(obj2));
         end
         function val = eq(obj1,obj2)
+            %overloads the == operator to check the equality of two Model objects.
             if length(obj1)>1 || length(obj1)~=length(obj2) || ~isa(obj2,'baff.Model')
                 val = false;
                 return
@@ -25,6 +32,8 @@ classdef Model < handle
             val = val && obj1.Orphans == obj2.Orphans;
         end
         function new = Rebuild(obj)
+            %rebuild the model by working through the Orphans and populating the array of elements
+            %This is useful when the model has been modified and needs to be updated.
             new = baff.Model();
             new.Name = obj.Name;
             for i = 1:length(obj.Orphans)
@@ -32,20 +41,25 @@ classdef Model < handle
             end
         end
         function AddElement(obj,ele)
-            % add element
+            %add an element to the modelelement
             if isa(ele,'baff.Element')
                 obj.(ele.Type)(end+1) = ele;
+            end
+            if ~isempty(ele.Parent)
+                error('Can only add Orphan Elements directly to the model. Please add the Parent Element to the model.');
             end
             % add its Children
             for cIdx = 1:length(ele.Children)
                 obj.AddElement(ele.Children(cIdx));
             end
-            % if Orphan add to the list
-            if isempty(ele.Parent)
-                obj.Orphans(end+1) = ele;
-            end
+            % add to the list of Ophans
+            obj.Orphans(end+1) = ele;
         end
         function draw(obj,fig_handle,opts)
+            %Draw draw an element in 3D Space
+            %Args:
+            %   fig_handle: handle to the figure to draw in
+            %   opts.Type: plot type, can be 'stick', 'surf', or 'mesh'
             arguments
                 obj
                 fig_handle = figure;
@@ -88,6 +102,7 @@ classdef Model < handle
         end
 
         function ToBaff(obj,filename)
+            %TOBAFF save the model to a Baff HDF5 file
             date = datestr(now);
             h5write(filename,'/Version',string(baff.util.get_version));
             h5writeatt(filename,'/','BaffVersion', string(baff.util.get_version));
@@ -104,6 +119,7 @@ classdef Model < handle
             end
         end
         function val = GetMass(obj)
+            %GetMass get the total mass of the model
             val = 0;
             names = fieldnames(obj);
             for i = 1:length(names)
@@ -116,6 +132,8 @@ classdef Model < handle
             end
         end
         function val = GetOEM(obj)
+            %GetOEM get the total operational empty mass of the model
+            %This is the mass of the model excluding fuel and payload.
             val = 0;
             names = fieldnames(obj);
             for i = 1:length(names)
@@ -128,6 +146,7 @@ classdef Model < handle
             end
         end
         function [X,mass] = GetCoM(obj)
+            %GetCoM get the center of mass of the model
             masses = [0];
             Xs = [0;0;0];
             for i = 1:length(obj.Orphans)
@@ -145,7 +164,10 @@ classdef Model < handle
 
 
         function AssignChildren(obj,filename)
-            % get linker object
+            %AssignChildren assigns the children of the elements in the model
+            %This function is for reading HDF5 models. as after all elemetns are created it links parents to their children etc...
+            %Args:
+            %   filename: path to the HDF5 file
             linker = baff.Element.empty;
             names = fieldnames(obj);
             for i = 1:length(names)
@@ -171,6 +193,9 @@ classdef Model < handle
     end
     methods(Static)
         function GenTempHdf5(filename)
+            %GenTempHdf5 generate a template HDF5 file for the model
+            %Args:
+            %   filename: path to the HDF5 file
             obj = baff.Model();
             h5create(filename,'/Version',[1 1],'Datatype','string');
             h5write(filename,'/Version',string(baff.util.get_version));
@@ -183,6 +208,9 @@ classdef Model < handle
             end
         end
         function obj = FromBaff(filename)
+            %FromBaff load a Baff model from an HDF5 file
+            %Args:
+            %   filename: path to the HDF5 file
             obj = baff.Model();
             names = fieldnames(obj);
             for i = 1:length(names)

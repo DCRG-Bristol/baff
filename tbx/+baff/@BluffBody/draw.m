@@ -1,4 +1,9 @@
 function p = draw(obj,opts)
+%Draw draw an element in 3D Space
+%Args:
+%   opts.Origin: Origin of the beam element in 3D space
+%   opts.A: Rotation matrix to beam coordinate system
+%   opts.Type: plot type
 arguments
     obj
     opts.Origin (3,1) double = [0,0,0];
@@ -45,7 +50,7 @@ switch opts.Type
         p(end).Tag = 'BodySurface';
     case "mesh"
         % create mesh
-        p(end+1) = surf(X, Y, Z, FaceColor=[1 1 1]*0.9, EdgeColor='none');
+        p(end+1) = surf(X, Y, Z, FaceColor=[1 1 1]*0.9, EdgeColor='k');
         p(end).Tag = 'BodySurface';
 end
 
