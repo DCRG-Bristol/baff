@@ -56,22 +56,28 @@ Beam Elements
 
 Beam elements are the foundation for flexible and rigid structures. They have a notion of a normalised 1D reference line (e.g., their length is normalised by EtaLength).
 
-Beam Element has a Property **Station**, an array of *Station* elements. Each station has the following properties:
+Beam Element has a Property **Station**, an instance of a *baff.station.Base* element. Each station has the following arrays which define beam properties at different normailised stations:
 
 - **A** - 1D beam Aero
 - **I** - 3x3 second moment of area tensor
 - **J** - Torsion constant
 - **Mat** - Material properties
-- **Eta** - Normalise location along the reference line
+- **Eta** - Normalised location along the reference line
 - **EtaDir** - the direction of the reference line at this station (nominally points along the x-axis)
 - **Station Dir** - defines the beam's y-axis (for loads etc...)
 
 The array of *stations* must monotonically increase in Eta; therefore, it defines the 1D reference line in space and its structural / mass properties.
 
+.. .. warning::
+   between versions 0.1.x and 0.2.x the station property changed from an array of *Station* instances, to a single instance containing arrays of properties.
+   Therefore, calls such as `MyWing.Stations(1).Eta` will no longer work, and should be replaced with `MyWing.Station.Eta(1)`, etc...
+
+   A Warning has been added if you try to index into a beam element e.g `MyWing.Stations(1)`. This warning can be disbled by calling the static method `baff.station.Base.setDebugmode(false);`, but the warning will also be removed in a later version.
+
 Wing Elements
 ++++++++++++++
 
-Wing elements are the same as Beam elements, but have an additional array of *AeroStations*. Each *AeroStations* defines the variation in aerodynamic properties along the reference line. e.g.:
+Wing elements are the same as Beam elements, but have an additional property *AeroStations*. Each *AeroStations* defines the variation in aerodynamic properties along the reference line. e.g.:
 
 .. param: test
 

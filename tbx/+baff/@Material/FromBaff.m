@@ -1,5 +1,8 @@
 function obj = FromBaff(filepath,loc)
-% write default items
+%FROMBAFF build a beam BAFF object from a HDF5 file.
+%Args:
+%   filepath: path to the HDF5 file
+%   loc: location in the HDF5 file where the beam data is stored
 Qty = h5readatt(filepath,[loc,'/Materials/'],'Qty');
 obj = baff.Material.empty;
 if Qty == 0    

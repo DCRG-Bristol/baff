@@ -1,4 +1,8 @@
 function ToBaff(obj,filepath,loc)
+%TOBAFF Write a beam BAFF object to a HDF5 file.
+%Args:
+%   filepath (string): Path to file
+%   loc (string): Location in file
 N = length(obj);
 h5writeatt(filepath,[loc,'/ControlSurface/'],'Qty', N);
 if N ~= 0
