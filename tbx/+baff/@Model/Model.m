@@ -17,6 +17,18 @@ classdef Model < handle
         Wing (:,1) baff.Wing = baff.Wing.empty; % Wing elements
         Orphans (:,1) baff.Element = baff.Element.empty; % Orphan elements
     end
+    methods(Access=private)
+        function AddChild(obj,ele)
+            %Add children elements to the model
+            if isa(ele,'baff.Element')
+                obj.(ele.Type)(end+1) = ele;
+            end
+            % add its Children
+            for cIdx = 1:length(ele.Children)
+                obj.AddChild(ele.Children(cIdx));
+            end
+        end
+    end
     methods
         function val = ne(obj1,obj2)
             %overloads the ~= operator to check the inequality of two Model objects.
@@ -41,7 +53,7 @@ classdef Model < handle
             end
         end
         function AddElement(obj,ele)
-            %add an element to the modelelement
+            %add an element to the model
             if isa(ele,'baff.Element')
                 obj.(ele.Type)(end+1) = ele;
             end
@@ -50,7 +62,7 @@ classdef Model < handle
             end
             % add its Children
             for cIdx = 1:length(ele.Children)
-                obj.AddElement(ele.Children(cIdx));
+                obj.AddChild(ele.Children(cIdx));
             end
             % add to the list of Ophans
             obj.Orphans(end+1) = ele;

@@ -95,7 +95,7 @@ classdef Material
             % Static mthod to create an Aluminium material
             % E=71.7e9, nu=0.33, rho=2810
             persistent al
-            if ~isempty(al)
+            if isempty(al)
                 al = baff.Material(71.7e9,0.33,2810,yield=5e8);
                 al.Name = "Aluminium7075";
             end
@@ -119,7 +119,7 @@ classdef Material
             % Static method to create a Stainless Steel 304 material
             % E=193e9, nu=0.29, rho=7930
             persistent m
-            if ~isempty(m)
+            if isempty(m)
                 m = baff.Material(193e9,0.29,7930);
                 m.Name = "Stainless304";
             end
@@ -129,7 +129,7 @@ classdef Material
             % Static method to create a Stainless Steel 316 material
             % E=193e9, nu=0.3, rho=8000
             persistent m
-            if ~isempty(m)
+            if isempty(m)
                 m = baff.Material(193e9,0.27,8000);
                 m.Name = "Stainless316";
             end
@@ -139,7 +139,7 @@ classdef Material
             % Static method to create a Stainless Steel 400 material
             % E=200e9, nu=0.282, rho=7720
             persistent m
-            if ~isempty(m)
+            if isempty(m)
                 m = baff.Material(200e9,0.282,7720);
                 m.Name = "Stainless400";
             end
@@ -149,7 +149,7 @@ classdef Material
             % Static method to create a Stiff material - this a a specif material, which analysis tools may use to define rigid elements
             % E=inf, nu=0, rho=0
             persistent m
-            if ~isempty(m)
+            if isempty(m)
                 m = baff.Material(inf,0,0);
                 m.Name = "Stiff";
             end
@@ -159,7 +159,7 @@ classdef Material
             % Static method to create a Unity material
             % E=1, nu=-0.5, rho=1
             persistent m
-            if ~isempty(m)
+            if isempty(m)
                 m = baff.Material(1,-0.5,1);
                 m.Name = "Unity";
             end

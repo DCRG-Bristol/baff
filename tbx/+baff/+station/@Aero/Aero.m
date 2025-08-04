@@ -191,7 +191,7 @@ classdef Aero < baff.station.Base
         end
         function val = HasMass(obj)
             %HASMASS - returns boolean value dependent on if stations have mass
-            val = any(obj.LinearDensity > 0) || any(obj.LinearInertia > 0);
+            val = any(obj.LinearDensity > 0) | any(obj.LinearInertia > 0);
         end
         function out = interpolate(obj,N,method,PreserveOld)
             %INTERPOLATE interpolate stations at different etas
@@ -297,7 +297,7 @@ classdef Aero < baff.station.Base
                 areas = 0;
                 return
             end
-            perimeters = [sts_i.Airfoil.NormPerimeter].* obj.Chord;
+            perimeters = [obj.Airfoil.NormPerimeter].* obj.Chord;
             deltaEta = obj.Eta(2:end)-obj.Eta(1:end-1);
             areas = 0.5*(perimeters(1:end-1)+perimeters(2:end)).*deltaEta;
         end
