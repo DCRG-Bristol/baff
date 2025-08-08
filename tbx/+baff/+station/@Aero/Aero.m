@@ -244,23 +244,24 @@ classdef Aero < baff.station.Base
                 beamLoc = obj.BeamLoc;
                 twist = obj.Twist;
                 etaDir = obj.EtaDir;
-            elseif isscalar(eta) && ismember(eta,obj.Eta)
-                % if eta is one of the stations, get the station
-                idx = find(obj.Eta == eta,1);
-                stDir = obj.StationDir(:,idx);
-                chord = obj.Chord(idx);
-                beamLoc = obj.BeamLoc(idx);
-                twist = obj.Twist(idx);
-                etaDir = obj.EtaDir(:,idx);
             else
-                [~,idx_low,idx_high,alpha] = obj.InterpolateEtas(eta);
-                beta = 1-alpha;
-                
-                stDir = obj.StationDir(:,idx_low);
-                chord = obj.Chord(idx_low) .* beta + obj.Chord(idx_high) .* alpha;
-                beamLoc = obj.BeamLoc(idx_low) .* beta + obj.BeamLoc(idx_high) .* alpha;
-                twist = obj.Twist(idx_low) .* beta + obj.Twist(idx_high) .* alpha;
-                etaDir = obj.EtaDir(:,idx_low);
+                [ii,idx] = ismember(eta,obj.Eta);
+                if all(ii)
+                    stDir = obj.StationDir(:,idx);
+                    chord = obj.Chord(idx);
+                    beamLoc = obj.BeamLoc(idx);
+                    twist = obj.Twist(idx);
+                    etaDir = obj.EtaDir(:,idx);
+                else
+                    [~,idx_low,idx_high,alpha] = obj.InterpolateEtas(eta);
+                    beta = 1-alpha;
+                    
+                    stDir = obj.StationDir(:,idx_low);
+                    chord = obj.Chord(idx_low) .* beta + obj.Chord(idx_high) .* alpha;
+                    beamLoc = obj.BeamLoc(idx_low) .* beta + obj.BeamLoc(idx_high) .* alpha;
+                    twist = obj.Twist(idx_low) .* beta + obj.Twist(idx_high) .* alpha;
+                    etaDir = obj.EtaDir(:,idx_low);
+                end
             end
             
             stDir = stDir./vecnorm(stDir);
