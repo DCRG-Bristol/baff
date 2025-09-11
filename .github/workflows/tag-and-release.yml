@@ -1,7 +1,10 @@
+
 name: Tag and Release
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - master
 
 permissions:
   contents: write
@@ -15,6 +18,11 @@ jobs:
         with:
           fetch-depth: 0
           ref: master
+
+      - name: Configure Git author
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Get version from version.txt
         id: get_version
