@@ -25,6 +25,7 @@ and this project adheres to [Explicit Versioning](https://github.com/exadra37-ve
 ### Deprecated
 ### Removed
 ### Fixed
+ - [0.2.0.3] SetIndex of Beam station now also copies the Material.
 
 ## [0.1.0.x]
 ### Added
