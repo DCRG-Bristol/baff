@@ -84,32 +84,33 @@ jobs:
 
       - name: Create Pull Request to master
         if: steps.current_branch.outputs.name != 'master'
-        uses: peter-evans/create-pull-request@v5
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ steps.current_branch.outputs.name }}
-          title: "Release ${{ steps.new_version.outputs.new }}"
-          body: |
-            ## Release ${{ steps.new_version.outputs.new }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Create PR using GitHub CLI
+          gh pr create \
+            --title "Release ${{ steps.new_version.outputs.new }}" \
+            --body "## Release ${{ steps.new_version.outputs.new }}
 
-            This PR contains the version bump from `${{ steps.current_version.outputs.current }}` to `${{ steps.new_version.outputs.new }}`.
+          This PR contains the version bump from \`${{ steps.current_version.outputs.current }}\` to \`${{ steps.new_version.outputs.new }}\`.
 
-            **Source branch**: `${{ steps.current_branch.outputs.name }}`
-            **Version type**: ${{ github.event.inputs.version_type }}
+          **Source branch**: \`${{ steps.current_branch.outputs.name }}\`
+          **Version type**: ${{ github.event.inputs.version_type }}
 
-            ### Changes
-            - Updated `version.txt` to `${{ steps.new_version.outputs.new }}`
-            - Any other changes from the `${{ steps.current_branch.outputs.name }}` branch
+          ### Changes
+          - Updated \`version.txt\` to \`${{ steps.new_version.outputs.new }}\`
+          - Any other changes from the \`${{ steps.current_branch.outputs.name }}\` branch
 
-            Once this PR is merged, the tag and release workflow will automatically:
-            - Create a git tag `v${{ steps.new_version.outputs.new }}`
-            - Create a GitHub release with generated release notes
+          Once this PR is merged, the tag and release workflow will automatically:
+          - Create a git tag \`v${{ steps.new_version.outputs.new }}\`
+          - Create a GitHub release with generated release notes
 
-            ### Checklist
-            - [ ] Version number is correct
-            - [ ] All tests pass
-            - [ ] Ready for release
-          base: master
+          ### Checklist
+          - [ ] Version number is correct
+          - [ ] All tests pass
+          - [ ] Ready for release" \
+            --base master \
+            --head ${{ steps.current_branch.outputs.name }}
 
       - name: Skip PR creation - already on master
         if: steps.current_branch.outputs.name == 'master'
