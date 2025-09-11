@@ -1,4 +1,4 @@
-name: Bump Patch and Open PR
+name: Release Patch
 
 on:
   workflow_dispatch:
@@ -7,13 +7,14 @@ permissions:
   contents: write
 
 jobs:
-  bump-patch-open-pr:
+  release-patch:
+    if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 0 # ensure tags and full history are available
 
       - name: Configure Git author
         run: |
@@ -25,6 +26,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # Read current version and normalize line endings
           if [[ ! -f version.txt ]]; then
             echo "version.txt not found" >&2
             exit 1
@@ -37,19 +39,39 @@ jobs:
           IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
           PATCH=$((PATCH + 1))
           NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
-          echo "$NEW_VERSION" > version.txt
-          git checkout -b bump-patch-v${NEW_VERSION}
-          git add version.txt
-          git commit -m "chore(release): bump version to ${NEW_VERSION}"
-          git push origin bump-patch-v${NEW_VERSION}
-          echo "new_version=${NEW_VERSION}" >> "$GITHUB_OUTPUT"
 
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v6
+          echo "$NEW_VERSION" > version.txt
+          git add version.txt
+          if git diff --staged --quiet; then
+            echo "No changes detected in version.txt; nothing to commit."
+          else
+            git commit -m "chore(release): bump version to ${NEW_VERSION}"
+          fi
+
+          echo "new_version=${NEW_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "tag=v${NEW_VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Push version bump commit
+        run: |
+          # Push back to the same branch this workflow ran on
+          git push origin HEAD
+
+      - name: Create and push tag
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="${{ steps.bump.outputs.tag }}"
+          # Fail if tag already exists remotely
+          if git ls-remote --exit-code --tags origin "refs/tags/${TAG}" >/dev/null 2>&1; then
+            echo "Tag ${TAG} already exists on origin; aborting." >&2
+            exit 1
+          fi
+          git tag -a "$TAG" -m "Release $TAG"
+          git push origin "$TAG"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "chore(release): bump version to ${{ steps.bump.outputs.new_version }}"
-          branch: bump-patch-v${{ steps.bump.outputs.new_version }}
-          base: master
-          title: "chore(release): bump version to ${{ steps.bump.outputs.new_version }}"
-          body: "Automated patch version bump. Please review and merge."
+          tag_name: ${{ steps.bump.outputs.tag }}
+          name: ${{ steps.bump.outputs.tag }}
+          generate_release_notes: true

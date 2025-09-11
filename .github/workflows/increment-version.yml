@@ -1,0 +1,112 @@
+name: Increment Version
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_type:
+        description: 'Version increment type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  increment-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git author
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Get current version
+        id: current_version
+        run: |
+          CURRENT_VERSION=$(tr -d '\r' < version.txt | tr -d '\n')
+          if [[ ! $CURRENT_VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Invalid version in version.txt: '$CURRENT_VERSION' (expected X.Y.Z)" >&2
+            exit 1
+          fi
+          echo "current=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          echo "Current version: $CURRENT_VERSION"
+
+      - name: Calculate new version
+        id: new_version
+        run: |
+          CURRENT="${{ steps.current_version.outputs.current }}"
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
+          
+          case "${{ github.event.inputs.version_type }}" in
+            major)
+              MAJOR=$((MAJOR + 1))
+              MINOR=0
+              PATCH=0
+              ;;
+            minor)
+              MINOR=$((MINOR + 1))
+              PATCH=0
+              ;;
+            patch)
+              PATCH=$((PATCH + 1))
+              ;;
+          esac
+          
+          NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+          echo "new=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "New version: $NEW_VERSION"
+
+      - name: Create new branch
+        run: |
+          BRANCH_NAME="version-bump-${{ steps.new_version.outputs.new }}"
+          git checkout -b "$BRANCH_NAME"
+          echo "branch=$BRANCH_NAME" >> $GITHUB_ENV
+
+      - name: Update version.txt
+        run: |
+          echo "${{ steps.new_version.outputs.new }}" > version.txt
+          git add version.txt
+          git commit -m "Bump version to ${{ steps.new_version.outputs.new }}"
+
+      - name: Push branch
+        run: |
+          git push origin "${{ env.branch }}"
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ env.branch }}
+          title: "Bump version to ${{ steps.new_version.outputs.new }}"
+          body: |
+            ## Version Bump
+
+            This PR bumps the version from `${{ steps.current_version.outputs.current }}` to `${{ steps.new_version.outputs.new }}`.
+
+            **Type**: ${{ github.event.inputs.version_type }}
+
+            ### Changes
+            - Updated `version.txt` to `${{ steps.new_version.outputs.new }}`
+
+            Once this PR is merged, the tag and release workflow will automatically:
+            - Create a git tag `v${{ steps.new_version.outputs.new }}`
+            - Create a GitHub release with generated release notes
+
+            ### Checklist
+            - [ ] Version number is correct
+            - [ ] All tests pass
+            - [ ] Ready for release
+          base: master
+          delete-branch: true
