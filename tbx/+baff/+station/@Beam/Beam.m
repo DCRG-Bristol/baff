@@ -140,6 +140,7 @@ classdef Beam < baff.station.Base
             obj.J(i) = val.J;
             obj.I(:,:,i) = val.I;
             obj.tau(:,:,i) = val.tau;
+            obj.Mat(i) = val.Mat;
         end
     end
     % extra Methods
@@ -263,6 +264,59 @@ classdef Beam < baff.station.Base
             J = a*b^3*(1/3-0.2085*(b/a)*(1-(b^4)/(12*a^4)));
             I = diag([Ixx,Iyy,Izz]);
             obj = baff.station.Beam(eta, I=I, A=height*width, J=J, Mat=opts.Mat);
+        end
+        function obj = Rod(eta,diameter,opts)
+            arguments
+                eta
+                diameter
+                opts.Mat = baff.Material.Stiff;
+            end
+            r = diameter/2;
+            A = pi*r^2;
+            I = pi.*r^4.*diag([0.25,0.25,0.5]);
+            J = pi*diameter^4/32;
+            obj = baff.station.Beam(eta, I=I, A=A, J=J, Mat=opts.Mat);
+        end
+        function obj = Annulus(eta,outer_diameter,inner_diameter,opts)
+            arguments
+                eta
+                outer_diameter
+                inner_diameter
+                opts.Mat = baff.Material.Stiff;
+            end
+            r_outer = outer_diameter/2;
+            r_inner = inner_diameter/2;
+            A = pi*(r_outer^2 - r_inner^2);
+            I = pi.*(r_outer^4 - r_inner^4).*diag([0.25,0.25,0.5]);
+            J = pi/2*(r_outer^4 - r_inner^4);
+            obj = baff.station.Beam(eta, I=I, A=A, J=J, Mat=opts.Mat);
+        end
+        function obj = HollowRect(eta,height,width,thickness,opts)
+            arguments
+                eta
+                height
+                width
+                thickness
+                opts.Mat = baff.Material.Stiff;
+            end
+            if thickness*2>=min(height,width)
+                error('Thickness is too large for given dimensions')
+            end
+            A = height*width - (height-2*thickness)*(width-2*thickness);
+            Iyy = (height*width^3 - (height-2*thickness)*(width-2*thickness)^3)/12;
+            Izz = (width*height^3 - (width-2*thickness)*(height-2*thickness)^3)/12;
+            Ixx = Iyy + Izz;
+            if height>=width
+                a = height;
+                b = width;
+            else
+                a = width;
+                b = height;
+            end
+            t = thickness;
+            J = 2*t^2*(b-t)^2*(a-t)^2/(a*t+b*t-2*t^2);
+            I = diag([Ixx,Iyy,Izz]);
+            obj = baff.station.Beam(eta, I=I, A=A, J=J, Mat=opts.Mat);
         end
     end
 end
