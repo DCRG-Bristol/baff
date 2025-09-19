@@ -19,6 +19,10 @@ p = plot3(points(1,:),points(2,:),points(3,:),'--o');
 p.Color = 'r';
 p.Tag = 'Hinge';
 
+K = [0,-obj.HingeVector(3),obj.HingeVector(2);...
+    obj.HingeVector(3),0,-obj.HingeVector(1);...
+    -obj.HingeVector(2),obj.HingeVector(1),0];
+opts.A = opts.A * (eye(3)+sind(obj.Rotation)*K+(1-cosd(obj.Rotation))*K^2);
 %plot children
 optsCell = namedargs2cell(opts);
 plt_obj = draw@baff.Element(obj,optsCell{:});

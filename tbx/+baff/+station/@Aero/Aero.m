@@ -7,7 +7,7 @@ classdef Aero < baff.station.Base
         Twist = 0;
         BeamLoc = 0.25;
         Airfoil = baff.Airfoil.NACA_sym;
-        ThicknessRatio = 1;
+        ThicknessRatio = 0.12;
         LiftCurveSlope = 2*pi;
 
         %inertial properties
