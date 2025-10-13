@@ -1,4 +1,4 @@
-classdef Airfoil
+classdef Airfoil < handle
     %Airfoil Represents an airfoil with geometry and aerodynamic properties.
     properties
         Name string % Name of the airfoil
@@ -12,6 +12,11 @@ classdef Airfoil
         Thickness
         CumArea % Cumulative area 
     end
+    properties(GetAccess=private,SetAccess=private)
+        cEta_last = [nan;nan];
+        CutArea_last = nan;
+    end
+
 properties(Dependent)
     NEta
 end
@@ -64,6 +69,16 @@ methods
             val = val.*chord;
         end
     end
+    function val = CutArea(obj,cEta)
+        if all(cEta==obj.cEta_last)
+            val = obj.CutArea_last;
+        else
+            tmp = interp1(obj.Etas,obj.CumArea,cEta);
+            val = tmp(2)-tmp(1);
+            obj.cEta_last = cEta;
+            obj.CutArea_last = val;
+        end
+    end
     function val = Area(obj,chord,tc,cEta)
         arguments
             obj 
@@ -75,8 +90,7 @@ methods
             if isnan(cEta(1))
                 val = chord.^2*tc*obj.NormArea;
             else
-                tmp = interp1(obj.Etas,obj.CumArea,cEta(:,1));
-                val = chord.^2*tc*(tmp(2)-tmp(1));
+                val = chord.^2*tc*obj.CutArea(cEta(:,1));
             end
         else
             N = length(obj);
@@ -101,8 +115,7 @@ methods
                 val = val.*[obj.NormArea];
             else
                 for i = 1:N
-                    tmp = interp1(obj(i).Etas,obj(i).CumArea,cEta(:,i));
-                    val = val.*(tmp(2)-tmp(1));
+                    val(i) = val(i).*obj(i).CutArea(cEta(:,i));
                 end
             end
         end
