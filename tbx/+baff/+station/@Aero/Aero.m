@@ -379,7 +379,7 @@ classdef Aero < baff.station.Base
             A1 = A(2:end);
             A2 = A(1:end-1);
             z = obj.Eta(2:end)-obj.Eta(1:end-1);
-            vols = 1/3*z.*(A2.^2+sqrt(A2.*A1)+A1.^2);
+            vols = 1/3*z.*(A2+sqrt(A2.*A1)+A1);
         end
     end
 end

@@ -27,6 +27,8 @@ assert(isscalar(unique([md.Wing.Span])),'Span Property Not the same for all thre
 assert(isscalar(unique(md.Wing.WettedArea)),'Wetted Area Property Not the same for all three wings');
 assert(isscalar(unique(md.Wing.WingVolume)),'Wing Volume Property Not the same for all three wings');
 
+af = baff.Airfoil.NACA_sym;
+assert(abs(wing1.WingVolume-af.NormArea*0.1^2*0.12)<1e-10)
 %% Sweep Check: beam length longer for swept wings
 assert(wing1.GetBeamLength < wing2.GetBeamLength)
 assert(wing2.GetBeamLength == wing3.GetBeamLength)
