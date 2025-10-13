@@ -41,7 +41,7 @@ function obj = DistributeMass(obj, mass, Nele,opts)
     % Calculate mass distribution based on normalized volumes at each section
     etas = linspace(Etas(1),Etas(2),Nele+1);
     secs = obj.Stations.interpolate(etas);
-    NormVols = secs.GetNormVolumes();
+    NormVols = secs.NormVolumes();
     masses = NormVols./sum(NormVols) * mass;
 
     % Calculate eta positions for mass placement

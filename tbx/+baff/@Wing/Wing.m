@@ -128,8 +128,36 @@ classdef Wing < baff.Beam
             X = obj.Stations.GetPos(eta)*obj.EtaLength;
         end
         function Area = WettedArea(obj)
-            %WettedArea returns the wetted area of the wing
-            Area = zeros(size(obj));      
+            %WettedArea returns the wetted surface area of the bluff body element.
+            %Returns:
+            %   Area: wetted surface area of the bluff body element
+            if isscalar(obj)
+                Area = obj.AeroStations.GetNormWettedArea()*obj.EtaLength;            
+            else
+                Area = zeros(size(obj));
+                for i = 1:length(obj)
+                    Area(i) = obj(i).AeroStations.GetNormWettedArea()*obj(i).EtaLength;            
+                end
+            end
+        end
+        function Vol = WingVolume(obj,etaLims)
+            %Volume returns the volume of the bluff body element within specified eta limits.
+            %Args:
+            %   etaLims: eta limits for volume calculation [default: [0,1]]
+            %Returns:
+            %   Vol: volume of the bluff body element within the specified limits
+            arguments
+                obj
+                etaLims = [0,1]
+            end 
+            if isscalar(obj)
+                Vol = obj.AeroStations.GetNormVolume(etaLims)*obj.EtaLength;
+            else
+                Vol = zeros(size(obj));
+                for i = 1:length(obj)
+                    Vol(i) = obj(i).AeroStations.GetNormVolume(etaLims)*obj(i).EtaLength;
+                end
+            end
         end
         function [sweepAngles] = GetSweepAngles(obj,cEta)
             %GetSweepAngles returns the sweep angle of the wing at each aero station

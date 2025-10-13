@@ -11,7 +11,6 @@ classdef (Abstract) Base < handle & matlab.mixin.Copyable
         StationDir = [0;1;0];
     end
 
-
     methods
         function set.EtaDir(obj,val)
             if size(val,1)~=3
