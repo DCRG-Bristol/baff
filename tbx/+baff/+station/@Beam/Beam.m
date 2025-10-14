@@ -166,7 +166,7 @@ classdef Beam < baff.station.Base
             rho = [obj.Mat(1:end-1).rho];
             % set default values
             etaCoMs = obj.Eta(1:end-1) + z/2;
-            masses = A1.*z.*rho;
+            masses = A1.*z.*rho.*vecnorm(obj.EtaDir(:,1:end-1));
             % if a frustrum
             idx = abs(A1-A2)>1e-10;
             if nnz(idx)>0
@@ -179,7 +179,7 @@ classdef Beam < baff.station.Base
                 vol_bar = z_bar./3.*A2;
                 vol = vol_p-vol_bar;
                 etaCoMs(idx) = (vol_p.*z_p./4-vol_bar.*(z+z_bar./4))./vol + obj.Eta(:,[idx false]);
-                masses(idx) = vol.*rho(idx);
+                masses(idx) = vol.*rho(idx).*vecnorm(obj.EtaDir(:,[idx false]));
             end
             mass = sum(masses);
             if mass == 0
@@ -200,7 +200,7 @@ classdef Beam < baff.station.Base
             vol = z/3.*(A1+A2+sqrt(A1.*A2));
             rho = [obj.Mat(1:end-1).rho];
             % set default values
-            mass = vol.*rho;
+            mass = vol.*rho.*vecnorm(obj.EtaDir(:,1:end-1));
         end
         
         function out = interpolate(obj,N,method,PreserveOld)
