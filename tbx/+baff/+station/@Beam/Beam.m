@@ -202,7 +202,6 @@ classdef Beam < baff.station.Base
             % set default values
             mass = vol.*rho.*vecnorm(obj.EtaDir(:,1:end-1));
         end
-
         
         function out = interpolate(obj,N,method,PreserveOld)
             %INTERPOLATE interpolate stations at different etas
@@ -317,6 +316,31 @@ classdef Beam < baff.station.Base
             J = 2*t^2*(b-t)^2*(a-t)^2/(a*t+b*t-2*t^2);
             I = diag([Ixx,Iyy,Izz]);
             obj = baff.station.Beam(eta, I=I, A=A, J=J, Mat=opts.Mat);
+        end
+        function Vol = NormVolume(obj,etaLim)
+            arguments
+                obj
+                etaLim = [0,1]
+            end
+            Vol = sum(NormVolumes(obj,etaLim));
+        end
+
+        function Vol = NormVolumes(obj,etaLim)
+            arguments
+                obj
+                etaLim = [0,1]
+            end
+            etas = obj.Eta;
+            As = obj.A;
+            if any(~ismember(etaLim,etas))
+                idx = etas_full>=etaLim(1) & etas_full<=etaLim(2);
+                As = [interp1(etas,As,etaLim(1)),As(idx),interp1(etas,As,etaLim(2))];
+                etas = [etaLim(1),etas(idx),etaLim(2)];
+            end
+            A1 = As(2:end);
+            A2 = As(1:end-1);
+            z = etas(2:end)-etas(1:end-1);
+            Vol = 1/3*z.*(A2+sqrt(A2.*A1)+A1);
         end
     end
 end

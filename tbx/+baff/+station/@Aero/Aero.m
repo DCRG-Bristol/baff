@@ -298,7 +298,7 @@ classdef Aero < baff.station.Base
                 areas = 0;
                 return
             end
-            perimeters = [obj.Airfoil.NormPerimeter].* obj.Chord;
+            perimeters = obj.Airfoil.Perimeter(obj.Chord,obj.ThicknessRatio);
             deltaEta = obj.Eta(2:end)-obj.Eta(1:end-1);
             areas = 0.5*(perimeters(1:end-1)+perimeters(2:end)).*deltaEta;
         end
@@ -342,6 +342,7 @@ classdef Aero < baff.station.Base
             mgcs = 2/3*obj.Chord(1:end-1).*(1+tr+tr.^2)./(1+tr);
             thicknessRatios = (obj.ThicknessRatio(1:end-1) + obj.ThicknessRatio(2:end))/2;
         end
+
         function vol = GetNormVolume(obj,cEtas,Etas)
             %GETNORMVOLUME get wing normalised volume
             % get wing norm. volume with arguments
@@ -374,10 +375,11 @@ classdef Aero < baff.station.Base
                 idx = obj.Eta>Etas(1) & obj.Eta<Etas(2);
                 obj = obj.interpolate([Etas(1),obj.Eta(idx),Etas(2)]);
             end
-            A = obj.Chord.^2.*obj.ThicknessRatio;
-            A = A.*[obj.Airfoil.GetNormArea(cEtas)];
-            spans = obj.Eta(2:end)-obj.Eta(1:end-1);
-            vols = spans./3.*(A(1:end-1)+A(2:end)+sqrt(A(1:end-1).*A(2:end))); 
+            A = obj.Airfoil.Area(obj.Chord,obj.ThicknessRatio,cEtas');
+            A1 = A(2:end);
+            A2 = A(1:end-1);
+            z = obj.Eta(2:end)-obj.Eta(1:end-1);
+            vols = 1/3*z.*(A2+sqrt(A2.*A1)+A1);
         end
     end
 end
