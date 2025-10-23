@@ -270,10 +270,10 @@ classdef Aero < baff.station.Base
             
             if isscalar(eta)
                 points = repmat(stDir,1,length(pChord)).*(beamLoc - pChord);
-                X = baff.util.Rodrigues(perp,deg2rad(twist))*points.*chord;
+                X = dcrg.geom.Rodrigues(perp,deg2rad(twist))*points.*chord;
             else
                 points = stDir.*(beamLoc - pChord).*chord;
-                X = pagemtimes(baff.util.Rodrigues(reshape(perp,3,1,[]),reshape(deg2rad(twist),1,1,[])),reshape(points,3,1,[]));
+                X = pagemtimes(dcrg.geom.Rodrigues(reshape(perp,3,1,[]),reshape(deg2rad(twist),1,1,[])),reshape(points,3,1,[]));
                 X = reshape(X,3,[]);
             end
         end
