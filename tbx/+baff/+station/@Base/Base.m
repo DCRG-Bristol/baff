@@ -125,8 +125,16 @@ classdef (Abstract) Base < handle & matlab.mixin.Copyable
                     X = pos(:,idx);
                 else
                     ii = find(etas>eta,1);
-                    delta = (eta-etas(ii-1))/(etas(ii)-etas(ii-1));
-                    X = pos(:,ii-1) + (pos(:,ii)-pos(:,ii-1))*delta;
+                    if eta<etas(1)
+                        delta = (eta-etas(1))/(etas(2)-etas(1));
+                        X = pos(:,1) + (pos(:,2)-pos(:,1))*delta;
+                    elseif eta>etas(end)
+                        delta = (eta-etas(end-1))/(etas(end)-etas(end-1));
+                        X = pos(:,end-1) + (pos(:,end)-pos(:,1))*delta;
+                    else
+                        delta = (eta-etas(ii-1))/(etas(ii)-etas(ii-1));
+                        X = pos(:,ii-1) + (pos(:,ii)-pos(:,ii-1))*delta;
+                    end
                 end
             else
                 %fast interp
