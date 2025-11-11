@@ -128,11 +128,19 @@ classdef Beam < baff.station.Base
             out.J = obj.J(i);
             out.tau = obj.tau(:,:,i);
         end
-        function obj = SetIndex(obj,i,val)
+        function obj = SetIndex(obj,i,val,opts)
+            arguments
+                obj 
+                i 
+                val 
+                opts.UpdateEta = true;
+            end
             if any(i>obj.N | i<1)
                 error('Index must be valid')
             end
-            obj.Eta(i) = val.Eta;
+            if opts.UpdateEta
+                obj.Eta(i) = val.Eta;
+            end
             obj.EtaDir(:,i) = val.EtaDir;
             obj.StationDir(:,i) = val.StationDir;
 

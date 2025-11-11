@@ -143,6 +143,7 @@ classdef (Abstract) Base < handle & matlab.mixin.Copyable
                 eta_low = etas(bin_idx);
                 eta_high = etas(bin_idx + 1);
                 alpha = (eta - eta_low) ./ (eta_high - eta_low);
+                alpha(eta_high==eta_low) = 0.5; % deal with coincident points
                 beta = 1-alpha;
                 idx_low = bin_idx;
                 idx_high = bin_idx + 1;
@@ -158,7 +159,7 @@ classdef (Abstract) Base < handle & matlab.mixin.Copyable
             if nnz(idx)>0
                 X(:,idx) = obj.EtaDir(:,end).*(eta(idx)-etas(end)) + repmat(pos(:,end),1,nnz(idx));
             end
-            if any(isnan(X))
+            if any(isnan(X),"all")
                 error("unexpected NaN in interpolation of station positions")
             end
         end
