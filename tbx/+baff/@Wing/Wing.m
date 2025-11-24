@@ -75,13 +75,13 @@ classdef Wing < baff.Beam
                 [mac,eta] = obj.AeroStations.GetMGC;
                 X = obj.GetGlobalPos(eta,obj.AeroStations.GetPos(eta,pChord));
             else
-                As = [obj.PlanformArea];
-                idx = find(cumsum(As)>=sum(As)/2,1);
-                As = [0,As];
-                target_A = sum(As)/2 - As(idx);
-                target = target_A/As(idx+1);
-                [mac,eta] = obj(idx).AeroStations.GetMGC(target);
-                X = obj(idx).GetGlobalPos(eta,obj(idx).AeroStations.GetPos(eta,pChord));
+                As = [0,[obj.PlanformArea]];
+                cAs = cumsum(As);
+                idx = find(cAs>=sum(As)/2,1);
+                target_A = sum(As)/2 - cAs(idx-1);
+                target = target_A/As(idx);
+                [mac,eta] = obj(idx-1).AeroStations.GetMGC(target);
+                X = obj(idx-1).GetGlobalPos(eta,obj(idx-1).AeroStations.GetPos(eta,pChord));
             end
         end
         function [mac,X] = GetMAC(obj)
