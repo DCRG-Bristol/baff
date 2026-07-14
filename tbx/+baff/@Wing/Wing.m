@@ -60,7 +60,7 @@ classdef Wing < baff.Beam
                 b = obj.Stations.GetPos(etas(i))*obj.EtaLength;
                 tmp = obj.AeroStations.GetPos(etas(i),pChord);
                 tmp = tmp+repmat(b,1,size(tmp,2));
-                p(:,((i-1)*(NC)+1):(i*NC)) =A_g'*tmp + O_g;
+                p(:,((i-1)*(NC)+1):(i*NC)) =A_g*tmp + O_g;
             end
         end
         function [mac,X] = GetMGC(obj,pChord)
@@ -201,7 +201,7 @@ classdef Wing < baff.Beam
                 barHeight
                 barWidth
                 Material
-                Chord (1,1) double = 1; % Chord of the wing
+                Chord (1,1) double = 1; % Chord of the wing (root Chord if taper Ratio not unity)
                 BeamLoc (1,1) double = 0.5; % Location of the beam in the chord
                 opts.NAeroStations (1,1) double = 2; % Number of aero stations
                 opts.NStations (1,1) double = 2; % Number of beam stations
@@ -209,12 +209,15 @@ classdef Wing < baff.Beam
                 opts.etaAeroMax (1,1) double = 1; % Maximum eta for aero stations
                 opts.etaBeamMax (1,1) double = 1; % Maximum eta for beam stations
                 opts.LiftCurveSlope (1,1) double = 2*pi; % Lift curve slope of the wing
+                opts.TaperRatio (1,1) double = 1;
             end
             % create root stations
             stations = baff.station.Beam.Bar(linspace(0,opts.etaBeamMax,opts.NStations),barHeight,barWidth,Mat=Material);
             aeroStation = baff.station.Aero(0,Chord,BeamLoc,LiftCurveSlope=opts.LiftCurveSlope,ThicknessRatio=0.12);
             %create end aero station
             aeroStations = aeroStation.Duplicate(linspace(opts.etaAeroMin,opts.etaAeroMax,opts.NAeroStations));
+            % add taper 
+            aeroStations.Chord = (1-(aeroStations.Eta*(1-opts.TaperRatio))).*aeroStations.Chord;
             %gen wing
             obj = baff.Wing(aeroStations);
             obj.EtaLength = length;
